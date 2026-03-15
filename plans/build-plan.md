@@ -134,6 +134,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [ ] Mobile-responsive layout
 - [ ] Loading states, error handling, edge cases
 - [ ] UI/UX polish — smooth transitions, clean typography
+- [ ] Customize Liberty map style (colors, theming, brand identity)
 - [ ] Performance optimization (debounce search, cache results)
 
 **End of day:** App is polished. Documentation is thorough enough for AI agents to understand the full system.

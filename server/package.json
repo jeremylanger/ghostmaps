@@ -7,8 +7,8 @@
     "start": "tsx index.ts",
     "dev": "tsx watch index.ts",
     "test": "vitest run",
-    "test:unit": "vitest run search.unit.test.ts",
-    "test:integration": "vitest run search.integration.test.ts"
+    "test:unit": "vitest run search.unit.test.ts venice.unit.test.ts",
+    "test:integration": "vitest run search.integration.test.ts venice.integration.test.ts"
   },
   "keywords": [],
   "author": "",
@@ -17,8 +17,7 @@
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "openai": "^6.29.0"
+    "express": "^5.2.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

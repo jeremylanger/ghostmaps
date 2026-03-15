@@ -118,4 +118,52 @@ test.describe('Ghost Maps E2E', () => {
   test('page title is Ghost Maps', async ({ page }) => {
     await expect(page).toHaveTitle('Ghost Maps')
   })
+
+  // Day 3: AI search tests
+  test('AI search shows top pick badge', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('best tacos')
+
+    // Wait for AI ranking to complete (longer timeout for Venice)
+    const topPick = page.locator('.top-pick-badge')
+    await expect(topPick).toBeVisible({ timeout: 30000 })
+    await expect(topPick).toHaveText('Top Pick')
+  })
+
+  test('AI search shows recommendation reason', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('coffee shops')
+
+    // Wait for ranking
+    const reason = page.locator('.result-reason')
+    await expect(reason).toBeVisible({ timeout: 30000 })
+
+    // Reason should be non-empty text
+    const text = await reason.textContent()
+    expect(text!.length).toBeGreaterThan(10)
+  })
+
+  test('AI search shows status messages while loading', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('pizza')
+
+    // Should see a status message
+    const status = page.locator('.search-status')
+    await expect(status).toBeVisible({ timeout: 5000 })
+  })
+
+  test('clicking top pick hides results and shows place panel', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('bars')
+
+    // Wait for top pick
+    const topPickItem = page.locator('.search-result-item.top-pick')
+    await expect(topPickItem).toBeVisible({ timeout: 30000 })
+
+    await topPickItem.click()
+
+    // Results hidden, place panel visible
+    await expect(page.locator('.search-results')).not.toBeVisible()
+    await expect(page.locator('.place-panel')).toBeVisible()
+  })
 })
