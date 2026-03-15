@@ -4,7 +4,7 @@
 
 Building a private AI-powered maps app with on-chain reviews and navigation. Privacy-first alternative to Google Maps — private search via Venice AI, trustworthy on-chain reviews via EAS on Base, and navigation without location tracking.
 
-**The pitch:** "Google Maps tracks your location every 2 minutes and has paid $2.3B in privacy fines. We built the alternative — AI-powered search, trustworthy on-chain reviews, and real navigation, without anyone knowing where you go."
+**The pitch:** "Google Maps tracks your location every 2 minutes and has paid $7.3B+ in privacy fines. We built the alternative — AI-powered search, trustworthy on-chain reviews, and real navigation, without anyone knowing where you go."
 
 **Hackathon strategy:** AI agents judge this hackathon. Code quality, documentation, machine-readable artifacts, and on-chain proof matter as much as the demo. Venice bounty criteria: originality, ecosystem alignment (privacy), growth potential, technical depth, proof of work.
 
@@ -29,25 +29,27 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 ## Day-by-Day Plan
 
-### Day 1 — March 13 (TODAY)
+### Day 1 — March 13 ✅
 **Planning & Research** *(done)*
-- Architecture decisions finalized
-- Tech stack chosen
-- Search pipeline designed (Overture → OSM → HERE)
-- Navigation approach decided (TomTom)
-- Auth approach decided (CDP embedded wallets)
-- Hackathon judging criteria researched
+- [x] Architecture decisions finalized
+- [x] Tech stack chosen
+- [x] Search pipeline designed (Overture → OSM → HERE)
+- [x] Navigation approach decided (TomTom)
+- [x] Auth approach decided (CDP embedded wallets)
+- [x] Hackathon judging criteria researched
 
-### Day 2 — March 14
+### Day 2 — March 14 (IN PROGRESS)
 **Map Foundation + Basic Search**
-- [ ] Project scaffolding (React + Vite frontend, Node + Express backend)
-- [ ] MapLibre rendering with base map tiles (pick tile source: OpenFreeMap or similar)
-- [ ] User GPS location on map (browser Geolocation API)
-- [ ] Overture REST API integration — basic category + location search
-- [ ] Display search results as pins on the map
-- [ ] Smart search bar UI (top of screen, results as cards below/beside map)
+- [x] Project scaffolding (React + Vite frontend, Node + Express backend)
+- [x] MapLibre rendering with base map tiles — **OpenFreeMap** (liberty style)
+- [x] User GPS location on map (browser Geolocation API)
+- [x] Overture REST API integration — category + location search (no text search — API only supports category/brand/location filters)
+- [x] Display search results as pins on the map
+- [x] Smart search bar UI (top of screen, results as cards below map)
+- [x] Place detail panel — tap a pin/result to see name, category, address, phone, website
+- [ ] Sign up for Overture Maps API free key (currently using DEMO key, restricted to NYC/London/Paris/Bondi)
 
-**End of day:** Map renders, user location shown, can search "restaurants" and see pins.
+**End of day:** Map renders, user location shown, can search "restaurants" and see pins. ✅ (working with demo key in NYC)
 
 ### Day 3 — March 15
 **Venice AI Search + Streaming**
@@ -115,7 +117,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
   - Search history (saved forever vs. zero retention)
   - Law enforcement (11,500 geofence warrants vs. nothing to hand over)
   - Business profiling (every click tracked vs. no tracking)
-  - $2.3B in fines vs. privacy by architecture
+  - $7.3B+ in fines vs. privacy by architecture
 
 **End of day:** Navigation complete with speed limits + lane guidance. Privacy page tells the story. *App is a real product at this point.*
 
@@ -175,9 +177,9 @@ Priority order (cut from bottom):
 
 ## Open Items to Resolve
 
-1. **Map tile source** — OpenFreeMap, Stadia Maps, or MapTiler. Need to pick one.
+1. ~~**Map tile source**~~ — **RESOLVED: OpenFreeMap** (liberty style, free, no API key needed)
 2. **API keys to register:**
-   - Overture REST API (overturemapsapi.com) — free
+   - Overture REST API (overturemapsapi.com) — using DEMO key, need free account for full access
    - HERE (developer.here.com) — 1K req/day free
    - TomTom (developer.tomtom.com) — 2,500 req/day free
    - Coinbase CDP (portal.cdp.coinbase.com) — 5K ops/month free

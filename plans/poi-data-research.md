@@ -13,30 +13,107 @@
 - `operating_status` field is NOT opening hours — it's whether the business exists at all
 
 ### Overture REST API (overturemapsapi.com)
-- Third-party hosted API by ThatAPICompany (not official Overture)
-- `GET /places` with params: `lat`, `lng`, `radius` (meters), `categories`, `brand_name`, `min_confidence`, `limit`, `country`
-- No text search by name
+- Third-party hosted API by ThatAPICompany (not official Overture), v0.1.2
+- **Base URL:** `https://api.overturemapsapi.com`
+- Auth: `x-api-key` header
+  - Demo key: `DEMO-API-KEY` (restricted to 10km around NYC, London, Paris, Bondi Beach)
+  - Free accounts: sign up at https://overturemapsapi.com
+- **No text search by name** — `name=`, `q=` params are silently ignored (verified)
 - No opening hours filter
-- Auth: `x-api-key` header, demo key available
-- Free to use
 
-### Overture POI Record Structure
+#### Endpoints
+| Endpoint | Description |
+|---|---|
+| `GET /places` | Search places by location/category/brand |
+| `GET /places/categories` | List all categories with place/brand counts |
+| `GET /places/brands` | List all brands with place counts |
+| `GET /places/countries` | List all countries with place/brand counts |
+| `GET /places/buildings` | Building shapes containing places |
+| `GET /addresses` | Address theme data |
+
+#### `/places` Query Parameters
+| Param | Type | Description |
+|---|---|---|
+| `lat` | float | Latitude (required for geo search) |
+| `lng` | float | Longitude (required for geo search) |
+| `radius` | int | Search radius in meters |
+| `categories` | string | Comma-separated category filter (e.g. `restaurant,coffee_shop`) |
+| `brand_name` | string | Filter by brand name (e.g. `Starbucks`) |
+| `min_confidence` | float | Minimum confidence score (0-1) |
+| `country` | string | Country code filter (e.g. `US`) |
+| `limit` | int | Max results to return |
+| `format` | string | `json` (default) or `geojson` |
+
+#### Example Request
+```bash
+curl -H "x-api-key: YOUR_API_KEY" \
+  "https://api.overturemapsapi.com/places?lat=40.7128&lng=-74.006&radius=2000&categories=restaurant&min_confidence=0.8&limit=10"
+```
+
+### Response Format (JSON — default)
+Returns a JSON array of place objects:
+```json
+[
+  {
+    "id": "1a09ee5f-1006-4d82-b91a-bb792f56a5ce",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [-74.0058625, 40.7149206]
+    },
+    "properties": {
+      "id": "1a09ee5f-1006-4d82-b91a-bb792f56a5ce",
+      "version": 6,
+      "sources": [
+        { "property": "", "dataset": "meta", "record_id": "126724604042392",
+          "update_time": "2025-12-01T08:00:00.000Z", "confidence": 0.95 },
+        { "property": "/properties/confidence", "dataset": "Overture",
+          "record_id": null, "update_time": "2026-02-10T22:33:06Z", "confidence": null }
+      ],
+      "names": { "primary": "Starbucks", "common": null, "rules": null },
+      "categories": { "primary": "coffee_shop", "alternate": [] },
+      "confidence": 0.9809,
+      "websites": [],
+      "socials": ["https://www.facebook.com/126724604042392"],
+      "emails": [],
+      "phones": ["+12124065315"],
+      "brand": { "names": { "primary": "Starbucks", "common": null, "rules": null },
+                  "wikidata": "Q37158" },
+      "addresses": [
+        { "freeform": "80 Pine St", "locality": "New York",
+          "postcode": "10005", "region": "NY", "country": "US" }
+      ],
+      "ext_name": "Starbucks"
+    }
+  }
+]
+```
+
+### Response Format (GeoJSON — `format=geojson`)
+Wraps the same data in a standard GeoJSON FeatureCollection:
 ```json
 {
-  "id": "99003ee6-...",
-  "geometry": "POINT (-150.46875 -79.1713346)",
-  "names": { "primary": "Store Name" },
-  "categories": { "primary": "taco", "alternate": null },
-  "basic_category": "restaurant",
-  "taxonomy": { "primary": "taco", "hierarchy": ["eat_and_drink", "restaurant", "taco"] },
-  "confidence": 0.73,
-  "operating_status": "open",
-  "websites": ["https://example.com"],
-  "phones": ["+18005551234"],
-  "brand": { "names": { "primary": "Brand Name" }, "wikidata": "Q12345" },
-  "addresses": [{ "freeform": "123 Main St", "locality": "Austin", "postcode": "78701", "region": "TX", "country": "US" }]
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "id": "...",
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-74.005, 40.714] },
+      "properties": { /* same properties as JSON format */ }
+    }
+  ]
 }
 ```
+
+### Key Fields
+- `names.primary` — place name
+- `categories.primary` — Overture category slug (e.g. `restaurant`, `coffee_shop`, `taco`)
+- `categories.alternate` — additional categories (array)
+- `confidence` — 0-1 score, higher = more likely to be a real place
+- `brand` — present only for branded/chain locations, includes `wikidata` ID
+- `sources[].dataset` — data provenance (`meta` = Facebook/Meta, `Microsoft`, `Overture`)
+- `socials` — social media URLs (often Facebook page)
+- `ext_name` — display name (same as `names.primary`)
+- **NOT included:** opening hours, ratings, reviews, photos, price level
 
 ---
 

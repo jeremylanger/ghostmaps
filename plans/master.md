@@ -206,6 +206,10 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 - Smart search bar UX (not chat interface)
 
 ### 8. App Name — STILL TBD
+- Top candidates: **Roam**, **Carta**, **Locus**
+- Roam: "Roam privately. Review honestly. Navigate freely." One syllable, maps + freedom.
+- Carta: "map" in Latin/Italian/Spanish. Elegant, global.
+- Locus: "place" in Latin. Short, technical edge.
 
 ### 9. 10-Day Build Scope — RESOLVED
 - See [build-plan.md](build-plan.md) for full day-by-day plan
@@ -224,6 +228,26 @@ See detailed day-by-day build plan. Summary:
 - Days 5-6: CDP auth + on-chain reviews (hackathon differentiator)
 - Days 7-8: Navigation + privacy page (product differentiator)
 - Days 9-10: Documentation + polish + deploy
+
+---
+
+## Post-Hackathon Roadmap
+
+Priority features for Google Maps parity (in rough order):
+
+1. **Menus & pricing** — user-contributed via structured review prompts ("what did you order?"). Venice can also scrape restaurant websites for menu data. Price level ($ to $$$$) from HERE or community-tagged.
+2. **Transit directions** — GTFS feeds (3,000+ agencies publish free data) + OpenTripPlanner (open source multimodal routing engine). ~1-2 weeks of work. Transitland API aggregates 2,500+ feeds.
+3. **Offline maps** — MapLibre supports offline tile caching. Overture data can be pre-downloaded per region.
+4. **Save/organize places into lists** — simple feature, just needs user storage
+5. **Speed cameras / police alerts** — community-contributed (Waze model)
+6. **Gas prices / EV charging** — TomTom already has this data in their API
+7. **Indoor maps** — complex, likely last priority
+8. **Self-hosted routing (Valhalla)** — eliminate TomTom dependency for full privacy
+9. **Supabase auth migration** — add social login (Google, Apple) via Supabase + CDP custom JWT mode
+
+### Decided against
+- **Bright Data / scraped Google data** — legal risk, ironic for a privacy app, and our Overture + OSM + HERE stack provides sufficient data for the hackathon
+- **Token incentives** — deferred to V2, after proof-of-visit + quality scoring are battle-tested
 
 ---
 

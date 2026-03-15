@@ -1,2 +1,7 @@
 .env
 node_modules/
+dist/
+.DS_Store
+screenshot.js
+/package.json
+/package-lock.json
