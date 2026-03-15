@@ -85,10 +85,14 @@ test.describe('Ghost Maps E2E', () => {
     // Wait for results
     await page.locator('.search-result-item').first().waitFor({ timeout: 10000 })
 
-    // POI markers should appear on the map
-    const markers = page.locator('.poi-marker')
-    const count = await markers.count()
+    // Pins are canvas-rendered (GeoJSON circle layers), so we verify
+    // the search returned results and the map has a canvas
+    const results = page.locator('.search-result-item')
+    const count = await results.count()
     expect(count).toBeGreaterThan(0)
+
+    const canvas = page.locator('canvas')
+    await expect(canvas).toBeVisible()
   })
 
   test('clearing search removes results', async ({ page }) => {
