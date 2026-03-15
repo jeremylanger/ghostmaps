@@ -205,11 +205,11 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 - Two Venice round trips, second one streamed via SSE
 - Smart search bar UX (not chat interface)
 
-### 8. App Name — STILL TBD
-- Top candidates: **Roam**, **Carta**, **Locus**
-- Roam: "Roam privately. Review honestly. Navigate freely." One syllable, maps + freedom.
-- Carta: "map" in Latin/Italian/Spanish. Elegant, global.
-- Locus: "place" in Latin. Short, technical edge.
+### 8. App Name — RESOLVED
+- **Ghost Maps** — ghostmaps.app (purchased)
+- "Leave no trace." / "Maps that don't follow you home."
+- Ghost = invisible, no trace, can't be tracked — perfect privacy metaphor
+- Logo: ghost icon on a map pin
 
 ### 9. 10-Day Build Scope — RESOLVED
 - See [build-plan.md](build-plan.md) for full day-by-day plan

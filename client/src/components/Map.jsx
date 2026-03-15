@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
-const INITIAL_CENTER = [-74.006, 40.7128] // NYC (demo key restriction)
+const INITIAL_CENTER = [-118.2437, 34.0522] // LA
 const INITIAL_ZOOM = 13
 
 export default function Map({ userLocation, searchResults, selectedPlace, onSelectPlace, flyTo }) {

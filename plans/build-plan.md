@@ -38,7 +38,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Auth approach decided (CDP embedded wallets)
 - [x] Hackathon judging criteria researched
 
-### Day 2 — March 14 (IN PROGRESS)
+### Day 2 — March 14 ✅
 **Map Foundation + Basic Search**
 - [x] Project scaffolding (React + Vite frontend, Node + Express backend)
 - [x] MapLibre rendering with base map tiles — **OpenFreeMap** (liberty style)
@@ -47,9 +47,9 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Display search results as pins on the map
 - [x] Smart search bar UI (top of screen, results as cards below map)
 - [x] Place detail panel — tap a pin/result to see name, category, address, phone, website
-- [ ] Sign up for Overture Maps API free key (currently using DEMO key, restricted to NYC/London/Paris/Bondi)
+- [x] Sign up for Overture Maps API free key
 
-**End of day:** Map renders, user location shown, can search "restaurants" and see pins. ✅ (working with demo key in NYC)
+**End of day:** Map renders, user location shown, can search "restaurants" and see pins. ✅
 
 ### Day 3 — March 15
 **Venice AI Search + Streaming**
@@ -185,7 +185,7 @@ Priority order (cut from bottom):
    - Coinbase CDP (portal.cdp.coinbase.com) — 5K ops/month free
    - Venice — already have from hackathon
 3. **EAS schema fields** — finalize before Day 5 (rating, text, photo hash, GPS, Overture POI ID, quality score)
-4. **App name** — still TBD
+4. ~~**App name**~~ — **RESOLVED: Ghost Maps** (ghostmaps.app)
 5. **Photo storage** — IPFS (Pinata?) or S3 for hackathon
 6. **Gas sponsorship** — CDP Paymaster setup for Base (users pay $0)
 7. **Deployment target** — Vercel (frontend) + Railway or Fly.io (backend)

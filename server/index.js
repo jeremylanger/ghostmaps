@@ -141,8 +141,8 @@ async function searchOverture(query, lat, lng) {
   const categories = queryToCategories(query)
 
   const params = new URLSearchParams()
-  params.set('lat', lat || '40.7128')
-  params.set('lng', lng || '-74.006')
+  params.set('lat', lat || '34.0522')
+  params.set('lng', lng || '-118.2437')
   params.set('radius', '5000')
   params.set('categories', categories.join(','))
   params.set('min_confidence', '0.5')
