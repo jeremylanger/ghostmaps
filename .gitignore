@@ -5,3 +5,4 @@ dist/
 screenshot.js
 /package.json
 /package-lock.json
+test-results/

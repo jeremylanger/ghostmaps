@@ -52,13 +52,27 @@ node screenshot.js
 
 ## Testing Requirements
 
+**Tests are not optional. Write them automatically with every day of work — do not wait to be asked.**
+
 Every feature requires **three layers of tests**:
 
 1. **Unit tests** — Fast, isolated, mocks allowed. Test pure logic, helpers, and edge cases.
 2. **Integration tests** — Hit real external services and real DB. No mocks for service boundaries. Test that our code works with the actual APIs, SDKs, and data formats.
-3. **E2E tests** — Full flow from browser to DB. Use Playwright + Chrome DevTools MCP to test the actual user journey.
+3. **E2E tests** — Full browser flow via Playwright. Test the actual user journey.
 
 **Mocked unit tests alone are not sufficient.** They miss: SDK object access patterns, API version changes, import errors, state machine bugs, and frontend rendering issues. Always verify DB state after each flow with real queries. Always test failure paths.
+
+### Running Tests
+
+```bash
+# Unit + integration tests (server)
+cd server && npm test                    # all
+cd server && npm run test:unit           # unit only
+cd server && npm run test:integration    # integration only
+
+# E2E tests (requires both servers running on :3001 and :5174)
+npx playwright test --config e2e/playwright.config.js
+```
 
 ## Project Overview
 
