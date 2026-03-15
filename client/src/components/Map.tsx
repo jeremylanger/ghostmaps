@@ -67,6 +67,50 @@ export default function Map() {
 
       map.addControl(new maplibregl.NavigationControl(), 'top-right')
 
+      // Map OSM class/subclass names to Maki sprite icon names
+      const ICON_ALIASES: Record<string, string> = {
+        archery: 'pitch', athletics: 'pitch', atm: 'bank',
+        australian_football: 'american_football', badminton: 'tennis',
+        basin: 'water', beachvolleyball: 'pitch', bicycle_parking: 'bicycle',
+        billiards: 'pitch', bmx: 'bicycle', bollard: 'roadblock',
+        border_control: 'roadblock', boules: 'pitch', bowls: 'pitch',
+        boxing: 'pitch', brownfield: 'industry', canadian_football: 'american_football',
+        canoe: 'swimming', chess: 'pitch', climbing: 'mountain',
+        climbing_adventure: 'mountain', cricket_nets: 'cricket', croquet: 'pitch',
+        curling: 'pitch', cycle_barrier: 'roadblock', cycling: 'bicycle',
+        disc_golf: 'golf', diving: 'swimming', dog_racing: 'dog_park',
+        equestrian: 'pitch', escape_game: 'amusement_park', fatsal: 'soccer',
+        ferry_terminal: 'ferry', field_hockey: 'pitch', free_flying: 'aerialway',
+        gaelic_games: 'pitch', gate: 'roadblock', gymnastics: 'pitch',
+        hackerspace: 'commercial', handball: 'pitch', hockey: 'pitch',
+        horse_racing: 'pitch', horseshoes: 'pitch', ice_hockey: 'pitch',
+        ice_rink: 'swimming', ice_stock: 'pitch', judo: 'pitch',
+        karting: 'car', korfball: 'pitch', lift_gate: 'roadblock',
+        long_jump: 'pitch', model_aerodrome: 'airfield', motocross: 'car',
+        motor: 'car', motorcycle_parking: 'parking', multi: 'pitch',
+        netball: 'basketball', office: 'commercial', orienteering: 'pitch',
+        paddle_tennis: 'tennis', paintball: 'pitch', paragliding: 'aerialway',
+        pelota: 'pitch', racquet: 'tennis', rail: 'railway',
+        rc_car: 'pitch', recycling: 'waste_basket', reservoir: 'water',
+        rowing: 'swimming', rugby: 'american_football', rugby_league: 'american_football',
+        rugby_union: 'american_football', running: 'pitch', sailing: 'harbor',
+        sally_port: 'entrance', scuba_diving: 'swimming', shooting: 'danger',
+        shooting_range: 'danger', skateboard: 'pitch', skating: 'pitch',
+        sports_centre: 'stadium', stile: 'roadblock', surfing: 'swimming',
+        swimming_pool: 'swimming', table_soccer: 'pitch', table_tennis: 'tennis',
+        team_handball: 'pitch', theme_park: 'amusement_park', toboggan: 'skiing',
+        toll_booth: 'roadblock', volleyball: 'pitch', water_park: 'swimming',
+        water_ski: 'swimming', winter_sports: 'skiing', yoga: 'place_of_worship',
+      }
+
+      map.on('styleimagemissing', (e) => {
+        const alias = ICON_ALIASES[e.id]
+        if (alias && map.hasImage(alias)) {
+          const img = map.style.getImage(alias)
+          if (img) map.addImage(e.id, img.data)
+        }
+      })
+
       map.on('load', () => {
         map.addSource(SOURCE_ID, {
           type: 'geojson',
