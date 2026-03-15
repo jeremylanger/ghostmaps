@@ -12,6 +12,7 @@ interface SearchBarProps {
 
 export default function SearchBar({ onSearch, results, loading, error, onSelectResult, onClear }: SearchBarProps) {
   const [query, setQuery] = useState('')
+  const [showResults, setShowResults] = useState(true)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,6 +26,7 @@ export default function SearchBar({ onSearch, results, loading, error, onSelectR
       return
     }
 
+    setShowResults(true)
     debounceRef.current = setTimeout(() => {
       onSearch(value)
     }, 400)
@@ -43,6 +45,7 @@ export default function SearchBar({ onSearch, results, loading, error, onSelectR
 
   const handleSelectResult = useCallback((place: Place) => {
     setQuery(place.name)
+    setShowResults(false)
     onSelectResult(place)
   }, [onSelectResult])
 
@@ -67,7 +70,7 @@ export default function SearchBar({ onSearch, results, loading, error, onSelectR
         )}
       </form>
 
-      {(loading || error || results.length > 0) && query && (
+      {(loading || error || results.length > 0) && query && showResults && (
         <div className="search-results">
           {loading && <div className="search-loading">Searching...</div>}
           {error && <div className="search-error">{error}</div>}
