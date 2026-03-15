@@ -258,22 +258,98 @@
   line-height: 1;
 }
 
+.place-panel-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+}
+
 .place-panel-category {
   font-size: 14px;
   color: #666;
   text-transform: capitalize;
-  margin-bottom: 4px;
+}
+
+.open-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.open-status.open {
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
+}
+
+.open-status.closed {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
 }
 
 .place-panel-address {
   font-size: 14px;
   color: #999;
+  margin-top: 4px;
+}
+
+.place-panel-hours {
+  font-size: 13px;
+  color: #555;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.place-panel-food-types {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.food-type-chip {
+  font-size: 12px;
+  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.08);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.place-panel-loading {
+  font-size: 13px;
+  color: #999;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.place-panel-loading::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border: 2px solid #ddd;
+  border-top-color: #4285f4;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.place-panel-briefing {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 3px solid #4285f4;
 }
 
 .place-panel-details {
   margin-top: 12px;
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -283,6 +359,7 @@
   background: #f0f0f0;
   padding: 4px 10px;
   border-radius: 12px;
+  text-decoration: none;
 }
 
 /* Map markers */

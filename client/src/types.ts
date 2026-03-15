@@ -11,6 +11,14 @@ export interface Place {
   latitude: number
 }
 
+export interface EnrichedPlace extends Place {
+  openingHours: string | null
+  isOpen: boolean | null
+  foodTypes: string[]
+  references: { supplier: string; id: string }[]
+  briefing: string
+}
+
 export interface Ranking {
   topPick: string | null
   topPickReason: string

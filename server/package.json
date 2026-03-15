@@ -7,8 +7,8 @@
     "start": "tsx index.ts",
     "dev": "tsx watch index.ts",
     "test": "vitest run",
-    "test:unit": "vitest run search.unit.test.ts venice.unit.test.ts",
-    "test:integration": "vitest run search.integration.test.ts venice.integration.test.ts"
+    "test:unit": "vitest run search.unit.test.ts venice.unit.test.ts here.unit.test.ts",
+    "test:integration": "vitest run search.integration.test.ts venice.integration.test.ts enrichment.integration.test.ts"
   },
   "keywords": [],
   "author": "",

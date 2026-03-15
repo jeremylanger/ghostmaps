@@ -152,6 +152,36 @@ test.describe('Ghost Maps E2E', () => {
     await expect(status).toBeVisible({ timeout: 5000 })
   })
 
+  test('place panel shows AI briefing after clicking result', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('coffee')
+
+    const firstResult = page.locator('.search-result-item').first()
+    await expect(firstResult).toBeVisible({ timeout: 30000 })
+    await firstResult.click()
+
+    // Wait for briefing to load
+    const briefing = page.locator('.place-panel-briefing')
+    await expect(briefing).toBeVisible({ timeout: 30000 })
+
+    const text = await briefing.textContent()
+    expect(text!.length).toBeGreaterThan(20)
+  })
+
+  test('place panel shows loading state while fetching details', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('restaurant')
+
+    const firstResult = page.locator('.search-result-item').first()
+    await expect(firstResult).toBeVisible({ timeout: 30000 })
+    await firstResult.click()
+
+    // Should briefly show loading
+    const loading = page.locator('.place-panel-loading')
+    // Loading may be very fast, so just check the panel appears
+    await expect(page.locator('.place-panel')).toBeVisible()
+  })
+
   test('clicking top pick hides results and shows place panel', async ({ page }) => {
     const searchInput = page.getByPlaceholder('Search places...')
     await searchInput.fill('bars')

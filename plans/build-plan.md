@@ -66,15 +66,17 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** User types "best tacos near me", gets AI-ranked results with top pick + alternatives + "why not" explanations. ✅
 
-### Day 4 — March 16
+### Day 4 — March 16 (IN PROGRESS)
 **POI Enrichment Pipeline**
-- [ ] OSM enrichment via bridge files — add opening hours, cuisine, wifi, outdoor seating
-- [ ] HERE API integration — fallback for missing hours + TripAdvisor/Yelp reference IDs
-- [ ] Place detail panel — tap a pin/result to see full place info
-- [ ] Venice place intelligence briefing (synthesize all data into natural language summary)
-- [ ] "Open now" filtering (using hours from OSM/HERE)
+- [ ] ~~OSM enrichment via bridge files~~ — deferred (requires DuckDB + Parquet, too heavy for hackathon)
+- [x] HERE API integration — opening hours, isOpen, food types, TripAdvisor/Yelp IDs (awaiting API key)
+- [x] Place detail panel — enriched with hours, open/closed, cuisine, phone, website
+- [x] Venice place intelligence briefing (2-3 sentence AI summary per place)
+- [x] Place details fetched via TanStack Query with 5min cache
+- [x] In-memory place cache on server (search results → detail lookups)
+- [ ] "Open now" filtering (requires HERE API key)
 
-**End of day:** Search results show enriched data. Place panel shows hours, cuisine, AI summary. Time-based queries work when hours data available.
+**End of day:** Place panel shows AI briefing. When HERE key is added: hours, open/closed badge, cuisine tags. ✅
 
 ### Day 5 — March 17
 **Auth + Wallets + On-Chain Reviews — Write**

@@ -2,6 +2,7 @@ import type { Place } from './types'
 
 const VENICE_PARSE_MODEL = 'mistral-small-3-2-24b-instruct'
 const VENICE_RANK_MODEL = 'mistral-small-3-2-24b-instruct'
+const VENICE_BRIEFING_MODEL = 'mistral-small-3-2-24b-instruct'
 const VENICE_URL = 'https://api.venice.ai/api/v1/chat/completions'
 
 async function veniceChat(
@@ -221,5 +222,49 @@ export async function rankResults(
       alternatives: places.slice(1, 6).map((p) => ({ id: p.id, whyNot: '' })),
       summary: `Found ${places.length} results.`,
     }
+  }
+}
+
+const BRIEFING_SYSTEM_PROMPT = `You are a concise local guide for Ghost Maps. Given a place's data, write a 2-3 sentence intelligence briefing that helps someone decide whether to visit.
+
+Include: what makes it notable, vibe/atmosphere hints from the category and name, and any practical info (hours, cuisine type). Be opinionated but fair. If data is sparse, say what you can and note what's unknown.
+
+Return plain text only — no JSON, no markdown.`
+
+export interface PlaceBriefingData {
+  name: string
+  category: string
+  address: string
+  phone: string
+  website: string
+  brand: string
+  openingHours: string | null
+  isOpen: boolean | null
+  foodTypes: string[]
+}
+
+export async function generatePlaceBriefing(data: PlaceBriefingData): Promise<string> {
+  try {
+    const details = [
+      `Name: ${data.name}`,
+      `Category: ${data.category.replace(/_/g, ' ')}`,
+      data.address && `Address: ${data.address}`,
+      data.phone && `Phone: ${data.phone}`,
+      data.website && `Website: ${data.website}`,
+      data.brand && `Brand: ${data.brand}`,
+      data.openingHours && `Hours: ${data.openingHours}`,
+      data.isOpen !== null && `Currently: ${data.isOpen ? 'Open' : 'Closed'}`,
+      data.foodTypes.length > 0 && `Cuisine: ${data.foodTypes.join(', ')}`,
+    ].filter(Boolean).join('\n')
+
+    const content = await veniceChat([
+      { role: 'system', content: BRIEFING_SYSTEM_PROMPT },
+      { role: 'user', content: details },
+    ], VENICE_BRIEFING_MODEL, { temperature: 0.4 })
+
+    return content.trim()
+  } catch (err) {
+    console.error('Venice briefing error:', err)
+    return ''
   }
 }

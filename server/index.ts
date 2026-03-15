@@ -3,7 +3,9 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
 import { searchOverture } from './search'
-import { parseQuery, rankResults } from './venice'
+import { parseQuery, rankResults, generatePlaceBriefing } from './venice'
+import { enrichPlace } from './here'
+import type { Place } from './types'
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
@@ -12,6 +14,13 @@ const PORT = process.env.PORT || 3001
 
 app.use(cors())
 app.use(express.json())
+
+// In-memory place cache (search results are ephemeral, this lets us look up by ID)
+const placeCache = new Map<string, Place>()
+
+function cachePlaces(places: Place[]) {
+  for (const p of places) placeCache.set(p.id, p)
+}
 
 // Basic search (category mapping, no AI)
 app.get('/api/search', async (req, res) => {
@@ -24,6 +33,7 @@ app.get('/api/search', async (req, res) => {
     }
 
     const results = await searchOverture(q, lat, lng, process.env.OVERTURE_API_KEY)
+    cachePlaces(results)
     res.json({ results })
   } catch (err) {
     console.error('Search error:', err)
@@ -53,6 +63,7 @@ app.get('/api/ai-search', async (req, res) => {
       parsed.categories,
       parsed.radius || undefined
     )
+    cachePlaces(results)
 
     const ranking = await rankResults(q, results, parsed.attributes)
 
@@ -83,12 +94,10 @@ app.get('/api/ai-search/stream', async (req, res) => {
   }
 
   try {
-    // Step 1: Parse query
     send('status', { message: 'Understanding your search...' })
     const parsed = await parseQuery(q)
     send('parsed', parsed)
 
-    // Step 2: Search Overture
     send('status', { message: 'Finding places...' })
     const results = await searchOverture(
       parsed.categories[0],
@@ -97,6 +106,7 @@ app.get('/api/ai-search/stream', async (req, res) => {
       parsed.categories,
       parsed.radius || undefined
     )
+    cachePlaces(results)
     send('results', results)
 
     if (results.length === 0) {
@@ -105,14 +115,12 @@ app.get('/api/ai-search/stream', async (req, res) => {
       return
     }
 
-    // Step 3: Rank results (non-fatal if it fails)
     send('status', { message: 'Picking the best options...' })
     try {
       const ranking = await rankResults(q, results, parsed.attributes)
       send('ranking', ranking)
     } catch (err) {
       console.error('Ranking failed (non-fatal):', err)
-      // Send results without ranking — still useful
     }
 
     send('done', {})
@@ -124,11 +132,56 @@ app.get('/api/ai-search/stream', async (req, res) => {
   res.end()
 })
 
-// Place details
+// Place details with enrichment
 app.get('/api/places/:id', async (req, res) => {
   try {
-    res.status(501).json({ error: 'Not implemented yet' })
+    const { id } = req.params
+    const place = placeCache.get(id)
+
+    if (!place) {
+      res.status(404).json({ error: 'Place not found. Search first.' })
+      return
+    }
+
+    // Enrich with HERE data if API key available
+    let enrichment = null
+    const hereKey = process.env.HERE_API_KEY
+    if (hereKey) {
+      enrichment = await enrichPlace(place, hereKey)
+    }
+
+    // Generate Venice briefing
+    let briefing = ''
+    try {
+      briefing = await generatePlaceBriefing({
+        name: place.name,
+        category: place.category,
+        address: place.address,
+        phone: enrichment?.phone || place.phone,
+        website: enrichment?.website || place.website,
+        brand: place.brand,
+        openingHours: enrichment?.openingHours || null,
+        isOpen: enrichment?.isOpen ?? null,
+        foodTypes: enrichment?.foodTypes || [],
+      })
+    } catch (err) {
+      console.error('Briefing failed (non-fatal):', err)
+    }
+
+    res.json({
+      ...place,
+      // Override with richer HERE data if available
+      phone: enrichment?.phone || place.phone,
+      website: enrichment?.website || place.website,
+      // New enriched fields
+      openingHours: enrichment?.openingHours || null,
+      isOpen: enrichment?.isOpen ?? null,
+      foodTypes: enrichment?.foodTypes || [],
+      references: enrichment?.references || [],
+      briefing,
+    })
   } catch (err) {
+    console.error('Place detail error:', err)
     res.status(500).json({ error: 'Failed to get place details' })
   }
 })
