@@ -39,7 +39,7 @@ The `plans/build-plan.md` contains a day-by-day checklist with `- [ ]` and `- [x
 
 ```bash
 # Start backend (from repo root)
-cd server && node index.js     # runs on :3001
+cd server && npm run dev       # runs on :3001 (tsx watch)
 
 # Start frontend (from repo root)
 cd client && npx vite --port 5174   # runs on :5174, proxies /api to :3001

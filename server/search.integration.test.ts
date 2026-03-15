@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { searchOverture } from './search.js'
+import { searchOverture } from './search'
 import dotenv from 'dotenv'
 import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
@@ -40,7 +37,6 @@ describe('Overture API integration', () => {
 
     expect(results.length).toBeGreaterThan(0)
 
-    // At least some results should have addresses
     const withAddress = results.filter(r => r.address)
     expect(withAddress.length).toBeGreaterThan(0)
   }, TIMEOUT)
@@ -52,11 +48,10 @@ describe('Overture API integration', () => {
 
     expect(results.length).toBeGreaterThan(0)
 
-    // All results should be within ~10km of search center
     for (const place of results) {
       const dLat = Math.abs(place.latitude - lat)
       const dLng = Math.abs(place.longitude - lng)
-      expect(dLat).toBeLessThan(0.1) // ~11km
+      expect(dLat).toBeLessThan(0.1)
       expect(dLng).toBeLessThan(0.1)
     }
   }, TIMEOUT)
@@ -66,7 +61,6 @@ describe('Overture API integration', () => {
 
     expect(results.length).toBeGreaterThan(0)
 
-    // Should be near LA (default)
     for (const place of results) {
       expect(place.latitude).toBeGreaterThan(33)
       expect(place.latitude).toBeLessThan(35)
@@ -76,10 +70,7 @@ describe('Overture API integration', () => {
   }, TIMEOUT)
 
   it('handles unknown category gracefully', async () => {
-    // "xyzzy" won't match any category — the API should return empty or error gracefully
     const results = await searchOverture('xyzzy123', '34.0522', '-118.2437', API_KEY)
-
-    // Either empty results or throws — both are acceptable
     expect(Array.isArray(results)).toBe(true)
   }, TIMEOUT)
 })

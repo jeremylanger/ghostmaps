@@ -1,10 +1,20 @@
 import { useState, useRef, useCallback } from 'react'
+import type { Place } from '../types'
 
-export default function SearchBar({ onSearch, results, loading, error, onSelectResult, onClear }) {
+interface SearchBarProps {
+  onSearch: (query: string) => void
+  results: Place[]
+  loading: boolean
+  error: string | null
+  onSelectResult: (place: Place) => void
+  onClear: () => void
+}
+
+export default function SearchBar({ onSearch, results, loading, error, onSelectResult, onClear }: SearchBarProps) {
   const [query, setQuery] = useState('')
-  const debounceRef = useRef(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleChange = useCallback((e) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setQuery(value)
 
@@ -20,7 +30,7 @@ export default function SearchBar({ onSearch, results, loading, error, onSelectR
     }, 400)
   }, [onSearch, onClear])
 
-  const handleSubmit = useCallback((e) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     if (debounceRef.current) clearTimeout(debounceRef.current)
     if (query.trim()) onSearch(query)
@@ -31,7 +41,7 @@ export default function SearchBar({ onSearch, results, loading, error, onSelectR
     onClear()
   }, [onClear])
 
-  const handleSelectResult = useCallback((place) => {
+  const handleSelectResult = useCallback((place: Place) => {
     setQuery(place.name)
     onSelectResult(place)
   }, [onSelectResult])

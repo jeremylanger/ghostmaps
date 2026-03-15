@@ -1,4 +1,4 @@
-const { test, expect } = require('@playwright/test')
+import { test, expect } from '@playwright/test'
 
 test.describe('Ghost Maps E2E', () => {
   test.beforeEach(async ({ page }) => {
@@ -13,8 +13,8 @@ test.describe('Ghost Maps E2E', () => {
 
     // Map container should be full screen
     const box = await canvas.boundingBox()
-    expect(box.width).toBeGreaterThan(500)
-    expect(box.height).toBeGreaterThan(400)
+    expect(box!.width).toBeGreaterThan(500)
+    expect(box!.height).toBeGreaterThan(400)
   })
 
   test('search bar is visible and accepts input', async ({ page }) => {
@@ -59,7 +59,7 @@ test.describe('Ghost Maps E2E', () => {
     await expect(placePanel).toBeVisible()
 
     const panelTitle = placePanel.locator('h2')
-    await expect(panelTitle).toHaveText(resultName)
+    await expect(panelTitle).toHaveText(resultName!)
   })
 
   test('place panel has close button', async ({ page }) => {

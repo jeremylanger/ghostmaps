@@ -1,19 +1,25 @@
 import { useState, useCallback } from 'react'
+import type { Place } from './types'
 import Map from './components/Map'
 import SearchBar from './components/SearchBar'
 import PlacePanel from './components/PlacePanel'
 import LocateButton from './components/LocateButton'
 import './App.css'
 
-function App() {
-  const [searchResults, setSearchResults] = useState([])
-  const [selectedPlace, setSelectedPlace] = useState(null)
-  const [userLocation, setUserLocation] = useState(null)
-  const [mapCenter, setMapCenter] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+interface LatLng {
+  lat: number
+  lng: number
+}
 
-  const handleSearch = useCallback(async (query) => {
+function App() {
+  const [searchResults, setSearchResults] = useState<Place[]>([])
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null)
+  const [userLocation, setUserLocation] = useState<LatLng | null>(null)
+  const [mapCenter, setMapCenter] = useState<LatLng | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
       setSearchResults([])
       return
@@ -25,8 +31,8 @@ function App() {
     try {
       const params = new URLSearchParams({ q: query })
       if (userLocation) {
-        params.set('lat', userLocation.lat)
-        params.set('lng', userLocation.lng)
+        params.set('lat', String(userLocation.lat))
+        params.set('lng', String(userLocation.lng))
       }
 
       const res = await fetch(`/api/search?${params}`)
@@ -35,19 +41,19 @@ function App() {
       const data = await res.json()
       setSearchResults(data.results || [])
     } catch (err) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : 'Search failed')
       setSearchResults([])
     } finally {
       setLoading(false)
     }
   }, [userLocation])
 
-  const handleSelectPlace = useCallback((place) => {
+  const handleSelectPlace = useCallback((place: Place) => {
     setSelectedPlace(place)
     setMapCenter({ lng: place.longitude, lat: place.latitude })
   }, [])
 
-  const handleLocate = useCallback((location) => {
+  const handleLocate = useCallback((location: LatLng) => {
     setUserLocation(location)
     setMapCenter(location)
   }, [])

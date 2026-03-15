@@ -1,5 +1,6 @@
-// Common query-to-category mappings
-const CATEGORY_MAP = {
+import type { Place, OvertureFeature } from './types'
+
+const CATEGORY_MAP: Record<string, string> = {
   // Food & Drink
   restaurant: 'restaurant',
   restaurants: 'restaurant',
@@ -78,14 +79,14 @@ const CATEGORY_MAP = {
   spa: 'spa',
 }
 
-function queryToCategories(query) {
+export function queryToCategories(query: string): string[] {
   const lower = query.toLowerCase().trim()
 
   // Direct match
   if (CATEGORY_MAP[lower]) return [CATEGORY_MAP[lower]]
 
   // Check if query contains any mapped terms
-  const matches = []
+  const matches: string[] = []
   for (const [term, category] of Object.entries(CATEGORY_MAP)) {
     if (lower.includes(term) && !matches.includes(category)) {
       matches.push(category)
@@ -96,8 +97,7 @@ function queryToCategories(query) {
   return matches.length > 0 ? matches.slice(0, 3) : [lower.replace(/\s+/g, '_')]
 }
 
-function formatPlace(item) {
-  // Handle both raw array format and GeoJSON
+export function formatPlace(item: OvertureFeature): Place {
   const props = item.properties || item
   const coords = item.geometry?.coordinates || [props.longitude || 0, props.latitude || 0]
 
@@ -137,7 +137,12 @@ function formatPlace(item) {
   }
 }
 
-async function searchOverture(query, lat, lng, apiKey) {
+export async function searchOverture(
+  query: string,
+  lat?: string,
+  lng?: string,
+  apiKey?: string
+): Promise<Place[]> {
   const categories = queryToCategories(query)
 
   const params = new URLSearchParams()
@@ -163,9 +168,9 @@ async function searchOverture(query, lat, lng, apiKey) {
   }
 
   const data = await response.json()
-  const places = Array.isArray(data) ? data : (data.features || [])
+  const places: OvertureFeature[] = Array.isArray(data) ? data : (data.features || [])
 
   return places.map(formatPlace).slice(0, 20)
 }
 
-module.exports = { queryToCategories, formatPlace, searchOverture, CATEGORY_MAP }
+export { CATEGORY_MAP }

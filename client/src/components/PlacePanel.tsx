@@ -1,4 +1,11 @@
-export default function PlacePanel({ place, onClose }) {
+import type { Place } from '../types'
+
+interface PlacePanelProps {
+  place: Place
+  onClose: () => void
+}
+
+export default function PlacePanel({ place, onClose }: PlacePanelProps) {
   return (
     <div className="place-panel">
       <div className="place-panel-header">

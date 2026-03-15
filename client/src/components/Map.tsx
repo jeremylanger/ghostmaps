@@ -1,15 +1,29 @@
 import { useRef, useEffect } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import type { Place } from '../types'
 
-const INITIAL_CENTER = [-118.2437, 34.0522] // LA
+interface LatLng {
+  lat: number
+  lng: number
+}
+
+interface MapProps {
+  userLocation: LatLng | null
+  searchResults: Place[]
+  selectedPlace: Place | null
+  onSelectPlace: (place: Place) => void
+  flyTo: LatLng | null
+}
+
+const INITIAL_CENTER: [number, number] = [-118.2437, 34.0522] // LA
 const INITIAL_ZOOM = 13
 
-export default function Map({ userLocation, searchResults, selectedPlace, onSelectPlace, flyTo }) {
-  const mapContainer = useRef(null)
-  const mapRef = useRef(null)
-  const markersRef = useRef([])
-  const userMarkerRef = useRef(null)
+export default function Map({ userLocation, searchResults, selectedPlace, onSelectPlace, flyTo }: MapProps) {
+  const mapContainer = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<maplibregl.Map | null>(null)
+  const markersRef = useRef<maplibregl.Marker[]>([])
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null)
   const initRef = useRef(false)
 
   // Initialize map (handle StrictMode double-mount)
@@ -65,13 +79,11 @@ export default function Map({ userLocation, searchResults, selectedPlace, onSele
     const map = mapRef.current
     if (!map) return
 
-    // Clear existing markers
     markersRef.current.forEach(m => m.remove())
     markersRef.current = []
 
     if (!searchResults.length) return
 
-    // Wait for map to be loaded before adding markers
     const addMarkers = () => {
       const bounds = new maplibregl.LngLatBounds()
 

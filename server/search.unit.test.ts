@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { queryToCategories, formatPlace } from './search.js'
+import { queryToCategories, formatPlace } from './search'
+import type { OvertureFeature } from './types'
 
 describe('queryToCategories', () => {
   // Direct matches
@@ -85,7 +86,7 @@ describe('queryToCategories', () => {
 
 describe('formatPlace', () => {
   it('formats a full Overture API response', () => {
-    const input = {
+    const input: OvertureFeature = {
       id: 'abc-123',
       geometry: { coordinates: [-118.25, 34.05] },
       properties: {
@@ -116,7 +117,7 @@ describe('formatPlace', () => {
   })
 
   it('handles missing optional fields', () => {
-    const input = {
+    const input: OvertureFeature = {
       id: 'xyz-789',
       geometry: { coordinates: [-74.006, 40.71] },
       properties: {
@@ -139,7 +140,7 @@ describe('formatPlace', () => {
   })
 
   it('handles structured address when freeform is missing', () => {
-    const input = {
+    const input: OvertureFeature = {
       id: '1',
       geometry: { coordinates: [0, 0] },
       properties: {
@@ -153,7 +154,7 @@ describe('formatPlace', () => {
   })
 
   it('handles empty geometry gracefully', () => {
-    const input = {
+    const input: OvertureFeature = {
       properties: {
         names: { primary: 'No Geo Place' },
       },
@@ -165,7 +166,7 @@ describe('formatPlace', () => {
   })
 
   it('generates fallback id from coordinates', () => {
-    const input = {
+    const input: OvertureFeature = {
       geometry: { coordinates: [-118.5, 34.1] },
       properties: {
         names: { primary: 'No ID Place' },

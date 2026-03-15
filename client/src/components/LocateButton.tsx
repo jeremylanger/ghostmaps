@@ -1,6 +1,10 @@
 import { useState, useCallback } from 'react'
 
-export default function LocateButton({ onLocate }) {
+interface LocateButtonProps {
+  onLocate: (location: { lat: number; lng: number }) => void
+}
+
+export default function LocateButton({ onLocate }: LocateButtonProps) {
   const [active, setActive] = useState(false)
 
   const handleClick = useCallback(() => {

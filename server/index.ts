@@ -1,8 +1,8 @@
-const express = require('express')
-const cors = require('cors')
-const dotenv = require('dotenv')
-const path = require('path')
-const { searchOverture } = require('./search')
+import express from 'express'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import path from 'path'
+import { searchOverture } from './search'
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
 
@@ -12,13 +12,13 @@ const PORT = process.env.PORT || 3001
 app.use(cors())
 app.use(express.json())
 
-// Search endpoint
 app.get('/api/search', async (req, res) => {
   try {
-    const { q, lat, lng } = req.query
+    const { q, lat, lng } = req.query as { q?: string; lat?: string; lng?: string }
 
     if (!q) {
-      return res.status(400).json({ error: 'Query parameter "q" is required' })
+      res.status(400).json({ error: 'Query parameter "q" is required' })
+      return
     }
 
     const results = await searchOverture(q, lat, lng, process.env.OVERTURE_API_KEY)
@@ -29,10 +29,8 @@ app.get('/api/search', async (req, res) => {
   }
 })
 
-// Place details
 app.get('/api/places/:id', async (req, res) => {
   try {
-    const { id } = req.params
     res.status(501).json({ error: 'Not implemented yet' })
   } catch (err) {
     res.status(500).json({ error: 'Failed to get place details' })
