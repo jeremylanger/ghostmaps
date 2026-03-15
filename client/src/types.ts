@@ -10,3 +10,10 @@ export interface Place {
   longitude: number
   latitude: number
 }
+
+export interface Ranking {
+  topPick: string | null
+  topPickReason: string
+  alternatives: { id: string; whyNot: string }[]
+  summary: string
+}

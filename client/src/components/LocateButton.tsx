@@ -1,11 +1,9 @@
 import { useState, useCallback } from 'react'
+import { useAppStore } from '../store'
 
-interface LocateButtonProps {
-  onLocate: (location: { lat: number; lng: number }) => void
-}
-
-export default function LocateButton({ onLocate }: LocateButtonProps) {
+export default function LocateButton() {
   const [active, setActive] = useState(false)
+  const setUserLocation = useAppStore((s) => s.setUserLocation)
 
   const handleClick = useCallback(() => {
     if (!navigator.geolocation) {
@@ -15,9 +13,8 @@ export default function LocateButton({ onLocate }: LocateButtonProps) {
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const location = { lat: pos.coords.latitude, lng: pos.coords.longitude }
         setActive(true)
-        onLocate(location)
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
       },
       (err) => {
         console.error('Geolocation error:', err)
@@ -25,7 +22,7 @@ export default function LocateButton({ onLocate }: LocateButtonProps) {
       },
       { enableHighAccuracy: true, timeout: 10000 }
     )
-  }, [onLocate])
+  }, [setUserLocation])
 
   return (
     <button

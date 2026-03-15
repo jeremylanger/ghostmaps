@@ -1,19 +1,21 @@
 import { useState, useRef, useCallback } from 'react'
+import { useAppStore } from '../store'
+import { useAISearch } from '../hooks/useAISearch'
 import type { Place } from '../types'
 
-interface SearchBarProps {
-  onSearch: (query: string) => void
-  results: Place[]
-  loading: boolean
-  error: string | null
-  onSelectResult: (place: Place) => void
-  onClear: () => void
-}
-
-export default function SearchBar({ onSearch, results, loading, error, onSelectResult, onClear }: SearchBarProps) {
+export default function SearchBar() {
   const [query, setQuery] = useState('')
   const [showResults, setShowResults] = useState(true)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const { search, abort } = useAISearch()
+  const results = useAppStore((s) => s.searchResults)
+  const loading = useAppStore((s) => s.loading)
+  const statusMessage = useAppStore((s) => s.statusMessage)
+  const error = useAppStore((s) => s.error)
+  const ranking = useAppStore((s) => s.ranking)
+  const selectPlace = useAppStore((s) => s.selectPlace)
+  const clearSearch = useAppStore((s) => s.clearSearch)
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -22,32 +24,57 @@ export default function SearchBar({ onSearch, results, loading, error, onSelectR
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
     if (!value.trim()) {
-      onClear()
+      abort()
+      clearSearch()
       return
     }
 
     setShowResults(true)
     debounceRef.current = setTimeout(() => {
-      onSearch(value)
-    }, 400)
-  }, [onSearch, onClear])
+      search(value)
+    }, 600)
+  }, [search, abort, clearSearch])
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault()
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    if (query.trim()) onSearch(query)
-  }, [query, onSearch])
+    if (query.trim()) {
+      setShowResults(true)
+      search(query)
+    }
+  }, [query, search])
 
   const handleClear = useCallback(() => {
     setQuery('')
-    onClear()
-  }, [onClear])
+    abort()
+    clearSearch()
+  }, [abort, clearSearch])
 
   const handleSelectResult = useCallback((place: Place) => {
     setQuery(place.name)
     setShowResults(false)
-    onSelectResult(place)
-  }, [onSelectResult])
+    selectPlace(place)
+  }, [selectPlace])
+
+  // Sort results: top pick first, then alternatives in order
+  const sortedResults = ranking
+    ? [...results].sort((a, b) => {
+        if (a.id === ranking.topPick) return -1
+        if (b.id === ranking.topPick) return 1
+        const aAlt = ranking.alternatives.findIndex((alt) => alt.id === a.id)
+        const bAlt = ranking.alternatives.findIndex((alt) => alt.id === b.id)
+        if (aAlt !== -1 && bAlt === -1) return -1
+        if (aAlt === -1 && bAlt !== -1) return 1
+        if (aAlt !== -1 && bAlt !== -1) return aAlt - bAlt
+        return 0
+      })
+    : results
+
+  const getWhyNot = (placeId: string): string | null => {
+    if (!ranking) return null
+    const alt = ranking.alternatives.find((a) => a.id === placeId)
+    return alt?.whyNot || null
+  }
 
   return (
     <div className="search-container">
@@ -70,27 +97,50 @@ export default function SearchBar({ onSearch, results, loading, error, onSelectR
         )}
       </form>
 
-      {(loading || error || results.length > 0) && query && showResults && (
+      {(loading || error || (results.length > 0 && showResults)) && query && (
         <div className="search-results">
-          {loading && <div className="search-loading">Searching...</div>}
+          {statusMessage && (
+            <div className="search-status">{statusMessage}</div>
+          )}
           {error && <div className="search-error">{error}</div>}
-          {!loading && !error && results.map((place) => (
-            <div
-              key={place.id}
-              className="search-result-item"
-              onClick={() => handleSelectResult(place)}
-            >
-              <div className="result-name">{place.name}</div>
-              {place.category && (
-                <div className="result-category">
-                  {place.category.replace(/_/g, ' ')}
+
+          {ranking?.summary && !loading && (
+            <div className="search-summary">{ranking.summary}</div>
+          )}
+
+          {!error && sortedResults.map((place) => {
+            const isTopPick = ranking?.topPick === place.id
+            const whyNot = getWhyNot(place.id)
+
+            return (
+              <div
+                key={place.id}
+                className={`search-result-item ${isTopPick ? 'top-pick' : ''}`}
+                onClick={() => handleSelectResult(place)}
+              >
+                <div className="result-header">
+                  <div>
+                    <div className="result-name">
+                      {isTopPick && <span className="top-pick-badge">Top Pick</span>}
+                      {place.name}
+                    </div>
+                    {place.category && (
+                      <div className="result-category">
+                        {place.category.replace(/_/g, ' ')}
+                      </div>
+                    )}
+                  </div>
+                  {whyNot && <div className="result-why-not">{whyNot}</div>}
                 </div>
-              )}
-              {place.address && (
-                <div className="result-address">{place.address}</div>
-              )}
-            </div>
-          ))}
+                {isTopPick && ranking?.topPickReason && (
+                  <div className="result-reason">{ranking.topPickReason}</div>
+                )}
+                {place.address && (
+                  <div className="result-address">{place.address}</div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

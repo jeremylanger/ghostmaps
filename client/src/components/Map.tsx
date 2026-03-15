@@ -1,20 +1,8 @@
 import { useRef, useEffect } from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { useAppStore } from '../store'
 import type { Place } from '../types'
-
-interface LatLng {
-  lat: number
-  lng: number
-}
-
-interface MapProps {
-  userLocation: LatLng | null
-  searchResults: Place[]
-  selectedPlace: Place | null
-  onSelectPlace: (place: Place) => void
-  flyTo: LatLng | null
-}
 
 const INITIAL_CENTER: [number, number] = [-118.2437, 34.0522] // LA
 const INITIAL_ZOOM = 13
@@ -44,16 +32,24 @@ function placesToGeoJSON(places: Place[], selectedId?: string) {
   }
 }
 
-export default function Map({ userLocation, searchResults, selectedPlace, onSelectPlace, flyTo }: MapProps) {
+export default function Map() {
   const mapContainer = useRef<HTMLDivElement>(null)
   const mapRef = useRef<maplibregl.Map | null>(null)
   const userMarkerRef = useRef<maplibregl.Marker | null>(null)
   const initRef = useRef(false)
-  const searchResultsRef = useRef<Place[]>([])
   const layersReady = useRef(false)
 
-  // Keep a ref to searchResults for click handler
+  const searchResults = useAppStore((s) => s.searchResults)
+  const selectedPlace = useAppStore((s) => s.selectedPlace)
+  const userLocation = useAppStore((s) => s.userLocation)
+  const flyTo = useAppStore((s) => s.flyTo)
+  const selectPlace = useAppStore((s) => s.selectPlace)
+
+  // Keep a ref for click handlers
+  const searchResultsRef = useRef<Place[]>([])
   searchResultsRef.current = searchResults
+  const selectPlaceRef = useRef(selectPlace)
+  selectPlaceRef.current = selectPlace
 
   // Initialize map
   useEffect(() => {
@@ -72,149 +68,93 @@ export default function Map({ userLocation, searchResults, selectedPlace, onSele
       map.addControl(new maplibregl.NavigationControl(), 'top-right')
 
       map.on('load', () => {
-        // Add empty source
         map.addSource(SOURCE_ID, {
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] },
         })
 
-        // Unselected circles — white border
         map.addLayer({
-          id: CIRCLE_BORDER_LAYER,
-          type: 'circle',
-          source: SOURCE_ID,
+          id: CIRCLE_BORDER_LAYER, type: 'circle', source: SOURCE_ID,
           filter: ['!', ['get', 'selected']],
-          paint: {
-            'circle-radius': 10,
-            'circle-color': '#ffffff',
-          },
+          paint: { 'circle-radius': 10, 'circle-color': '#ffffff' },
         })
-
         map.addLayer({
-          id: CIRCLE_LAYER,
-          type: 'circle',
-          source: SOURCE_ID,
+          id: CIRCLE_LAYER, type: 'circle', source: SOURCE_ID,
           filter: ['!', ['get', 'selected']],
-          paint: {
-            'circle-radius': 7,
-            'circle-color': '#e53e3e',
-          },
+          paint: { 'circle-radius': 7, 'circle-color': '#e53e3e' },
         })
-
-        // Selected circle — larger, blue, with glow
         map.addLayer({
-          id: SELECTED_BORDER_LAYER,
-          type: 'circle',
-          source: SOURCE_ID,
+          id: SELECTED_BORDER_LAYER, type: 'circle', source: SOURCE_ID,
+          filter: ['get', 'selected'],
+          paint: { 'circle-radius': 16, 'circle-color': 'rgba(66, 133, 244, 0.25)' },
+        })
+        map.addLayer({
+          id: SELECTED_LAYER, type: 'circle', source: SOURCE_ID,
           filter: ['get', 'selected'],
           paint: {
-            'circle-radius': 16,
-            'circle-color': 'rgba(66, 133, 244, 0.25)',
-          },
-        })
-
-        map.addLayer({
-          id: SELECTED_LAYER,
-          type: 'circle',
-          source: SOURCE_ID,
-          filter: ['get', 'selected'],
-          paint: {
-            'circle-radius': 10,
-            'circle-color': '#4285f4',
-            'circle-stroke-width': 3,
-            'circle-stroke-color': '#ffffff',
+            'circle-radius': 10, 'circle-color': '#4285f4',
+            'circle-stroke-width': 3, 'circle-stroke-color': '#ffffff',
           },
         })
 
         layersReady.current = true
 
-        // Click handler
-        map.on('click', CIRCLE_LAYER, (e) => {
+        const handleClick = (e: maplibregl.MapLayerMouseEvent) => {
           const feature = e.features?.[0]
           if (!feature) return
-          const place = searchResultsRef.current.find(
-            (p) => p.id === feature.properties?.id
-          )
-          if (place) onSelectPlace(place)
-        })
+          const place = searchResultsRef.current.find((p) => p.id === feature.properties?.id)
+          if (place) selectPlaceRef.current(place)
+        }
 
-        map.on('click', SELECTED_LAYER, (e) => {
-          const feature = e.features?.[0]
-          if (!feature) return
-          const place = searchResultsRef.current.find(
-            (p) => p.id === feature.properties?.id
-          )
-          if (place) onSelectPlace(place)
-        })
+        map.on('click', CIRCLE_LAYER, handleClick)
+        map.on('click', SELECTED_LAYER, handleClick)
 
-        // Cursor
-        map.on('mouseenter', CIRCLE_LAYER, () => {
-          map.getCanvas().style.cursor = 'pointer'
-        })
-        map.on('mouseleave', CIRCLE_LAYER, () => {
-          map.getCanvas().style.cursor = ''
-        })
-        map.on('mouseenter', SELECTED_LAYER, () => {
-          map.getCanvas().style.cursor = 'pointer'
-        })
-        map.on('mouseleave', SELECTED_LAYER, () => {
-          map.getCanvas().style.cursor = ''
-        })
+        for (const layer of [CIRCLE_LAYER, SELECTED_LAYER]) {
+          map.on('mouseenter', layer, () => { map.getCanvas().style.cursor = 'pointer' })
+          map.on('mouseleave', layer, () => { map.getCanvas().style.cursor = '' })
+        }
       })
 
       mapRef.current = map
     } catch (err) {
       console.error('MapLibre init failed:', err)
     }
-  }, [onSelectPlace])
+  }, [])
 
   // Fly to location
   useEffect(() => {
     if (!flyTo || !mapRef.current) return
     const map = mapRef.current
     const doFly = () => {
-      map.flyTo({
-        center: [flyTo.lng, flyTo.lat],
-        zoom: 17,
-        duration: 1200,
-      })
+      map.flyTo({ center: [flyTo.lng, flyTo.lat], zoom: 17, duration: 1200 })
     }
-    if (map.getCanvas()) {
-      doFly()
-    } else {
-      map.on('load', doFly)
-    }
+    if (map.getCanvas()) doFly()
+    else map.on('load', doFly)
   }, [flyTo])
 
-  // User location marker (DOM marker is fine — it doesn't move with flyTo)
+  // User location marker
   useEffect(() => {
     if (!userLocation || !mapRef.current) return
-
     if (userMarkerRef.current) {
       userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat])
       return
     }
-
     const el = document.createElement('div')
     el.className = 'user-marker'
-
     userMarkerRef.current = new maplibregl.Marker({ element: el })
       .setLngLat([userLocation.lng, userLocation.lat])
       .addTo(mapRef.current)
   }, [userLocation])
 
-  // Update GeoJSON source when results or selection changes
+  // Update GeoJSON source
   useEffect(() => {
     const map = mapRef.current
     if (!map || !layersReady.current) return
-
     const source = map.getSource(SOURCE_ID) as maplibregl.GeoJSONSource | undefined
     if (!source) return
 
-    const geojson = placesToGeoJSON(searchResults, selectedPlace?.id)
-    source.setData(geojson)
+    source.setData(placesToGeoJSON(searchResults, selectedPlace?.id))
 
-    // Fit bounds when showing new results (not when just selecting)
     if (searchResults.length && !selectedPlace) {
       const bounds = new maplibregl.LngLatBounds()
       searchResults.forEach((p) => bounds.extend([p.longitude, p.latitude]))

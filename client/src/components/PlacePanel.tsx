@@ -1,11 +1,9 @@
-import type { Place } from '../types'
+import { useAppStore } from '../store'
 
-interface PlacePanelProps {
-  place: Place
-  onClose: () => void
-}
+export default function PlacePanel() {
+  const place = useAppStore((s) => s.selectedPlace)!
+  const clearSelection = useAppStore((s) => s.clearSelection)
 
-export default function PlacePanel({ place, onClose }: PlacePanelProps) {
   return (
     <div className="place-panel">
       <div className="place-panel-header">
@@ -17,7 +15,7 @@ export default function PlacePanel({ place, onClose }: PlacePanelProps) {
             </div>
           )}
         </div>
-        <button className="place-panel-close" onClick={onClose}>
+        <button className="place-panel-close" onClick={clearSelection}>
           &times;
         </button>
       </div>

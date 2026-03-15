@@ -141,14 +141,16 @@ export async function searchOverture(
   query: string,
   lat?: string,
   lng?: string,
-  apiKey?: string
+  apiKey?: string,
+  overrideCategories?: string[],
+  radius?: number
 ): Promise<Place[]> {
-  const categories = queryToCategories(query)
+  const categories = overrideCategories || queryToCategories(query)
 
   const params = new URLSearchParams()
   params.set('lat', lat || '34.0522')
   params.set('lng', lng || '-118.2437')
-  params.set('radius', '5000')
+  params.set('radius', String(radius || 5000))
   params.set('categories', categories.join(','))
   params.set('min_confidence', '0.5')
   params.set('limit', '20')

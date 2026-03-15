@@ -51,16 +51,20 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** Map renders, user location shown, can search "restaurants" and see pins. ✅
 
-### Day 3 — March 15
+### Day 3 — March 15 (IN PROGRESS)
 **Venice AI Search + Streaming**
-- [ ] Venice API integration (OpenAI-compatible SDK, `stream: true`)
-- [ ] Query parsing: Venice extracts intent (categories, location, radius, time)
-- [ ] SSE streaming — backend streams Venice response to frontend
-- [ ] Search bar shows streaming AI response with ranked results
-- [ ] Top pick with recommendation + alternatives with "why not" (up to 5 words each)
+- [x] Venice API integration (raw fetch, mistral-small-3-2-24b-instruct model)
+- [x] Query parsing: Venice extracts intent (categories, time_filter, attributes, location_hint, radius)
+- [x] SSE streaming — backend streams status → results → ranking to frontend
+- [x] Search bar shows AI response with ranked results
+- [x] Top pick with "Top Pick" badge + AI recommendation reason
+- [x] Alternatives with "why not" labels (max 5 words each)
+- [x] Zustand for client state management (replaces prop drilling)
+- [x] TanStack Query provider set up (ready for future queries)
+- [x] AI search hook (useAISearch) with SSE parsing + abort support
 - [ ] Follow-up queries with context ("which ones have outdoor seating?")
 
-**End of day:** User types "indian food near me", gets streaming AI response with top pick + alternatives + brief "why not" explanations.
+**End of day:** User types "best tacos near me", gets AI-ranked results with top pick + alternatives + "why not" explanations. ✅
 
 ### Day 4 — March 16
 **POI Enrichment Pipeline**
