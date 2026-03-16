@@ -51,7 +51,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** Map renders, user location shown, can search "restaurants" and see pins. ✅
 
-### Day 3 — March 15 (IN PROGRESS)
+### Day 3 — March 15 ✅
 **Venice AI Search + Streaming**
 - [x] Venice API integration (raw fetch, mistral-small-3-2-24b-instruct model)
 - [x] Query parsing: Venice extracts intent (categories, time_filter, attributes, location_hint, radius)
@@ -66,17 +66,19 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** User types "best tacos near me", gets AI-ranked results with top pick + alternatives + "why not" explanations. ✅
 
-### Day 4 — March 16 (IN PROGRESS)
+### Day 4 — March 16 ✅
 **POI Enrichment Pipeline**
 - [ ] ~~OSM enrichment via bridge files~~ — deferred (requires DuckDB + Parquet, too heavy for hackathon)
-- [x] HERE API integration — opening hours, isOpen, food types, TripAdvisor/Yelp IDs (awaiting API key)
-- [x] Place detail panel — enriched with hours, open/closed, cuisine, phone, website
+- [ ] ~~HERE API integration~~ — replaced with Google Places (HERE signup broken)
+- [x] Google Places integration — photos, ratings, review count, price level, hours, open/closed, dine-in/takeout/delivery, wheelchair accessible
+- [x] Place detail panel — photo header, star rating, open/closed badge, food type chips, service chips
 - [x] Venice place intelligence briefing (2-3 sentence AI summary per place)
 - [x] Place details fetched via TanStack Query with 5min cache
 - [x] In-memory place cache on server (search results → detail lookups)
-- [ ] "Open now" filtering (requires HERE API key)
+- [x] Privacy documentation for Google Places data flow
+- [x] Expanded attestation vision — community data replaces Google over time
 
-**End of day:** Place panel shows AI briefing. When HERE key is added: hours, open/closed badge, cuisine tags. ✅
+**End of day:** Place panel shows photo, rating, hours, open/closed, price level, services, AI briefing. ✅
 
 ### Day 5 — March 17
 **Auth + Wallets + On-Chain Reviews — Write**
