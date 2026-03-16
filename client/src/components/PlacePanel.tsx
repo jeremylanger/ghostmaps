@@ -10,6 +10,12 @@ export default function PlacePanel() {
 
   return (
     <div className="place-panel">
+      {enriched?.photoUri && (
+        <div className="place-panel-photo">
+          <img src={enriched.photoUri} alt={displayPlace.name} />
+        </div>
+      )}
+
       <div className="place-panel-header">
         <div>
           <h2>{displayPlace.name}</h2>
@@ -19,9 +25,12 @@ export default function PlacePanel() {
                 {displayPlace.category.replace(/_/g, ' ')}
               </span>
             )}
+            {enriched?.priceLevel && (
+              <span className="price-level">{enriched.priceLevel}</span>
+            )}
             {enriched?.isOpen !== null && enriched?.isOpen !== undefined && (
               <span className={`open-status ${enriched.isOpen ? 'open' : 'closed'}`}>
-                {enriched.isOpen ? 'Open now' : 'Closed'}
+                {enriched.isOpen ? 'Open' : 'Closed'}
               </span>
             )}
           </div>
@@ -30,6 +39,16 @@ export default function PlacePanel() {
           &times;
         </button>
       </div>
+
+      {enriched?.rating && (
+        <div className="place-panel-rating">
+          <span className="rating-stars">{'★'.repeat(Math.round(enriched.rating))}</span>
+          <span className="rating-value">{enriched.rating.toFixed(1)}</span>
+          {enriched.reviewCount && (
+            <span className="rating-count">({enriched.reviewCount.toLocaleString()} reviews)</span>
+          )}
+        </div>
+      )}
 
       {displayPlace.address && (
         <div className="place-panel-address">{displayPlace.address}</div>
@@ -44,6 +63,15 @@ export default function PlacePanel() {
           {enriched.foodTypes.map((type) => (
             <span key={type} className="food-type-chip">{type}</span>
           ))}
+        </div>
+      )}
+
+      {(enriched?.dineIn !== null || enriched?.takeout !== null || enriched?.delivery !== null) && (
+        <div className="place-panel-services">
+          {enriched?.dineIn && <span className="service-chip">Dine-in</span>}
+          {enriched?.takeout && <span className="service-chip">Takeout</span>}
+          {enriched?.delivery && <span className="service-chip">Delivery</span>}
+          {enriched?.wheelchairAccessible && <span className="service-chip">♿ Accessible</span>}
         </div>
       )}
 

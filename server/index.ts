@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import path from 'path'
 import { searchOverture } from './search'
 import { parseQuery, rankResults, generatePlaceBriefing } from './venice'
-import { enrichPlace } from './here'
+import { enrichPlace } from './google-places'
 import type { Place } from './types'
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
@@ -143,14 +143,14 @@ app.get('/api/places/:id', async (req, res) => {
       return
     }
 
-    // Enrich with HERE data if API key available
+    // Enrich with Google Places data if API key available
     let enrichment = null
-    const hereKey = process.env.HERE_API_KEY
-    if (hereKey) {
-      enrichment = await enrichPlace(place, hereKey)
+    const googleKey = process.env.GOOGLE_PLACES_API_KEY
+    if (googleKey) {
+      enrichment = await enrichPlace(place, googleKey)
     }
 
-    // Generate Venice briefing
+    // Generate Venice briefing with all available data
     let briefing = ''
     try {
       briefing = await generatePlaceBriefing({
@@ -170,14 +170,19 @@ app.get('/api/places/:id', async (req, res) => {
 
     res.json({
       ...place,
-      // Override with richer HERE data if available
       phone: enrichment?.phone || place.phone,
       website: enrichment?.website || place.website,
-      // New enriched fields
       openingHours: enrichment?.openingHours || null,
       isOpen: enrichment?.isOpen ?? null,
       foodTypes: enrichment?.foodTypes || [],
-      references: enrichment?.references || [],
+      rating: enrichment?.rating ?? null,
+      reviewCount: enrichment?.reviewCount ?? null,
+      priceLevel: enrichment?.priceLevel ?? null,
+      dineIn: enrichment?.dineIn ?? null,
+      takeout: enrichment?.takeout ?? null,
+      delivery: enrichment?.delivery ?? null,
+      wheelchairAccessible: enrichment?.wheelchairAccessible ?? null,
+      photoUri: enrichment?.photoUri ?? null,
       briefing,
     })
   } catch (err) {

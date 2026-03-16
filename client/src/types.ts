@@ -15,7 +15,14 @@ export interface EnrichedPlace extends Place {
   openingHours: string | null
   isOpen: boolean | null
   foodTypes: string[]
-  references: { supplier: string; id: string }[]
+  rating: number | null
+  reviewCount: number | null
+  priceLevel: string | null
+  dineIn: boolean | null
+  takeout: boolean | null
+  delivery: boolean | null
+  wheelchairAccessible: boolean | null
+  photoUri: string | null
   briefing: string
 }
 
