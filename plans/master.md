@@ -27,18 +27,19 @@ Open source. Built on Ethereum (Base). Privacy by design.
 - Also used for: review summarization, pattern detection, suspicious review flagging
 - User's search history, location, and reading behavior never stored anywhere
 
-### 3. On-Chain Reviews (EAS on Base)
-- **Ethereum Attestation Service (EAS)** for review storage — no custom token needed
+### 3. On-Chain Attestations (EAS on Base)
+- **Ethereum Attestation Service (EAS)** for reviews AND business data — no custom token needed
 - Already deployed on Base with sub-cent transaction costs
-- Custom review schema: rating, text, category tags, timestamp, location hash
-- Reviews are immutable — businesses can't pay to remove them, platforms can't filter them
-- Composable — other apps can read/build on review data
+- Attestation types: reviews, hours, status, menus, attributes, photos, corrections
+- All attestations are immutable — businesses can't pay to remove them, platforms can't filter them
+- Composable — other apps can read/build on the data
+- **Long-term:** community-contributed business data replaces Google Places dependency
 
 ### 4. Review Authenticity (6-Layer Defense)
 - Detailed in [plans/reviews.md](reviews.md)
 - **Hackathon MVP:** Identity (ERC-8004) + Proof of visit (photo + EXIF GPS) + Quality scoring (Venice AI)
-- **V2+:** Stake & challenge, soulbound reputation, quadratic decay
-- Goal: reward genuine reviews while making fake reviews economically/technically infeasible
+- **V2+:** Stake & challenge, soulbound reputation, quadratic decay, token incentives
+- Goal: reward genuine contributions while making gaming economically/technically infeasible
 
 ---
 

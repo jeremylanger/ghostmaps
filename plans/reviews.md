@@ -1,8 +1,50 @@
-# Review Authenticity System
+# On-Chain Attestation System
 
 ## Overview
 
-On-chain reviews that can't be deleted, manipulated, or extorted. Defense-in-depth approach: multiple layers so the aggregate cost of gaming exceeds any reward.
+On-chain attestations — reviews, business data, photos — that can't be deleted, manipulated, or extorted. Defense-in-depth approach: multiple layers so the aggregate cost of gaming exceeds any reward.
+
+## Beyond Reviews: Decentralized Business Data
+
+Reviews are just one type of attestation. The same EAS infrastructure supports community-contributed business data that reduces our dependence on Google Places over time.
+
+### Attestation Types
+
+| Type | Example | Schema Fields |
+|------|---------|---------------|
+| **Review** | "Amazing tacos, great outdoor seating" | rating, text, photo, quality_score |
+| **Hours** | "Open Mon-Fri 8am-6pm" | hours_text, observed_date |
+| **Status** | "I'm here right now, they're open" | is_open, timestamp |
+| **Menu/Prices** | "Latte $5.50, cold brew $6" | items (JSON), observed_date |
+| **Attributes** | "Has wifi, outdoor seating, pet friendly" | attributes (array) |
+| **Photo** | Interior/exterior/food photo | photo_hash, photo_type, exif_gps |
+| **Correction** | "Name is actually spelled..." | field, old_value, new_value |
+
+### How Conflicts Resolve
+- **Latest attestation wins** for factual data (hours, status)
+- **Venice AI arbitrates** when attestations conflict ("3 say closes at 9, 1 says 10 → probably 9")
+- **Attestor reputation** (ERC-8004) weights trustworthiness
+- **Multiple confirmations** increase confidence
+
+### How This Replaces Google Places Over Time
+1. **Cold start:** Google Places provides baseline data for every place
+2. **Early users:** Attestations supplement Google data (user-contributed photos, real-time "open now" status)
+3. **Growth:** Popular places have enough attestations to skip Google entirely
+4. **Maturity:** Community data is richer than Google for covered areas (menus, accessibility, wifi speed, pet policy — things Google doesn't have)
+
+Google Places calls decrease as attestation coverage increases. We can track coverage per place and only call Google when community data is insufficient.
+
+### V2: Token Incentives for Business Data
+Token incentives are deferred to V2 (see [token-incentivized-reviews-research.md](token-incentivized-reviews-research.md)) but the attestation types above are designed to be compatible with future token rewards. Key design constraints:
+- Must avoid failure modes of Revain, Dentacoin, etc. (see "Why Previous Projects Failed" below)
+- Proof-of-visit required for reviews, NOT for business data attestations (you can read hours off a website)
+- Quality scoring applies to reviews, factual verification applies to business data
+- First attestation for an under-covered place is worth more than the 100th confirmation of Starbucks hours
+
+### V2+: Web Scraping as Attestation Source
+Venice AI could scrape business websites, social media, and public listings, then submit the extracted data as attestations with source attribution. This is legal (publicly available data) and doesn't violate any API ToS since we're reading public web pages, not API data. Combined with community contributions, this could achieve near-Google coverage independently.
+
+---
 
 ---
 
