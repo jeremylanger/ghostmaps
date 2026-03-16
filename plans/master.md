@@ -200,10 +200,28 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 ### 7. Venice + Overture Search Integration — RESOLVED
 - Venice receives natural language query + user lat/lng (zero retention)
 - Venice extracts intent → structured query (categories, radius, time)
-- Backend queries Overture REST API, enriches with OSM (bridge files) + HERE (fallback)
+- Backend queries Overture REST API, enriches with Google Places (details)
 - Venice receives enriched results, ranks them, recommends top pick with "why not" for alternatives
 - Two Venice round trips, second one streamed via SSE
 - Smart search bar UX (not chat interface)
+
+### 10. Google Places Enrichment — RESOLVED
+**What we send:** Business name + address + coordinates. That's it.
+**What we DON'T send:** User identity, user location, search queries, browsing behavior, session data — nothing that identifies or tracks our users.
+
+**Why we use it:** Google has the best business data on earth (~95% coverage for hours, ratings, photos). OSM has ~39% coverage. For a hackathon demo, the difference is the entire place panel being empty vs. rich and useful.
+
+**How it fits the privacy narrative:** Ghost Maps protects *user* data — your searches, your location history, where you go, what you look at. Business data (hours, ratings, photos) is public information about commercial establishments. We query it server-side by place name/address, the same way any person could look it up. Google learns nothing about our users from these requests.
+
+**Data flow:**
+```
+User searches → Venice AI (zero retention) → Overture POIs (open data)
+User taps a place → Backend sends [place name + coords] to Google → Gets hours/rating/photo
+                     Google sees: "someone looked up Verve Coffee at 214 S Main St"
+                     Google does NOT see: who searched, what they searched for, their location
+```
+
+**Long-term:** Replace with self-hosted OSM data + community-contributed hours/photos once coverage improves. Google Places is a bridge, not the architecture.
 
 ### 8. App Name — RESOLVED
 - **Ghost Maps** — ghostmaps.app (purchased)

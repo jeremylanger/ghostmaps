@@ -144,6 +144,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 ### Day 10 — March 22
 **Deploy + Demo + Submit**
 - [ ] Deploy (Vercel for frontend, Railway/Fly.io for backend)
+- [ ] Add production server IP to Google Places API key restrictions
 - [ ] Seed demo reviews (write a few real reviews so judges see the full experience)
 - [ ] Demo script — rehearse the narrative
 - [ ] Record demo video if required
@@ -225,7 +226,9 @@ Venice is central to the app, not a utility:
 | 11,500+ geofence warrants/year | Nothing to hand over |
 | Tracked 98M users who opted out | No opt-out needed — data never exists |
 
-**One transparency note:** TomTom sees origin + destination for route calculation. Long-term, self-host Valhalla for fully private routing.
+**Transparency notes:**
+- **TomTom** sees origin + destination for route calculation. Long-term, self-host Valhalla for fully private routing.
+- **Google Places** sees place name + coordinates when a user taps a place for details. Google does NOT see who searched, what they searched for, or the user's location. We send zero user data — only public business identifiers. Long-term, replace with self-hosted OSM data + community contributions.
 
 ---
 
