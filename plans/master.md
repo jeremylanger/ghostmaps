@@ -260,7 +260,7 @@ Priority features for Google Maps parity (in rough order):
 5. **Speed cameras / police alerts** — community-contributed (Waze model)
 6. **Gas prices / EV charging** — TomTom already has this data in their API
 7. **Indoor maps** — complex, likely last priority
-8. **Self-hosted routing (Valhalla)** — eliminate TomTom dependency for full privacy
+8. ~~**Self-hosted routing (Valhalla)**~~ — Valhalla lacks real-time traffic data and no open alternative exists. TomTom is likely a permanent dependency (zero user identity sent).
 9. **Supabase auth migration** — add social login (Google, Apple) via Supabase + CDP custom JWT mode
 
 ### Decided against

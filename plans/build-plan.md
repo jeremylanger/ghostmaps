@@ -227,7 +227,7 @@ Venice is central to the app, not a utility:
 | Tracked 98M users who opted out | No opt-out needed — data never exists |
 
 **Transparency notes:**
-- **TomTom** sees origin + destination for route calculation. Long-term, self-host Valhalla for fully private routing.
+- **TomTom** sees origin + destination for route calculation. Valhalla (open-source routing) lacks real-time traffic data and no open alternative exists, so TomTom is likely a permanent dependency. We send zero user identity — just anonymous origin/destination coordinates.
 - **Google Places** sees place name + coordinates when a user taps a place for details. Google does NOT see who searched, what they searched for, or the user's location. We send zero user data — only public business identifiers. Long-term, replace with self-hosted OSM data + community contributions.
 
 ---
