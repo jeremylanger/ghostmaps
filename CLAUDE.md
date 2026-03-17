@@ -71,7 +71,7 @@ cd server && npm run test:unit           # unit only
 cd server && npm run test:integration    # integration only
 
 # E2E tests (requires both servers running on :3001 and :5174)
-npx playwright test --config e2e/playwright.config.js
+npx playwright test --config e2e/playwright.config.ts
 ```
 
 ## Project Overview
@@ -87,7 +87,7 @@ See `plans/master.md` for full architecture, decisions, and research.
 | Frontend | React + Vite + MapLibre GL JS |
 | Backend | Node.js + Express |
 | AI | Venice API (OpenAI-compatible, zero data retention) |
-| POI Search | Overture REST API → OSM enrichment → HERE fallback |
+| POI Search | Overture REST API → Google Places enrichment |
 | Navigation | TomTom Routing API |
 | On-chain | EAS on Base (ethers.js + EAS SDK) |
 | Auth + Wallets | Coinbase CDP Embedded Wallets |

@@ -17,7 +17,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 | Frontend | React + Vite + MapLibre GL JS |
 | Backend | Node.js + Express |
 | AI | Venice API (OpenAI-compatible, zero data retention) |
-| POI Search | Overture REST API → OSM enrichment → HERE fallback |
+| POI Search | Overture REST API → Google Places enrichment |
 | Navigation | TomTom Routing API (traffic ETA, speed limits, lane guidance) |
 | On-chain | EAS on Base (ethers.js + EAS SDK) |
 | Auth + Wallets | Coinbase CDP Embedded Wallets (email OTP, invisible wallet on Base) |
@@ -94,7 +94,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** User signs up with email, gets invisible wallet. Can write a review with photo, Venice scores it, review goes on-chain. User never knows crypto is involved.
 
-### Day 6 — March 18 (IN PROGRESS)
+### Day 6 — March 18 ✅
 **On-Chain Reviews — Read + Display**
 - [x] Fetch reviews from EAS for a given place (EAS GraphQL → server endpoint → client hook)
 - [x] Display reviews in place detail panel (ReviewList component with cards)
@@ -104,7 +104,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Venice AI photo verification (metadata analysis: file size, GPS, dimensions)
 - [x] Comparative recommendations ("compare these spots" — Venice-powered endpoint)
 
-**End of day:** Full review loop — write on-chain, read, see AI summaries, photos from reviews show on places. *App is hackathon-winning at this point.*
+**End of day:** Full review loop — write on-chain, read, see AI summaries, identity display, review photos. Venice summarizes all reviews. Comparative recommendations endpoint ready. 104 tests passing (unit + integration + E2E). *App is hackathon-winning at this point.*
 
 ### Day 7 — March 19
 **Navigation — Core**
@@ -194,29 +194,30 @@ Priority order (cut from bottom):
 
 1. ~~**Map tile source**~~ — **RESOLVED: OpenFreeMap** (liberty style, free, no API key needed)
 2. **API keys to register:**
-   - Overture REST API (overturemapsapi.com) — using DEMO key, need free account for full access
-   - HERE (developer.here.com) — 1K req/day free
-   - TomTom (developer.tomtom.com) — 2,500 req/day free
-   - Coinbase CDP (portal.cdp.coinbase.com) — 5K ops/month free
-   - Venice — already have from hackathon
-3. **EAS schema fields** — finalize before Day 5 (rating, text, photo hash, GPS, Overture POI ID, quality score)
+   - Overture REST API — ✅ using DEMO key (restricted to NYC/London/Paris/Bondi)
+   - ~~HERE~~ — replaced with Google Places
+   - Google Places API — ✅ registered, key in .env
+   - TomTom (developer.tomtom.com) — 2,500 req/day free (Day 7)
+   - Coinbase CDP — ✅ registered, project ID in .env
+   - Venice — ✅ have from hackathon
+3. ~~**EAS schema fields**~~ — **RESOLVED:** `uint8 rating, string text, string placeId, string placeName, bytes32 photoHash, int256 lat, int256 lng, uint8 qualityScore` — UID: `0x968e91f0...`
 4. ~~**App name**~~ — **RESOLVED: Ghost Maps** (ghostmaps.app)
-5. **Photo storage** — IPFS (Pinata?) or S3 for hackathon
-6. **Gas sponsorship** — CDP Paymaster setup for Base (users pay $0)
+5. ~~**Photo storage**~~ — **RESOLVED:** Server-side filesystem storage keyed by SHA-256 hash. Photos uploaded alongside on-chain submission. Migrate to IPFS/S3 post-hackathon.
+6. ~~**Gas sponsorship**~~ — **RESOLVED:** CDP Paymaster on Base Sepolia. Users pay $0.
 7. **Deployment target** — Vercel (frontend) + Railway or Fly.io (backend)
 
 ---
 
-## Venice Integration Points (6 total)
+## Venice Integration Points (6 total — all implemented)
 
 Venice is central to the app, not a utility:
 
-1. **Conversational search** — parse natural language queries, rank results, explain recommendations
-2. **Place intelligence briefing** — synthesize all POI data into natural language summary
-3. **Review quality scoring** — specificity, sentiment-rating consistency
-4. **Review summarization** — aggregate all reviews for a place into a briefing
-5. **Photo verification** — detect AI-generated images, verify photo matches business type
-6. **Comparative recommendations** — compare places using reviews + data, explain tradeoffs
+1. **Conversational search** — parse natural language queries, rank results, explain recommendations ✅
+2. **Place intelligence briefing** — synthesize all POI data into natural language summary ✅
+3. **Review quality scoring** — specificity, sentiment-rating consistency ✅
+4. **Review summarization** — aggregate all reviews for a place into a briefing ✅
+5. **Photo verification** — metadata analysis (file size, GPS, dimensions) ✅
+6. **Comparative recommendations** — compare places using reviews + data, explain tradeoffs ✅
 
 ---
 

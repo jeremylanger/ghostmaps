@@ -194,9 +194,11 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 - **Web app, mobile-responsive.** React + Vite + MapLibre.
 - Mobile native (React Native / Expo) is a post-hackathon play.
 
-### 6. EAS Schema Design — PARTIALLY RESOLVED
-- Fields: rating, text, photo hash, GPS coords, Overture POI ID, quality score
-- Final schema to be designed on Day 5
+### 6. EAS Schema Design — RESOLVED
+- Schema: `uint8 rating, string text, string placeId, string placeName, bytes32 photoHash, int256 lat, int256 lng, uint8 qualityScore`
+- Schema UID: `0x968e91f0274b78a31037839b55e59b942dd1521daebf9190268137e450b7d69f`
+- Registered on Base Sepolia, non-revocable, zero resolver
+- lat/lng stored as int256 (value * 1e6) to avoid floating point in Solidity
 
 ### 7. Venice + Overture Search Integration — RESOLVED
 - Venice receives natural language query + user lat/lng (zero retention)
@@ -240,11 +242,12 @@ User taps a place → Backend sends [place name + coords] to Google → Gets hou
 ## Hackathon Timeline (March 13-22)
 
 See detailed day-by-day build plan. Summary:
-- Days 1: Planning (done)
-- Day 2: Map + basic search
-- Day 3: Venice AI search + streaming
-- Day 4: POI enrichment pipeline
-- Days 5-6: CDP auth + on-chain reviews (hackathon differentiator)
+- Day 1: Planning ✅
+- Day 2: Map + basic search ✅
+- Day 3: Venice AI search + streaming ✅
+- Day 4: POI enrichment (Google Places) ✅
+- Day 5: CDP auth + on-chain reviews (write) ✅
+- Day 6: On-chain reviews (read + display + summarization) ✅
 - Days 7-8: Navigation + privacy page (product differentiator)
 - Days 9-10: Documentation + polish + deploy
 
