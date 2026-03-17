@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Place, Ranking } from './types'
+import type { Place, Ranking, RouteData } from './types'
 
 interface LatLng {
   lat: number
@@ -22,6 +22,12 @@ interface AppState {
   // Review
   showReviewForm: boolean
 
+  // Navigation
+  routeData: RouteData | null
+  navigating: boolean
+  routeLoading: boolean
+  currentInstructionIndex: number
+
   // Actions
   setSearchResults: (results: Place[]) => void
   setRanking: (ranking: Ranking | null) => void
@@ -33,6 +39,11 @@ interface AppState {
   setUserLocation: (location: LatLng) => void
   clearSearch: () => void
   setShowReviewForm: (show: boolean) => void
+  setRouteData: (route: RouteData | null) => void
+  setNavigating: (navigating: boolean) => void
+  setRouteLoading: (loading: boolean) => void
+  setCurrentInstructionIndex: (index: number) => void
+  clearRoute: () => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -45,6 +56,10 @@ export const useAppStore = create<AppState>((set) => ({
   userLocation: null,
   flyTo: null,
   showReviewForm: false,
+  routeData: null,
+  navigating: false,
+  routeLoading: false,
+  currentInstructionIndex: 0,
 
   setSearchResults: (results) => set({ searchResults: results }),
   setRanking: (ranking) => set({ ranking }),
@@ -73,4 +88,16 @@ export const useAppStore = create<AppState>((set) => ({
   }),
 
   setShowReviewForm: (show) => set({ showReviewForm: show }),
+
+  setRouteData: (routeData) => set({ routeData }),
+  setNavigating: (navigating) => set({ navigating }),
+  setRouteLoading: (routeLoading) => set({ routeLoading }),
+  setCurrentInstructionIndex: (currentInstructionIndex) => set({ currentInstructionIndex }),
+
+  clearRoute: () => set({
+    routeData: null,
+    navigating: false,
+    routeLoading: false,
+    currentInstructionIndex: 0,
+  }),
 }))

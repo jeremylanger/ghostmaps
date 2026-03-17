@@ -11,6 +11,9 @@ const CIRCLE_LAYER = 'poi-circles'
 const CIRCLE_BORDER_LAYER = 'poi-circles-border'
 const SELECTED_LAYER = 'poi-selected'
 const SELECTED_BORDER_LAYER = 'poi-selected-border'
+const ROUTE_SOURCE = 'route-line'
+const ROUTE_LAYER = 'route-line-layer'
+const ROUTE_CASING_LAYER = 'route-line-casing'
 
 function placesToGeoJSON(places: Place[], selectedId?: string) {
   return {
@@ -38,12 +41,15 @@ export default function Map() {
   const userMarkerRef = useRef<maplibregl.Marker | null>(null)
   const initRef = useRef(false)
   const layersReady = useRef(false)
+  const watchIdRef = useRef<number | null>(null)
 
   const searchResults = useAppStore((s) => s.searchResults)
   const selectedPlace = useAppStore((s) => s.selectedPlace)
   const userLocation = useAppStore((s) => s.userLocation)
   const flyTo = useAppStore((s) => s.flyTo)
   const selectPlace = useAppStore((s) => s.selectPlace)
+  const routeData = useAppStore((s) => s.routeData)
+  const navigating = useAppStore((s) => s.navigating)
 
   // Keep a ref for click handlers
   const searchResultsRef = useRef<Place[]>([])
@@ -112,6 +118,7 @@ export default function Map() {
       })
 
       map.on('load', () => {
+        // POI source + layers
         map.addSource(SOURCE_ID, {
           type: 'geojson',
           data: { type: 'FeatureCollection', features: [] },
@@ -140,6 +147,28 @@ export default function Map() {
             'circle-stroke-width': 3, 'circle-stroke-color': '#ffffff',
           },
         })
+
+        // Route source + layers
+        map.addSource(ROUTE_SOURCE, {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: [] },
+        })
+
+        map.addLayer({
+          id: ROUTE_CASING_LAYER,
+          type: 'line',
+          source: ROUTE_SOURCE,
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: { 'line-color': '#1a56db', 'line-width': 8, 'line-opacity': 0.4 },
+        }, CIRCLE_BORDER_LAYER) // Insert below POI circles
+
+        map.addLayer({
+          id: ROUTE_LAYER,
+          type: 'line',
+          source: ROUTE_SOURCE,
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: { 'line-color': '#4285f4', 'line-width': 5 },
+        }, CIRCLE_BORDER_LAYER)
 
         layersReady.current = true
 
@@ -206,6 +235,94 @@ export default function Map() {
       map.fitBounds(bounds, { padding: 80, maxZoom: 15, duration: 1000 })
     }
   }, [searchResults, selectedPlace, userLocation])
+
+  // Update route line
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !layersReady.current) return
+    const source = map.getSource(ROUTE_SOURCE) as maplibregl.GeoJSONSource | undefined
+    if (!source) return
+
+    if (!routeData) {
+      source.setData({ type: 'FeatureCollection', features: [] })
+      return
+    }
+
+    source.setData({
+      type: 'Feature',
+      geometry: {
+        type: 'LineString',
+        coordinates: routeData.coordinates,
+      },
+      properties: {},
+    } as GeoJSON.Feature)
+
+    // Fit map to route bounds
+    const bounds = new maplibregl.LngLatBounds()
+    routeData.coordinates.forEach((c) => bounds.extend(c))
+    map.fitBounds(bounds, { padding: 80, maxZoom: 16, duration: 1000 })
+  }, [routeData])
+
+  // GPS tracking during navigation
+  useEffect(() => {
+    if (!navigating) {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current)
+        watchIdRef.current = null
+      }
+      return
+    }
+
+    const store = useAppStore.getState()
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+
+        // Update user marker without triggering flyTo
+        useAppStore.setState({ userLocation: loc })
+
+        // Update user marker on map
+        if (userMarkerRef.current) {
+          userMarkerRef.current.setLngLat([loc.lng, loc.lat])
+        }
+
+        // Center map on user during navigation
+        if (mapRef.current) {
+          mapRef.current.easeTo({
+            center: [loc.lng, loc.lat],
+            zoom: 17,
+            duration: 500,
+          })
+        }
+
+        // Find closest instruction
+        const route = useAppStore.getState().routeData
+        if (route) {
+          let closestIdx = 0
+          let closestDist = Infinity
+          route.instructions.forEach((inst, i) => {
+            const dx = inst.point[0] - loc.lng
+            const dy = inst.point[1] - loc.lat
+            const dist = dx * dx + dy * dy
+            if (dist < closestDist) {
+              closestDist = dist
+              closestIdx = i
+            }
+          })
+          useAppStore.getState().setCurrentInstructionIndex(closestIdx)
+        }
+      },
+      (err) => console.error('GPS error:', err),
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
+    )
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current)
+        watchIdRef.current = null
+      }
+    }
+  }, [navigating])
 
   return <div ref={mapContainer} style={{ width: '100%', height: '100%' }} />
 }

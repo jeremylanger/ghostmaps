@@ -52,3 +52,28 @@ export interface OvertureAddress {
   locality?: string
   region?: string
 }
+
+export interface RouteSummary {
+  lengthInMeters: number
+  travelTimeInSeconds: number
+  trafficDelayInSeconds: number
+  departureTime: string
+  arrivalTime: string
+}
+
+export interface RouteInstruction {
+  distance: number
+  travelTime: number
+  point: [number, number]
+  instructionType: string
+  street: string
+  message: string
+  maneuver: string
+  turnAngle: number
+}
+
+export interface RouteResponse {
+  coordinates: [number, number][]
+  instructions: RouteInstruction[]
+  summary: RouteSummary
+}

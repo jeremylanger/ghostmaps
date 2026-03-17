@@ -106,16 +106,18 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** Full review loop — write on-chain, read, see AI summaries, identity display, review photos. Venice summarizes all reviews. Comparative recommendations endpoint ready. 104 tests passing (unit + integration + E2E). *App is hackathon-winning at this point.*
 
-### Day 7 — March 19
+### Day 7 — March 19 ✅
 **Navigation — Core**
-- [ ] TomTom Routing API integration
-- [ ] "Get directions" button on place detail panel
-- [ ] Route display on MapLibre (GeoJSON line layer)
-- [ ] Turn-by-turn instruction panel
-- [ ] Traffic-aware ETA display
-- [ ] GPS tracking — follow user position along route
+- [x] TomTom Routing API integration (`server/tomtom.ts` + `/api/route` endpoint)
+- [x] "Get directions" button on place detail panel
+- [x] Route display on MapLibre (GeoJSON line layer with casing)
+- [x] Turn-by-turn instruction panel (`NavigationPanel.tsx`)
+- [x] Traffic-aware ETA display (duration, distance, traffic delay)
+- [x] GPS tracking — follow user position along route (`watchPosition`)
+- [x] TomTom API key registered and configured
+- [x] Tests: unit (6), integration (4), E2E (8) — 18 total
 
-**End of day:** Full flow works: search → pick place → get directions → see route with traffic-aware ETA and turn-by-turn.
+**End of day:** Full flow works: search → pick place → get directions → see route with traffic-aware ETA and turn-by-turn. ✅
 
 ### Day 8 — March 20
 **Navigation Polish + Privacy Page**
@@ -128,6 +130,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
   - Law enforcement (11,500 geofence warrants vs. nothing to hand over)
   - Business profiling (every click tracked vs. no tracking)
   - $7.3B+ in fines vs. privacy by architecture
+- [ ] Tests: unit, integration, E2E
 
 **End of day:** Navigation complete with speed limits + lane guidance. Privacy page tells the story. *App is a real product at this point.*
 
@@ -142,6 +145,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [ ] UI/UX polish — smooth transitions, clean typography
 - [ ] Customize Liberty map style (colors, theming, brand identity)
 - [ ] Performance optimization (debounce search, cache results)
+- [ ] Tests: unit, integration, E2E
 
 **End of day:** App is polished. Documentation is thorough enough for AI agents to understand the full system.
 
@@ -157,6 +161,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [ ] Record demo video if required
 - [ ] Write project description / submission
 - [ ] Final bug fixes
+- [ ] Tests: unit, integration, E2E (full regression)
 - [ ] Submit
 
 ---
@@ -197,7 +202,7 @@ Priority order (cut from bottom):
    - Overture REST API — ✅ using DEMO key (restricted to NYC/London/Paris/Bondi)
    - ~~HERE~~ — replaced with Google Places
    - Google Places API — ✅ registered, key in .env
-   - TomTom (developer.tomtom.com) — 2,500 req/day free (Day 7)
+   - TomTom — ✅ registered, key in .env (2,500 req/day free)
    - Coinbase CDP — ✅ registered, project ID in .env
    - Venice — ✅ have from hackathon
 3. ~~**EAS schema fields**~~ — **RESOLVED:** `uint8 rating, string text, string placeId, string placeName, bytes32 photoHash, int256 lat, int256 lng, uint8 qualityScore` — UID: `0x968e91f0...`

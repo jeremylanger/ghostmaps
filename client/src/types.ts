@@ -57,3 +57,28 @@ export interface ReviewsResponse {
   identities: Record<string, ReviewIdentity>
   summary: string
 }
+
+export interface RouteSummary {
+  lengthInMeters: number
+  travelTimeInSeconds: number
+  trafficDelayInSeconds: number
+  departureTime: string
+  arrivalTime: string
+}
+
+export interface RouteInstruction {
+  distance: number
+  travelTime: number
+  point: [number, number]
+  instructionType: string
+  street: string
+  message: string
+  maneuver: string
+  turnAngle: number
+}
+
+export interface RouteData {
+  coordinates: [number, number][]
+  instructions: RouteInstruction[]
+  summary: RouteSummary
+}

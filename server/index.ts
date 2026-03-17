@@ -7,6 +7,7 @@ import { parseQuery, rankResults, generatePlaceBriefing, scoreReviewQuality, sum
 import { enrichPlace } from './google-places'
 import { fetchReviewsForPlace, fetchAccountAge } from './eas-reader'
 import { storePhoto, getPhotoPath } from './photos'
+import { calculateRoute } from './tomtom'
 import type { Place } from './types'
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
@@ -270,6 +271,34 @@ app.get('/api/reviews/:placeId', async (req, res) => {
   } catch (err) {
     console.error('Review fetch error:', err)
     res.status(500).json({ error: 'Failed to fetch reviews' })
+  }
+})
+
+// Calculate route (TomTom)
+app.post('/api/route', async (req, res) => {
+  try {
+    const { fromLat, fromLng, toLat, toLng } = req.body
+
+    if (!fromLat || !fromLng || !toLat || !toLng) {
+      res.status(400).json({ error: 'fromLat, fromLng, toLat, toLng are required' })
+      return
+    }
+
+    const tomtomKey = process.env.TOMTOM_API_KEY
+    if (!tomtomKey) {
+      res.status(500).json({ error: 'TomTom API key not configured' })
+      return
+    }
+
+    const route = await calculateRoute(
+      Number(fromLat), Number(fromLng),
+      Number(toLat), Number(toLng),
+      tomtomKey
+    )
+    res.json(route)
+  } catch (err) {
+    console.error('Route error:', err)
+    res.status(500).json({ error: 'Failed to calculate route' })
   }
 })
 

@@ -87,8 +87,43 @@ export default function PlacePanel() {
       {/* On-chain reviews */}
       <ReviewList placeId={place.id} />
 
-      {/* Write a Review button */}
+      {/* Action buttons */}
       <div className="place-panel-actions">
+        <button
+          className="directions-btn"
+          onClick={async () => {
+            const store = useAppStore.getState()
+            const loc = store.userLocation
+            if (!loc) {
+              alert('Enable location to get directions')
+              return
+            }
+            store.setRouteLoading(true)
+            try {
+              const res = await fetch('/api/route', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  fromLat: loc.lat,
+                  fromLng: loc.lng,
+                  toLat: place.latitude,
+                  toLng: place.longitude,
+                }),
+              })
+              if (!res.ok) throw new Error('Route failed')
+              const route = await res.json()
+              store.setRouteData(route)
+            } catch (err) {
+              console.error('Route error:', err)
+              alert('Could not calculate route')
+            } finally {
+              store.setRouteLoading(false)
+            }
+          }}
+          disabled={useAppStore((s) => s.routeLoading)}
+        >
+          {useAppStore((s) => s.routeLoading) ? 'Calculating...' : 'Get Directions'}
+        </button>
         <button
           className="review-cta-btn"
           onClick={() => useAppStore.getState().setShowReviewForm(true)}
