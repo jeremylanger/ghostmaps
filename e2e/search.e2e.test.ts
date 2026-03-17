@@ -196,4 +196,91 @@ test.describe('Ghost Maps E2E', () => {
     await expect(page.locator('.search-results')).not.toBeVisible()
     await expect(page.locator('.place-panel')).toBeVisible()
   })
+
+  // Day 5-6: Auth, Reviews, Review Display
+  test('auth button is visible', async ({ page }) => {
+    const authContainer = page.locator('.auth-container')
+    await expect(authContainer).toBeVisible()
+  })
+
+  test('place panel has Write a Review button', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('coffee')
+
+    const firstResult = page.locator('.search-result-item').first()
+    await expect(firstResult).toBeVisible({ timeout: 30000 })
+    await firstResult.click()
+
+    const reviewBtn = page.locator('.review-cta-btn')
+    await expect(reviewBtn).toBeVisible()
+    await expect(reviewBtn).toHaveText('Write a Review')
+  })
+
+  test('clicking Write a Review opens review form overlay', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('pizza')
+
+    const firstResult = page.locator('.search-result-item').first()
+    await expect(firstResult).toBeVisible({ timeout: 30000 })
+    await firstResult.click()
+
+    await page.locator('.review-cta-btn').click()
+
+    // Review form overlay should appear
+    const overlay = page.locator('.review-form-overlay')
+    await expect(overlay).toBeVisible()
+
+    // Should show sign-in prompt (not signed in) or review form
+    const formContent = page.locator('.review-form')
+    await expect(formContent).toBeVisible()
+  })
+
+  test('review form can be closed', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('restaurant')
+
+    const firstResult = page.locator('.search-result-item').first()
+    await expect(firstResult).toBeVisible({ timeout: 30000 })
+    await firstResult.click()
+
+    await page.locator('.review-cta-btn').click()
+    await expect(page.locator('.review-form-overlay')).toBeVisible()
+
+    // Close it
+    await page.locator('.review-form-close').click()
+    await expect(page.locator('.review-form-overlay')).not.toBeVisible()
+  })
+
+  test('place panel shows community reviews section', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('tacos')
+
+    const firstResult = page.locator('.search-result-item').first()
+    await expect(firstResult).toBeVisible({ timeout: 30000 })
+    await firstResult.click()
+
+    // Reviews section should appear (either with reviews or "No reviews yet")
+    const reviewsSection = page.locator('.reviews-section')
+    await expect(reviewsSection).toBeVisible({ timeout: 15000 })
+
+    const heading = reviewsSection.locator('.reviews-heading')
+    await expect(heading).toContainText('Community Reviews')
+  })
+
+  test('place panel scrolls to show reviews and actions', async ({ page }) => {
+    const searchInput = page.getByPlaceholder('Search places...')
+    await searchInput.fill('coffee')
+
+    const firstResult = page.locator('.search-result-item').first()
+    await expect(firstResult).toBeVisible({ timeout: 30000 })
+    await firstResult.click()
+
+    // Place panel should be visible and scrollable
+    const panel = page.locator('.place-panel')
+    await expect(panel).toBeVisible()
+
+    // Should contain both reviews section and write review button
+    await expect(panel.locator('.reviews-section')).toBeVisible({ timeout: 15000 })
+    await expect(panel.locator('.review-cta-btn')).toBeVisible()
+  })
 })

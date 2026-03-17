@@ -162,7 +162,7 @@ export default function ReviewForm() {
             <h3>Write a Review</h3>
             <button className="review-form-close" onClick={() => setShowReviewForm(false)}>&times;</button>
           </div>
-          <p className="review-form-signin-prompt">Sign in with your email to write a review. Your wallet is created automatically — no crypto knowledge needed.</p>
+          <p className="review-form-signin-prompt">Sign in with your email to write a review.</p>
         </div>
       </div>
     )
