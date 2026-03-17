@@ -80,27 +80,29 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** Place panel shows photo, rating, hours, open/closed, price level, services, AI briefing. ✅
 
-### Day 5 — March 17
+### Day 5 — March 17 ✅
 **Auth + Wallets + On-Chain Reviews — Write**
-- [ ] Coinbase CDP integration — email OTP signup, invisible wallet creation on Base
-- [ ] EAS schema design and deployment on Base
-- [ ] Review submission form (rating, text, structured prompts)
-- [ ] Photo upload with EXIF GPS extraction (proof of visit)
-- [ ] Venice AI quality scoring (specificity, sentiment-rating consistency)
-- [ ] Submit review as EAS attestation on Base (gas sponsored, invisible to user)
-- [ ] Transaction confirmation UI ("Review submitted!" — no crypto jargon)
+- [x] Coinbase CDP integration — email OTP signup, invisible wallet creation on Base
+- [x] EAS schema design (review schema with rating, text, placeId, placeName, photoHash, lat, lng, qualityScore)
+- [x] EAS schema deployment on Base Sepolia (registered, UID: 0x968e91f0...)
+- [x] Review submission form (rating, text, structured prompts: what ordered, one tip)
+- [x] Photo upload with EXIF GPS extraction (proof of visit, location verification badge)
+- [x] Venice AI quality scoring (specificity, sentiment-rating consistency, flags)
+- [x] Submit review as EAS attestation on Base (gas sponsored via CDP Paymaster)
+- [x] Transaction confirmation UI ("Review submitted!" — no crypto jargon, EAS Explorer link)
+- [x] Quality badge display (generic/decent/detailed/exceptional with score)
 
 **End of day:** User signs up with email, gets invisible wallet. Can write a review with photo, Venice scores it, review goes on-chain. User never knows crypto is involved.
 
-### Day 6 — March 18
+### Day 6 — March 18 (IN PROGRESS)
 **On-Chain Reviews — Read + Display**
-- [ ] Fetch reviews from EAS for a given place
-- [ ] Display reviews in place detail panel
-- [ ] Venice review summarization (aggregate all reviews into briefing)
-- [ ] ERC-8004 identity display on reviews (account age, trust signal)
-- [ ] Review photos displayed as place photos (solves cold-start photo problem)
-- [ ] Venice AI photo verification (not AI-generated, matches business type)
-- [ ] Comparative recommendations ("compare these 3 spots")
+- [x] Fetch reviews from EAS for a given place (EAS GraphQL → server endpoint → client hook)
+- [x] Display reviews in place detail panel (ReviewList component with cards)
+- [x] Venice review summarization (aggregate all reviews into AI briefing)
+- [x] Identity display on reviews (account age, review count via EAS GraphQL)
+- [x] Review photo upload + display (server-side storage keyed by SHA-256 hash)
+- [x] Venice AI photo verification (metadata analysis: file size, GPS, dimensions)
+- [x] Comparative recommendations ("compare these spots" — Venice-powered endpoint)
 
 **End of day:** Full review loop — write on-chain, read, see AI summaries, photos from reviews show on places. *App is hackathon-winning at this point.*
 
@@ -147,6 +149,9 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 **Deploy + Demo + Submit**
 - [ ] Deploy (Vercel for frontend, Railway/Fly.io for backend)
 - [ ] Add production server IP to Google Places API key restrictions
+- [ ] Restrict CDP Project domain allowlist to production domain only
+- [ ] Add production domain to CDP Paymaster allowlist
+- [ ] Switch EAS from Base Sepolia to Base mainnet (requires CDP billing or Gasless Campaign credits)
 - [ ] Seed demo reviews (write a few real reviews so judges see the full experience)
 - [ ] Demo script — rehearse the narrative
 - [ ] Record demo video if required

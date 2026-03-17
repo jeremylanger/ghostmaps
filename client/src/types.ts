@@ -32,3 +32,28 @@ export interface Ranking {
   alternatives: { id: string; whyNot: string }[]
   summary: string
 }
+
+export interface OnChainReview {
+  uid: string
+  attester: string
+  time: number
+  rating: number
+  text: string
+  placeId: string
+  placeName: string
+  photoHash: string
+  lat: number
+  lng: number
+  qualityScore: number
+}
+
+export interface ReviewIdentity {
+  firstSeen: number
+  totalReviews: number
+}
+
+export interface ReviewsResponse {
+  reviews: OnChainReview[]
+  identities: Record<string, ReviewIdentity>
+  summary: string
+}

@@ -1,5 +1,6 @@
 import { useAppStore } from '../store'
 import { usePlaceDetails } from '../hooks/usePlaceDetails'
+import ReviewList from './ReviewList'
 
 export default function PlacePanel() {
   const place = useAppStore((s) => s.selectedPlace)!
@@ -82,6 +83,19 @@ export default function PlacePanel() {
       {enriched?.briefing && (
         <div className="place-panel-briefing">{enriched.briefing}</div>
       )}
+
+      {/* On-chain reviews */}
+      <ReviewList placeId={place.id} />
+
+      {/* Write a Review button */}
+      <div className="place-panel-actions">
+        <button
+          className="review-cta-btn"
+          onClick={() => useAppStore.getState().setShowReviewForm(true)}
+        >
+          Write a Review
+        </button>
+      </div>
 
       <div className="place-panel-details">
         {(enriched?.phone || place.phone) && (

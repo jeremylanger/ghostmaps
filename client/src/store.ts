@@ -19,6 +19,9 @@ interface AppState {
   userLocation: LatLng | null
   flyTo: LatLng | null
 
+  // Review
+  showReviewForm: boolean
+
   // Actions
   setSearchResults: (results: Place[]) => void
   setRanking: (ranking: Ranking | null) => void
@@ -29,6 +32,7 @@ interface AppState {
   clearSelection: () => void
   setUserLocation: (location: LatLng) => void
   clearSearch: () => void
+  setShowReviewForm: (show: boolean) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -40,6 +44,7 @@ export const useAppStore = create<AppState>((set) => ({
   selectedPlace: null,
   userLocation: null,
   flyTo: null,
+  showReviewForm: false,
 
   setSearchResults: (results) => set({ searchResults: results }),
   setRanking: (ranking) => set({ ranking }),
@@ -66,4 +71,6 @@ export const useAppStore = create<AppState>((set) => ({
     statusMessage: null,
     error: null,
   }),
+
+  setShowReviewForm: (show) => set({ showReviewForm: show }),
 }))

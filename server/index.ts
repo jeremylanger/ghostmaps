@@ -3,8 +3,10 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import path from 'path'
 import { searchOverture } from './search'
-import { parseQuery, rankResults, generatePlaceBriefing } from './venice'
+import { parseQuery, rankResults, generatePlaceBriefing, scoreReviewQuality, summarizeReviews, comparePlaces } from './venice'
 import { enrichPlace } from './google-places'
+import { fetchReviewsForPlace, fetchAccountAge } from './eas-reader'
+import { storePhoto, getPhotoPath } from './photos'
 import type { Place } from './types'
 
 dotenv.config({ path: path.join(__dirname, '..', '.env') })
@@ -188,6 +190,130 @@ app.get('/api/places/:id', async (req, res) => {
   } catch (err) {
     console.error('Place detail error:', err)
     res.status(500).json({ error: 'Failed to get place details' })
+  }
+})
+
+// Review quality scoring
+app.post('/api/reviews/score', async (req, res) => {
+  try {
+    const { rating, text, hasPhoto, structuredResponses } = req.body
+
+    if (!rating || !text) {
+      res.status(400).json({ error: 'Rating and text are required' })
+      return
+    }
+
+    const result = await scoreReviewQuality({ rating, text, hasPhoto, structuredResponses })
+    res.json(result)
+  } catch (err) {
+    console.error('Review scoring error:', err)
+    res.status(500).json({ error: 'Failed to score review' })
+  }
+})
+
+// Upload a review photo (returns SHA-256 hash)
+app.post('/api/photos', express.raw({ type: 'image/*', limit: '10mb' }), (req, res) => {
+  try {
+    const contentType = req.headers['content-type'] || 'image/jpeg'
+    const hash = storePhoto(req.body, contentType)
+    res.json({ hash })
+  } catch (err) {
+    console.error('Photo upload error:', err)
+    res.status(500).json({ error: 'Failed to upload photo' })
+  }
+})
+
+// Serve a review photo by hash
+app.get('/api/photos/:hash', (req, res) => {
+  const filepath = getPhotoPath(req.params.hash)
+  if (!filepath) {
+    res.status(404).json({ error: 'Photo not found' })
+    return
+  }
+  res.sendFile(filepath)
+})
+
+// Fetch on-chain reviews for a place
+app.get('/api/reviews/:placeId', async (req, res) => {
+  try {
+    const { placeId } = req.params
+    const reviews = await fetchReviewsForPlace(placeId)
+
+    // Fetch account age for each unique attester
+    const attesters = [...new Set(reviews.map((r) => r.attester))]
+    const identities: Record<string, { firstSeen: number; totalReviews: number }> = {}
+    await Promise.all(
+      attesters.map(async (addr) => {
+        try {
+          identities[addr] = await fetchAccountAge(addr)
+        } catch {
+          identities[addr] = { firstSeen: 0, totalReviews: 0 }
+        }
+      })
+    )
+
+    // Generate Venice summary if there are reviews
+    let summary = ''
+    if (reviews.length > 0) {
+      const place = placeCache.get(placeId)
+      try {
+        summary = await summarizeReviews(
+          place?.name || reviews[0].placeName,
+          reviews.map((r) => ({ rating: r.rating, text: r.text, qualityScore: r.qualityScore }))
+        )
+      } catch (err) {
+        console.error('Review summarization failed (non-fatal):', err)
+      }
+    }
+
+    res.json({ reviews, identities, summary })
+  } catch (err) {
+    console.error('Review fetch error:', err)
+    res.status(500).json({ error: 'Failed to fetch reviews' })
+  }
+})
+
+// Compare places
+app.post('/api/compare', async (req, res) => {
+  try {
+    const { placeIds } = req.body as { placeIds: string[] }
+
+    if (!placeIds || placeIds.length < 2 || placeIds.length > 5) {
+      res.status(400).json({ error: 'Provide 2-5 place IDs to compare' })
+      return
+    }
+
+    const places = placeIds
+      .map((id) => placeCache.get(id))
+      .filter((p): p is Place => !!p)
+
+    if (places.length < 2) {
+      res.status(400).json({ error: 'Not enough places found in cache. Search first.' })
+      return
+    }
+
+    // Fetch reviews for each place
+    const placesWithReviews = await Promise.all(
+      places.map(async (p) => {
+        try {
+          const reviews = await fetchReviewsForPlace(p.id)
+          return {
+            name: p.name,
+            category: p.category,
+            address: p.address,
+            reviews: reviews.map((r) => ({ rating: r.rating, text: r.text })),
+          }
+        } catch {
+          return { name: p.name, category: p.category, address: p.address }
+        }
+      })
+    )
+
+    const result = await comparePlaces(placesWithReviews)
+    res.json(result)
+  } catch (err) {
+    console.error('Compare error:', err)
+    res.status(500).json({ error: 'Failed to compare places' })
   }
 })
 

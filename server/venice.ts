@@ -3,6 +3,7 @@ import type { Place } from './types'
 const VENICE_PARSE_MODEL = 'mistral-small-3-2-24b-instruct'
 const VENICE_RANK_MODEL = 'mistral-small-3-2-24b-instruct'
 const VENICE_BRIEFING_MODEL = 'mistral-small-3-2-24b-instruct'
+const VENICE_QUALITY_MODEL = 'mistral-small-3-2-24b-instruct'
 const VENICE_URL = 'https://api.venice.ai/api/v1/chat/completions'
 
 async function veniceChat(
@@ -241,6 +242,244 @@ export interface PlaceBriefingData {
   openingHours: string | null
   isOpen: boolean | null
   foodTypes: string[]
+}
+
+// --- Review Quality Scoring ---
+
+const QUALITY_SYSTEM_PROMPT = `You are a review quality scorer for Ghost Maps. Score a review on specificity and authenticity.
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "score": <0-100>,
+  "label": "generic" | "decent" | "detailed" | "exceptional",
+  "flags": [],
+  "reason": "1 sentence explanation"
+}
+
+Scoring guide:
+- 0-20 (generic): "Great place!" / "5 stars" / no useful info
+- 21-50 (decent): mentions what they ordered or a specific detail
+- 51-80 (detailed): specific items, prices, experiences, comparisons
+- 81-100 (exceptional): detailed with photos, insider tips, specific staff mentions, unique observations
+
+Flags (array of strings):
+- "sentiment_mismatch" — text sentiment contradicts the numeric rating (e.g. "terrible food" with 5 stars)
+- "too_short" — under 10 words
+- "possible_spam" — repetitive, all caps, or promotional language
+- "ai_generated" — suspiciously perfect prose, lacks personal voice`
+
+export interface ReviewQualityInput {
+  rating: number
+  text: string
+  hasPhoto: boolean
+  structuredResponses?: {
+    whatOrdered?: string
+    wouldRecommend?: string
+    oneThingToKnow?: string
+  }
+}
+
+export interface ReviewQualityResult {
+  score: number
+  label: string
+  flags: string[]
+  reason: string
+}
+
+export async function scoreReviewQuality(input: ReviewQualityInput): Promise<ReviewQualityResult> {
+  try {
+    const details = [
+      `Rating: ${input.rating}/5`,
+      `Review text: "${input.text}"`,
+      `Has photo: ${input.hasPhoto}`,
+      input.structuredResponses?.whatOrdered && `What they ordered: "${input.structuredResponses.whatOrdered}"`,
+      input.structuredResponses?.wouldRecommend && `Would recommend: "${input.structuredResponses.wouldRecommend}"`,
+      input.structuredResponses?.oneThingToKnow && `One thing to know: "${input.structuredResponses.oneThingToKnow}"`,
+    ].filter(Boolean).join('\n')
+
+    const content = await veniceChat([
+      { role: 'system', content: QUALITY_SYSTEM_PROMPT },
+      { role: 'user', content: details },
+    ], VENICE_QUALITY_MODEL, { temperature: 0.1 })
+
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content]
+    const parsed = JSON.parse(jsonMatch[1]!.trim())
+
+    return {
+      score: Math.min(100, Math.max(0, parsed.score || 0)),
+      label: parsed.label || 'generic',
+      flags: parsed.flags || [],
+      reason: parsed.reason || '',
+    }
+  } catch (err) {
+    console.error('Venice quality scoring error:', err)
+    return { score: 30, label: 'decent', flags: [], reason: 'Could not score — defaulting to decent.' }
+  }
+}
+
+// --- Review Summarization ---
+
+const SUMMARIZE_SYSTEM_PROMPT = `You are a concise local guide for Ghost Maps. Given a set of on-chain reviews for a place, write a 2-3 sentence summary that captures the overall sentiment, highlights, and any recurring themes.
+
+Focus on: what reviewers loved, what they didn't, specific dishes/experiences mentioned, and overall vibe. Be direct and helpful. If reviews are mixed, say so honestly.
+
+Return plain text only — no JSON, no markdown.`
+
+export interface ReviewForSummary {
+  rating: number
+  text: string
+  qualityScore: number
+}
+
+export async function summarizeReviews(
+  placeName: string,
+  reviews: ReviewForSummary[]
+): Promise<string> {
+  if (reviews.length === 0) return ''
+
+  try {
+    const reviewTexts = reviews
+      .map((r, i) => `Review ${i + 1} (${r.rating}/5, quality: ${r.qualityScore}/100): "${r.text}"`)
+      .join('\n')
+
+    const content = await veniceChat([
+      { role: 'system', content: SUMMARIZE_SYSTEM_PROMPT },
+      { role: 'user', content: `Place: ${placeName}\n\n${reviewTexts}` },
+    ], VENICE_BRIEFING_MODEL, { temperature: 0.3 })
+
+    return content.trim()
+  } catch (err) {
+    console.error('Venice review summarization error:', err)
+    return ''
+  }
+}
+
+// --- Photo Verification ---
+
+const PHOTO_VERIFY_SYSTEM_PROMPT = `You are a photo verification assistant for Ghost Maps. Given metadata about a user-uploaded review photo, assess whether it seems legitimate.
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "legitimate": true|false,
+  "confidence": 0.0-1.0,
+  "reason": "1 sentence explanation"
+}
+
+Red flags:
+- File size too small (< 10KB) for a real photo
+- File size too large (> 15MB) suggests stock photo
+- Suspicious EXIF: missing all metadata (AI-generated images often lack EXIF)
+- Photo taken far from the place location
+- Image dimensions suggest a screenshot rather than camera photo
+
+Green flags:
+- Has EXIF GPS data near the business
+- Reasonable file size (100KB - 10MB)
+- Has camera model in EXIF
+- Taken recently`
+
+export interface PhotoMetadata {
+  fileSize: number // bytes
+  hasExifGPS: boolean
+  nearPlace: boolean
+  mimeType: string
+  width?: number
+  height?: number
+}
+
+export async function verifyPhoto(metadata: PhotoMetadata): Promise<{ legitimate: boolean; confidence: number; reason: string }> {
+  try {
+    const details = [
+      `File size: ${(metadata.fileSize / 1024).toFixed(0)} KB`,
+      `MIME type: ${metadata.mimeType}`,
+      `Has GPS data: ${metadata.hasExifGPS}`,
+      `Near place: ${metadata.nearPlace}`,
+      metadata.width && `Dimensions: ${metadata.width}x${metadata.height}`,
+    ].filter(Boolean).join('\n')
+
+    const content = await veniceChat([
+      { role: 'system', content: PHOTO_VERIFY_SYSTEM_PROMPT },
+      { role: 'user', content: details },
+    ], VENICE_QUALITY_MODEL, { temperature: 0.1 })
+
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content]
+    const parsed = JSON.parse(jsonMatch[1]!.trim())
+
+    return {
+      legitimate: parsed.legitimate ?? true,
+      confidence: parsed.confidence ?? 0.5,
+      reason: parsed.reason || '',
+    }
+  } catch (err) {
+    console.error('Venice photo verification error:', err)
+    return { legitimate: true, confidence: 0.5, reason: 'Could not verify — assuming legitimate.' }
+  }
+}
+
+// --- Comparative Recommendations ---
+
+const COMPARE_SYSTEM_PROMPT = `You are a local guide for Ghost Maps. Compare the given places and help the user choose.
+
+Return ONLY valid JSON (no markdown, no code blocks):
+{
+  "comparison": "2-3 sentence comparison highlighting key differences",
+  "recommendation": "1 sentence pick with reason",
+  "tradeoffs": [
+    {"place": "place name", "pros": ["pro1", "pro2"], "cons": ["con1"]}
+  ]
+}
+
+Be concise, opinionated, and helpful. Use review data when available.`
+
+export interface PlaceForComparison {
+  name: string
+  category: string
+  address: string
+  rating?: number | null
+  priceLevel?: string | null
+  reviews?: { rating: number; text: string }[]
+}
+
+export async function comparePlaces(places: PlaceForComparison[]): Promise<{
+  comparison: string
+  recommendation: string
+  tradeoffs: { place: string; pros: string[]; cons: string[] }[]
+}> {
+  try {
+    const placeSummaries = places.map((p) => {
+      const lines = [
+        `Name: ${p.name}`,
+        `Category: ${p.category}`,
+        `Address: ${p.address}`,
+        p.rating && `Rating: ${p.rating}`,
+        p.priceLevel && `Price: ${p.priceLevel}`,
+      ].filter(Boolean).join(', ')
+
+      const reviewLines = (p.reviews || [])
+        .slice(0, 3)
+        .map((r) => `  - ${r.rating}/5: "${r.text.slice(0, 100)}"`)
+        .join('\n')
+
+      return reviewLines ? `${lines}\nReviews:\n${reviewLines}` : lines
+    }).join('\n\n')
+
+    const content = await veniceChat([
+      { role: 'system', content: COMPARE_SYSTEM_PROMPT },
+      { role: 'user', content: `Compare these places:\n\n${placeSummaries}` },
+    ], VENICE_RANK_MODEL, { temperature: 0.3 })
+
+    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || [null, content]
+    const parsed = JSON.parse(jsonMatch[1]!.trim())
+
+    return {
+      comparison: parsed.comparison || '',
+      recommendation: parsed.recommendation || '',
+      tradeoffs: parsed.tradeoffs || [],
+    }
+  } catch (err) {
+    console.error('Venice comparison error:', err)
+    return { comparison: '', recommendation: '', tradeoffs: [] }
+  }
 }
 
 export async function generatePlaceBriefing(data: PlaceBriefingData): Promise<string> {
