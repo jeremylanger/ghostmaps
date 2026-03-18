@@ -72,8 +72,28 @@ export interface RouteInstruction {
   turnAngle: number
 }
 
+export interface SpeedLimitSection {
+  startPointIndex: number
+  endPointIndex: number
+  maxSpeedKmh: number
+  maxSpeedMph: number
+}
+
+export interface Lane {
+  directions: string[]
+  follow: string
+}
+
+export interface LaneGuidanceSection {
+  startPointIndex: number
+  endPointIndex: number
+  lanes: Lane[]
+}
+
 export interface RouteResponse {
   coordinates: [number, number][]
   instructions: RouteInstruction[]
   summary: RouteSummary
+  speedLimits: SpeedLimitSection[]
+  laneGuidance: LaneGuidanceSection[]
 }

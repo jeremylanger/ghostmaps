@@ -150,7 +150,7 @@ export async function searchOverture(
   const params = new URLSearchParams()
   params.set('lat', lat || '34.0522')
   params.set('lng', lng || '-118.2437')
-  params.set('radius', String(radius || 5000))
+  params.set('radius', String(Math.max(radius || 5000, 3000)))
   params.set('categories', categories.join(','))
   params.set('min_confidence', '0.5')
   params.set('limit', '20')

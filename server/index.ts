@@ -5,7 +5,7 @@ import path from 'path'
 import { searchOverture } from './search'
 import { parseQuery, rankResults, generatePlaceBriefing, scoreReviewQuality, summarizeReviews, comparePlaces } from './venice'
 import { enrichPlace } from './google-places'
-import { fetchReviewsForPlace, fetchAccountAge } from './eas-reader'
+import { fetchReviewsForPlace, fetchAccountAge, type OnChainReview } from './eas-reader'
 import { storePhoto, getPhotoPath } from './photos'
 import { calculateRoute } from './tomtom'
 import type { Place } from './types'
@@ -21,8 +21,30 @@ app.use(express.json())
 // In-memory place cache (search results are ephemeral, this lets us look up by ID)
 const placeCache = new Map<string, Place>()
 
+// Review cache with TTL (2 minutes) to avoid slow EAS GraphQL on every request
+interface ReviewIdentity { firstSeen: number; totalReviews: number }
+interface CachedReviews {
+  data: { reviews: OnChainReview[]; identities: Record<string, ReviewIdentity>; summary: string }
+  timestamp: number
+}
+const reviewCache = new Map<string, CachedReviews>()
+const REVIEW_CACHE_TTL = 2 * 60 * 1000 // 2 minutes
+const MAX_PLACE_CACHE = 500
+
+function trimPlaceCache() {
+  if (placeCache.size <= MAX_PLACE_CACHE) return
+  // Delete oldest entries (Map iterates in insertion order)
+  const excess = placeCache.size - MAX_PLACE_CACHE
+  let i = 0
+  for (const key of placeCache.keys()) {
+    if (i++ >= excess) break
+    placeCache.delete(key)
+  }
+}
+
 function cachePlaces(places: Place[]) {
   for (const p of places) placeCache.set(p.id, p)
+  trimPlaceCache()
 }
 
 // Basic search (category mapping, no AI)
@@ -234,40 +256,58 @@ app.get('/api/photos/:hash', (req, res) => {
   res.sendFile(filepath)
 })
 
-// Fetch on-chain reviews for a place
+// Fetch on-chain reviews for a place (with server-side cache)
 app.get('/api/reviews/:placeId', async (req, res) => {
   try {
     const { placeId } = req.params
-    const reviews = await fetchReviewsForPlace(placeId)
 
-    // Fetch account age for each unique attester
-    const attesters = [...new Set(reviews.map((r) => r.attester))]
-    const identities: Record<string, { firstSeen: number; totalReviews: number }> = {}
-    await Promise.all(
-      attesters.map(async (addr) => {
-        try {
-          identities[addr] = await fetchAccountAge(addr)
-        } catch {
-          identities[addr] = { firstSeen: 0, totalReviews: 0 }
-        }
-      })
-    )
-
-    // Generate Venice summary if there are reviews
-    let summary = ''
-    if (reviews.length > 0) {
-      const place = placeCache.get(placeId)
-      try {
-        summary = await summarizeReviews(
-          place?.name || reviews[0].placeName,
-          reviews.map((r) => ({ rating: r.rating, text: r.text, qualityScore: r.qualityScore }))
-        )
-      } catch (err) {
-        console.error('Review summarization failed (non-fatal):', err)
-      }
+    // Check cache first
+    const cached = reviewCache.get(placeId)
+    if (cached && Date.now() - cached.timestamp < REVIEW_CACHE_TTL) {
+      res.json(cached.data)
+      return
     }
 
-    res.json({ reviews, identities, summary })
+    const reviews = await fetchReviewsForPlace(placeId)
+
+    // Fetch identities + summary in parallel (not sequentially)
+    const attesters = [...new Set(reviews.map((r) => r.attester))]
+    const identities: Record<string, { firstSeen: number; totalReviews: number }> = {}
+
+    const [, summary] = await Promise.all([
+      // Identity lookups (parallelized)
+      Promise.all(
+        attesters.map(async (addr) => {
+          try {
+            identities[addr] = await fetchAccountAge(addr)
+          } catch {
+            identities[addr] = { firstSeen: 0, totalReviews: 0 }
+          }
+        })
+      ),
+      // Venice summary (parallel with identity lookups)
+      reviews.length > 0
+        ? (async () => {
+            const place = placeCache.get(placeId)
+            try {
+              return await summarizeReviews(
+                place?.name || reviews[0].placeName,
+                reviews.map((r) => ({ rating: r.rating, text: r.text, qualityScore: r.qualityScore }))
+              )
+            } catch (err) {
+              console.error('Review summarization failed (non-fatal):', err)
+              return ''
+            }
+          })()
+        : Promise.resolve(''),
+    ])
+
+    const data = { reviews, identities, summary }
+
+    // Cache the result
+    reviewCache.set(placeId, { data, timestamp: Date.now() })
+
+    res.json(data)
   } catch (err) {
     console.error('Review fetch error:', err)
     res.status(500).json({ error: 'Failed to fetch reviews' })

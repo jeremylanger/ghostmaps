@@ -4,6 +4,7 @@ import type { Place, Ranking } from '../types'
 
 export function useAISearch() {
   const abortRef = useRef<AbortController | null>(null)
+  const lastQueryRef = useRef<string>('')
   const {
     setSearchResults, setRanking, setLoading,
     setStatusMessage, setError, clearSearch,
@@ -11,10 +12,15 @@ export function useAISearch() {
   } = useAppStore()
 
   const search = useCallback(async (query: string) => {
-    if (!query.trim()) {
+    const trimmed = query.trim()
+    if (!trimmed) {
       clearSearch()
       return
     }
+
+    // Skip if same query is already in-flight or just completed
+    if (trimmed === lastQueryRef.current) return
+    lastQueryRef.current = trimmed
 
     // Abort any in-flight search
     if (abortRef.current) abortRef.current.abort()
@@ -90,7 +96,11 @@ export function useAISearch() {
         }
       }
     } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') return
+      if (err instanceof Error && err.name === 'AbortError') {
+        lastQueryRef.current = ''
+        return
+      }
+      lastQueryRef.current = ''
       setError(err instanceof Error ? err.message : 'Search failed')
       setSearchResults([])
     } finally {
@@ -101,6 +111,7 @@ export function useAISearch() {
 
   const abort = useCallback(() => {
     if (abortRef.current) abortRef.current.abort()
+    lastQueryRef.current = ''
   }, [])
 
   return { search, abort }

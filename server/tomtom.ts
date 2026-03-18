@@ -1,4 +1,4 @@
-import type { RouteResponse, RouteInstruction, RouteSummary } from './types'
+import type { RouteResponse, RouteInstruction, RouteSummary, SpeedLimitSection, LaneGuidanceSection } from './types'
 
 const TOMTOM_BASE = 'https://api.tomtom.com/routing/1/calculateRoute'
 
@@ -10,7 +10,7 @@ export async function calculateRoute(
   apiKey: string
 ): Promise<RouteResponse> {
   const locations = `${fromLat},${fromLng}:${toLat},${toLng}`
-  const url = `${TOMTOM_BASE}/${locations}/json?key=${apiKey}&traffic=true&instructionsType=text&routeType=fastest&travelMode=car&routeRepresentation=polyline&computeTravelTimeFor=all`
+  const url = `${TOMTOM_BASE}/${locations}/json?key=${apiKey}&traffic=true&instructionsType=text&routeType=fastest&travelMode=car&routeRepresentation=polyline&computeTravelTimeFor=all&sectionType=speedLimit&sectionType=lanes`
 
   const res = await fetch(url)
   if (!res.ok) {
@@ -61,5 +61,31 @@ export async function calculateRoute(
     arrivalTime: route.summary.arrivalTime || '',
   }
 
-  return { coordinates, instructions, summary }
+  // Extract speed limit sections
+  const speedLimits: SpeedLimitSection[] = (route.sections || [])
+    .filter((s: { sectionType: string }) => s.sectionType === 'SPEED_LIMIT')
+    .map((s: { startPointIndex: number; endPointIndex: number; maxSpeedLimitInKmh?: number }) => ({
+      startPointIndex: s.startPointIndex,
+      endPointIndex: s.endPointIndex,
+      maxSpeedKmh: s.maxSpeedLimitInKmh || 0,
+      maxSpeedMph: Math.round((s.maxSpeedLimitInKmh || 0) * 0.621371),
+    }))
+
+  // Extract lane guidance sections
+  const laneGuidance: LaneGuidanceSection[] = (route.sections || [])
+    .filter((s: { sectionType: string }) => s.sectionType === 'LANES')
+    .map((s: {
+      startPointIndex: number
+      endPointIndex: number
+      lanes?: { directions: string[]; follow: string }[]
+    }) => ({
+      startPointIndex: s.startPointIndex,
+      endPointIndex: s.endPointIndex,
+      lanes: (s.lanes || []).map((lane) => ({
+        directions: lane.directions,
+        follow: lane.follow,
+      })),
+    }))
+
+  return { coordinates, instructions, summary, speedLimits, laneGuidance }
 }

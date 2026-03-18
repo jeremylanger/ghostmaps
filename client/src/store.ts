@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Place, Ranking, RouteData } from './types'
+import type { Place, Ranking, RouteData, Lane } from './types'
 
 interface LatLng {
   lat: number
@@ -27,6 +27,13 @@ interface AppState {
   navigating: boolean
   routeLoading: boolean
   currentInstructionIndex: number
+  showSteps: boolean
+  currentSpeedLimit: number | null
+  currentLanes: Lane[] | null
+  rerouting: boolean
+
+  // UI
+  showPrivacy: boolean
 
   // Actions
   setSearchResults: (results: Place[]) => void
@@ -43,6 +50,11 @@ interface AppState {
   setNavigating: (navigating: boolean) => void
   setRouteLoading: (loading: boolean) => void
   setCurrentInstructionIndex: (index: number) => void
+  setShowSteps: (show: boolean) => void
+  setCurrentSpeedLimit: (limit: number | null) => void
+  setCurrentLanes: (lanes: Lane[] | null) => void
+  setRerouting: (rerouting: boolean) => void
+  setShowPrivacy: (show: boolean) => void
   clearRoute: () => void
 }
 
@@ -60,6 +72,11 @@ export const useAppStore = create<AppState>((set) => ({
   navigating: false,
   routeLoading: false,
   currentInstructionIndex: 0,
+  showSteps: false,
+  currentSpeedLimit: null,
+  currentLanes: null,
+  rerouting: false,
+  showPrivacy: false,
 
   setSearchResults: (results) => set({ searchResults: results }),
   setRanking: (ranking) => set({ ranking }),
@@ -93,11 +110,20 @@ export const useAppStore = create<AppState>((set) => ({
   setNavigating: (navigating) => set({ navigating }),
   setRouteLoading: (routeLoading) => set({ routeLoading }),
   setCurrentInstructionIndex: (currentInstructionIndex) => set({ currentInstructionIndex }),
+  setShowSteps: (showSteps) => set({ showSteps }),
+  setCurrentSpeedLimit: (currentSpeedLimit) => set({ currentSpeedLimit }),
+  setCurrentLanes: (currentLanes) => set({ currentLanes }),
+  setRerouting: (rerouting) => set({ rerouting }),
+  setShowPrivacy: (showPrivacy) => set({ showPrivacy }),
 
   clearRoute: () => set({
     routeData: null,
     navigating: false,
     routeLoading: false,
     currentInstructionIndex: 0,
+    showSteps: false,
+    currentSpeedLimit: null,
+    currentLanes: null,
+    rerouting: false,
   }),
 }))

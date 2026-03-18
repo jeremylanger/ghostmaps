@@ -14,8 +14,8 @@ Open source. Built on Ethereum (Base). Privacy by design.
 
 ### 1. Map Layer
 - **MapLibre GL JS** for rendering (open source, vector tiles)
+- **MapTiler Streets v2** for map tiles (polished styling, dense POI labels, terrain shading, free 100K tiles/month)
 - **Overture Maps Foundation** for POI data (64M+ POIs, 2,100+ categories, permissive license)
-- **Overture PMTiles** for serverless tile hosting — integrates directly with MapLibre
 - POI data includes: name, location, category hierarchy, address, phone, website, brand, confidence score
 - POI data does NOT include: hours, reviews, photos, ratings (we fill this gap)
 
@@ -96,7 +96,7 @@ EAS on Base  <--- Review attestations
 ```
 
 ### Key Technical Decisions
-- **No custom backend for map tiles** — Overture PMTiles served directly to MapLibre
+- **MapTiler Streets v2 for tiles** — polished, dense POI labels at zoom 12+, free tier (100K/month)
 - **Overture data access** — community REST API or pre-processed subset via DuckDB
 - **Venice as OpenAI-compatible endpoint** — standard SDK, simple integration
 - **Base L2** — sub-cent transactions, EAS already deployed, ERC-8004 registration already on Base
@@ -248,7 +248,8 @@ See detailed day-by-day build plan. Summary:
 - Day 4: POI enrichment (Google Places) ✅
 - Day 5: CDP auth + on-chain reviews (write) ✅
 - Day 6: On-chain reviews (read + display + summarization) ✅
-- Days 7-8: Navigation + privacy page (product differentiator)
+- Day 7: Navigation core (route display, turn-by-turn, GPS tracking) ✅
+- Day 8: Navigation polish (speed limits, lane guidance, rerouting) + privacy page ✅
 - Days 9-10: Documentation + polish + deploy
 
 ---

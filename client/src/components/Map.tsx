@@ -42,6 +42,7 @@ export default function Map() {
   const initRef = useRef(false)
   const layersReady = useRef(false)
   const watchIdRef = useRef<number | null>(null)
+  const rerouteAbortRef = useRef<AbortController | null>(null)
 
   const searchResults = useAppStore((s) => s.searchResults)
   const selectedPlace = useAppStore((s) => s.selectedPlace)
@@ -62,14 +63,44 @@ export default function Map() {
     if (initRef.current || !mapContainer.current) return
     initRef.current = true
 
-    try {
+    const container = mapContainer.current
+    const styleUrl = `https://api.maptiler.com/maps/streets-v2/style.json?key=${import.meta.env.VITE_MAPTILER_KEY || 'cNjmhoHsVnBLG2X16UtK'}`
+
+    // Fetch style and lower POI minzoom so labels appear earlier
+    const initMap = async () => {
+      let style: any = styleUrl
+      try {
+        const res = await fetch(styleUrl)
+        const json = await res.json()
+        for (const layer of json.layers || []) {
+          // POI label layers typically have "poi" or "place" in the id
+          if (layer.type === 'symbol' && /poi/i.test(layer.id)) {
+            layer.minzoom = Math.min(layer.minzoom ?? 14, 12)
+          }
+        }
+        style = json
+      } catch {
+        // Fall back to URL if fetch fails
+      }
+
       const map = new maplibregl.Map({
-        container: mapContainer.current,
-        style: 'https://tiles.openfreemap.org/styles/liberty',
+        container,
+        style,
         center: INITIAL_CENTER,
         zoom: INITIAL_ZOOM,
         attributionControl: false,
       })
+
+      // Request user location and fly to it
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+          useAppStore.setState({ userLocation: loc })
+          map.flyTo({ center: [loc.lng, loc.lat], zoom: INITIAL_ZOOM, duration: 1200 })
+        },
+        () => { /* geolocation denied — stay on default center */ },
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+      )
 
       map.addControl(new maplibregl.NavigationControl(), 'top-right')
 
@@ -189,17 +220,28 @@ export default function Map() {
       })
 
       mapRef.current = map
-    } catch (err) {
-      console.error('MapLibre init failed:', err)
     }
+
+    initMap().catch((err) => console.error('MapLibre init failed:', err))
   }, [])
 
-  // Fly to location
+  // Fly to location — offset center upward so pin is visible above the bottom sheet
   useEffect(() => {
     if (!flyTo || !mapRef.current) return
     const map = mapRef.current
     const doFly = () => {
-      map.flyTo({ center: [flyTo.lng, flyTo.lat], zoom: 17, duration: 1200 })
+      // If a place is selected, the bottom sheet covers ~50% of screen.
+      // Offset the center so the pin appears in the top portion of the visible map.
+      const hasSheet = !!useAppStore.getState().selectedPlace
+      const padding = hasSheet
+        ? { top: 80, bottom: map.getContainer().clientHeight * 0.5, left: 40, right: 40 }
+        : { top: 80, bottom: 40, left: 40, right: 40 }
+      map.flyTo({
+        center: [flyTo.lng, flyTo.lat],
+        zoom: hasSheet ? 15 : 17,
+        duration: 1200,
+        padding,
+      })
     }
     if (map.getCanvas()) doFly()
     else map.on('load', doFly)
@@ -273,7 +315,6 @@ export default function Map() {
       return
     }
 
-    const store = useAppStore.getState()
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }
@@ -295,21 +336,91 @@ export default function Map() {
           })
         }
 
-        // Find closest instruction
-        const route = useAppStore.getState().routeData
+        const store = useAppStore.getState()
+        const route = store.routeData
         if (route) {
+          // Find closest point on route polyline
+          let closestRouteDist = Infinity
+          let closestPointIdx = 0
+          route.coordinates.forEach((coord, i) => {
+            const dx = coord[0] - loc.lng
+            const dy = coord[1] - loc.lat
+            const dist = dx * dx + dy * dy
+            if (dist < closestRouteDist) {
+              closestRouteDist = dist
+              closestPointIdx = i
+            }
+          })
+
+          // Off-route detection: ~50m threshold (approx 0.00045 degrees)
+          const OFF_ROUTE_THRESHOLD = 0.00045 * 0.00045
+          if (closestRouteDist > OFF_ROUTE_THRESHOLD && !store.rerouting) {
+            store.setRerouting(true)
+            const selectedPlace = store.selectedPlace
+            if (selectedPlace) {
+              const controller = new AbortController()
+              rerouteAbortRef.current = controller
+              fetch('/api/route', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  fromLat: loc.lat,
+                  fromLng: loc.lng,
+                  toLat: selectedPlace.latitude,
+                  toLng: selectedPlace.longitude,
+                }),
+                signal: controller.signal,
+              })
+                .then((res) => res.json())
+                .then((newRoute) => {
+                  useAppStore.setState({ routeData: newRoute, rerouting: false })
+                })
+                .catch(() => {
+                  useAppStore.getState().setRerouting(false)
+                })
+            }
+          }
+
+          // Find closest instruction
           let closestIdx = 0
-          let closestDist = Infinity
+          let closestInstDist = Infinity
           route.instructions.forEach((inst, i) => {
             const dx = inst.point[0] - loc.lng
             const dy = inst.point[1] - loc.lat
             const dist = dx * dx + dy * dy
-            if (dist < closestDist) {
-              closestDist = dist
+            if (dist < closestInstDist) {
+              closestInstDist = dist
               closestIdx = i
             }
           })
-          useAppStore.getState().setCurrentInstructionIndex(closestIdx)
+          // Only update store if values actually changed (avoid unnecessary re-renders)
+          if (closestIdx !== store.currentInstructionIndex) {
+            store.setCurrentInstructionIndex(closestIdx)
+          }
+
+          // Update speed limit based on position along route
+          if (route.speedLimits && route.speedLimits.length > 0) {
+            const section = route.speedLimits.find(
+              (s) => closestPointIdx >= s.startPointIndex && closestPointIdx <= s.endPointIndex
+            )
+            const newLimit = section ? section.maxSpeedMph : null
+            if (newLimit !== store.currentSpeedLimit) {
+              store.setCurrentSpeedLimit(newLimit)
+            }
+          }
+
+          // Update lane guidance based on position along route
+          if (route.laneGuidance && route.laneGuidance.length > 0) {
+            const laneSection = route.laneGuidance.find(
+              (s) => closestPointIdx >= s.startPointIndex && closestPointIdx <= s.endPointIndex
+            )
+            const newLanes = laneSection ? laneSection.lanes : null
+            if (newLanes !== store.currentLanes) {
+              store.setCurrentLanes(newLanes)
+            }
+          } else if (store.currentLanes !== null) {
+            store.setCurrentLanes(null)
+          }
         }
       },
       (err) => console.error('GPS error:', err),
@@ -320,6 +431,10 @@ export default function Map() {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current)
         watchIdRef.current = null
+      }
+      if (rerouteAbortRef.current) {
+        rerouteAbortRef.current.abort()
+        rerouteAbortRef.current = null
       }
     }
   }, [navigating])

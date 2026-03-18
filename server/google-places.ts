@@ -3,7 +3,7 @@ import type { Place } from './types'
 const PLACES_BASE = 'https://places.googleapis.com/v1/places'
 
 export interface PlaceEnrichment {
-  openingHours: string | null
+  openingHours: string[] | null
   isOpen: boolean | null
   foodTypes: string[]
   website: string | null
@@ -115,7 +115,7 @@ export async function enrichPlace(place: Place, apiKey: string): Promise<PlaceEn
     }
 
     return {
-      openingHours: hours?.weekdayDescriptions?.join('; ') || null,
+      openingHours: hours?.weekdayDescriptions || null,
       isOpen: hours?.openNow ?? null,
       foodTypes: (item.types || [])
         .filter((t) => t.startsWith('restaurant') || t.includes('food') || t.includes('cafe') || t.includes('bar') || t.includes('bakery'))

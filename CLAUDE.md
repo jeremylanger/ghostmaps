@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Components should be a max of 100-120 lines.
+Each component should be in its own file.
+
+Avoid `useEffect`.
+
+All components should try to use shadcn/ui first, unless there's a good reason we want to build something custom.
+
+Keep all code minimal and clean, while maintaining readability.
+
 ## Living Plans Directory
 
 The `plans/` directory is the source of truth for what we're building, how, and why. **It must always be kept up to date.**
@@ -50,6 +59,8 @@ node screenshot.js
 
 **Overture Maps API:** Currently using DEMO key (restricted to NYC/London/Paris/Bondi). Sign up at overturemapsapi.com for free key that works everywhere. Set `OVERTURE_API_KEY` in `.env`.
 
+**MapTiler:** Map tiles via MapTiler Streets v2. Set `VITE_MAPTILER_KEY` in `.env`. Free tier: 100K tiles/month.
+
 ## Testing Requirements
 
 **Tests are not optional. Write them automatically with every day of work — do not wait to be asked.**
@@ -84,11 +95,11 @@ See `plans/master.md` for full architecture, decisions, and research.
 
 | Layer | Technology |
 |---|---|
-| Frontend | React + Vite + MapLibre GL JS |
+| Frontend | React + Vite + MapLibre GL JS (MapTiler Streets v2 tiles) |
 | Backend | Node.js + Express |
 | AI | Venice API (OpenAI-compatible, zero data retention) |
 | POI Search | Overture REST API → Google Places enrichment |
-| Navigation | TomTom Routing API |
+| Navigation | TomTom Routing API (traffic ETA, speed limits, lane guidance, rerouting) |
 | On-chain | EAS on Base (ethers.js + EAS SDK) |
 | Auth + Wallets | Coinbase CDP Embedded Wallets |
 | Identity | ERC-8004 |

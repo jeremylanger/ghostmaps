@@ -84,7 +84,16 @@ export default function ReviewList({ placeId }: { placeId: string }) {
     return (
       <div className="reviews-section">
         <h3 className="reviews-heading">Community Reviews</h3>
-        <div className="reviews-loading">Loading on-chain reviews...</div>
+        <div className="reviews-skeleton">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="review-skeleton-card">
+              <div className="skeleton-line skeleton-short" />
+              <div className="skeleton-line skeleton-stars" />
+              <div className="skeleton-line skeleton-long" />
+              <div className="skeleton-line skeleton-medium" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }

@@ -117,10 +117,10 @@ Return ONLY valid JSON (no markdown, no code blocks) with these fields:
 - time_filter: "open_now", "late_night", "morning", "lunch", or null
 - attributes: relevant attributes like ["outdoor_seating", "wifi", "delivery", "takeout", "pet_friendly", "live_music", "happy_hour", "vegan_options"]
 - location_hint: a neighborhood or area name if mentioned, or null
-- radius: search radius in meters if implied (e.g. "nearby" = 1000, "walking distance" = 800), or null
+- radius: search radius in meters if implied (e.g. "nearby"/"near me" = 5000, "walking distance" = 1500), or null. Default to null (server uses 5000m). Only set a small radius if the user explicitly asks for something very close.
 
 Examples:
-"best coffee near me" → {"categories":["coffee_shop","cafe"],"time_filter":null,"attributes":[],"location_hint":null,"radius":1000}
+"best coffee near me" → {"categories":["coffee_shop","cafe"],"time_filter":null,"attributes":[],"location_hint":null,"radius":null}
 "late night tacos with outdoor seating" → {"categories":["mexican_restaurant"],"time_filter":"late_night","attributes":["outdoor_seating"],"location_hint":null,"radius":null}
 "quiet bar in silverlake" → {"categories":["bar","pub"],"time_filter":null,"attributes":[],"location_hint":"silverlake","radius":null}`
 
@@ -239,7 +239,7 @@ export interface PlaceBriefingData {
   phone: string
   website: string
   brand: string
-  openingHours: string | null
+  openingHours: string[] | null
   isOpen: boolean | null
   foodTypes: string[]
 }
@@ -491,7 +491,7 @@ export async function generatePlaceBriefing(data: PlaceBriefingData): Promise<st
       data.phone && `Phone: ${data.phone}`,
       data.website && `Website: ${data.website}`,
       data.brand && `Brand: ${data.brand}`,
-      data.openingHours && `Hours: ${data.openingHours}`,
+      data.openingHours && `Hours: ${data.openingHours.join('; ')}`,
       data.isOpen !== null && `Currently: ${data.isOpen ? 'Open' : 'Closed'}`,
       data.foodTypes.length > 0 && `Cuisine: ${data.foodTypes.join(', ')}`,
     ].filter(Boolean).join('\n')

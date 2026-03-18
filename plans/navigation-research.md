@@ -9,8 +9,8 @@
 | Feature | TomTom | HERE | OSRM/Valhalla (free) | Mapbox |
 |---|---|---|---|---|
 | Traffic-aware routing + ETA | Yes, built-in | Yes, built-in | No (static speeds) | Yes |
-| Speed limits | Yes (Snap to Roads API) | Yes (included) | OSM ~8-12% coverage | Yes |
-| Lane guidance | Yes | Yes | Yes (OSM turn:lanes) | Yes |
+| Speed limits | Yes (sectionType=speedLimit) | Yes (included) | OSM ~8-12% coverage | Yes |
+| Lane guidance | Yes (sectionType=lanes) | Yes | Yes (OSM turn:lanes) | Yes |
 | Free tier | **2,500/day (~75K/mo)** | 30K/month | Unlimited (self-host) | 100K/month |
 | Cost after free | **$0.50/1K** | $0.75/1K | Free | $2.00/1K |
 | Use with MapLibre? | **Explicitly allowed** | Murky ToS (prohibits open-data combo) | N/A | Against spirit of ToS |
@@ -31,13 +31,17 @@
 - `openingHours` mode returns next 7 days pre-computed
 - `timeZone.ianaId` per POI — useful for local time calculations
 
-### Snap to Roads API — Speed Limits
-- Returns speed limit value, unit, and type for road segments
-- Separate API call from routing (costs additional transactions)
+### Speed Limits (via Calculate Route API)
+- Add `sectionType=speedLimit` to the routing request — no separate API call needed
+- Returns `sections` array with `sectionType: "SPEED_LIMIT"`, `startPointIndex`, `endPointIndex`, `maxSpeedLimitInKmh`
+- We convert to mph for US display
 
-### Lane Guidance
-- Guidance Instructions include `lanes` section with directions and recommendations
-- Returns which lanes are valid for the upcoming maneuver
+### Lane Guidance (via Calculate Route API)
+- Add `sectionType=lanes` to the routing request — no separate API call needed
+- Returns `sections` array with `sectionType: "LANES"`, each containing a `lanes` array
+- Each lane has `directions` (array of possible directions) and `follow` (recommended direction)
+- Direction values: STRAIGHT, SLIGHT_LEFT, LEFT, SHARP_LEFT, LEFT_U_TURN, SLIGHT_RIGHT, RIGHT, SHARP_RIGHT, RIGHT_U_TURN
+- Multiple `sectionType` params supported: `sectionType=speedLimit&sectionType=lanes`
 
 ### TomTom Response Example (route result)
 ```json
@@ -77,17 +81,20 @@
 
 ## Navigation Features — Hackathon Scope
 
-### Must build (Day 7)
+### Day 7 — Done ✅
 - TomTom Routing API integration
-- Route display on MapLibre (GeoJSON line layer)
+- Route display on MapLibre (GeoJSON line layer with casing)
 - Turn-by-turn instruction panel
 - Traffic-aware ETA display
 - GPS tracking (browser `navigator.geolocation.watchPosition()`)
 
-### Should build (Day 8)
-- Speed limit display (Snap to Roads API)
-- Lane guidance display
-- Re-routing when user goes off route
+### Day 8 — Done ✅
+- Navigation UX overhaul (big next-turn card, Steps toggle, upcoming peek)
+- Speed limit display (sectionType=speedLimit, red circle sign)
+- Lane guidance display (sectionType=lanes, dark lane bar with highlighted follow-lanes)
+- Auto-rerouting when user goes off route (~50m threshold)
+- Server-side review cache (2min TTL) + parallel identity/summary fetch
+- Privacy comparison page (8 categories, $7.3B fines, transparency section)
 
 ### Skipping for hackathon
 - Voice navigation

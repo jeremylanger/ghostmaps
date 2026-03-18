@@ -14,7 +14,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 | Layer | Technology |
 |---|---|
-| Frontend | React + Vite + MapLibre GL JS |
+| Frontend | React + Vite + MapLibre GL JS (MapTiler Streets v2 tiles) |
 | Backend | Node.js + Express |
 | AI | Venice API (OpenAI-compatible, zero data retention) |
 | POI Search | Overture REST API → Google Places enrichment |
@@ -41,7 +41,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 ### Day 2 — March 14 ✅
 **Map Foundation + Basic Search**
 - [x] Project scaffolding (React + Vite frontend, Node + Express backend)
-- [x] MapLibre rendering with base map tiles — **OpenFreeMap** (liberty style)
+- [x] MapLibre rendering with base map tiles — **MapTiler Streets v2** (polished, dense POIs)
 - [x] User GPS location on map (browser Geolocation API)
 - [x] Overture REST API integration — category + location search (no text search — API only supports category/brand/location filters)
 - [x] Display search results as pins on the map
@@ -119,20 +119,21 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** Full flow works: search → pick place → get directions → see route with traffic-aware ETA and turn-by-turn. ✅
 
-### Day 8 — March 20
+### Day 8 — March 20 ✅
 **Navigation Polish + Privacy Page**
-- [ ] Speed limit display (TomTom Snap to Roads API)
-- [ ] Lane guidance display
-- [ ] Re-routing when user goes off route
-- [ ] Privacy Comparison page — side-by-side: what Google collects vs. what we don't
-  - Location tracking (every 2 min vs. zero storage)
-  - Search history (saved forever vs. zero retention)
-  - Law enforcement (11,500 geofence warrants vs. nothing to hand over)
-  - Business profiling (every click tracked vs. no tracking)
-  - $7.3B+ in fines vs. privacy by architecture
-- [ ] Tests: unit, integration, E2E
+- [x] Navigation UX overhaul — big next-turn card (icon, street, distance), ETA summary at top, upcoming turn peek, full list behind "Steps" button
+- [x] Fix EAS review load time — server-side review cache (2min TTL), identity+summary fetched in parallel (not sequential), loading skeleton in ReviewList
+- [x] Speed limit display (TomTom sectionType=speedLimit, red circle sign in nav panel)
+- [x] Lane guidance display (TomTom sectionType=lanes, dark lane bar with highlighted follow-lanes)
+- [x] Re-routing when user goes off route (~50m threshold, auto-recalculates)
+- [x] Privacy Comparison page — side-by-side: what Google collects vs. what we don't
+  - 8 comparison categories with Google vs Ghost Maps cards
+  - $7.3B+ fines section with 4 major cases
+  - Transparency section (TomTom, Google Places, on-chain reviews)
+  - Location tracking, search history, law enforcement, opt-out, cross-app, business interactions
+- [x] Tests: 10 unit + 5 integration + 10 E2E = 25 new tests (129 server tests total)
 
-**End of day:** Navigation complete with speed limits + lane guidance. Privacy page tells the story. *App is a real product at this point.*
+**End of day:** Navigation complete with speed limits + rerouting. Privacy page tells the story. *App is a real product at this point.*
 
 ### Day 9 — March 21
 **Documentation + Polish**
@@ -197,7 +198,7 @@ Priority order (cut from bottom):
 
 ## Open Items to Resolve
 
-1. ~~**Map tile source**~~ — **RESOLVED: OpenFreeMap** (liberty style, free, no API key needed)
+1. ~~**Map tile source**~~ — **RESOLVED: MapTiler Streets v2** (polished styling, dense POI labels, free 100K tiles/month)
 2. **API keys to register:**
    - Overture REST API — ✅ using DEMO key (restricted to NYC/London/Paris/Bondi)
    - ~~HERE~~ — replaced with Google Places
@@ -205,6 +206,7 @@ Priority order (cut from bottom):
    - TomTom — ✅ registered, key in .env (2,500 req/day free)
    - Coinbase CDP — ✅ registered, project ID in .env
    - Venice — ✅ have from hackathon
+   - MapTiler — ✅ registered, key in .env (100K tiles/month free)
 3. ~~**EAS schema fields**~~ — **RESOLVED:** `uint8 rating, string text, string placeId, string placeName, bytes32 photoHash, int256 lat, int256 lng, uint8 qualityScore` — UID: `0x968e91f0...`
 4. ~~**App name**~~ — **RESOLVED: Ghost Maps** (ghostmaps.app)
 5. ~~**Photo storage**~~ — **RESOLVED:** Server-side filesystem storage keyed by SHA-256 hash. Photos uploaded alongside on-chain submission. Migrate to IPFS/S3 post-hackathon.
