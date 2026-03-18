@@ -1,58 +1,61 @@
-import type { Place } from './types'
+import type { Place } from "./types";
 
-const HERE_BASE = 'https://discover.search.hereapi.com/v1'
+const HERE_BASE = "https://discover.search.hereapi.com/v1";
 
 export interface HereEnrichment {
-  openingHours: string | null
-  isOpen: boolean | null
-  foodTypes: string[]
-  website: string | null
-  phone: string | null
-  rating: number | null
+  openingHours: string | null;
+  isOpen: boolean | null;
+  foodTypes: string[];
+  website: string | null;
+  phone: string | null;
+  rating: number | null;
   // TripAdvisor/Yelp reference IDs
-  references: { supplier: string; id: string }[]
+  references: { supplier: string; id: string }[];
 }
 
 interface HerePlace {
-  title: string
-  position: { lat: number; lng: number }
-  distance: number
-  categories?: { id: string; name: string; primary?: boolean }[]
-  foodTypes?: { id: string; name: string; primary?: boolean }[]
-  openingHours?: { text: string[]; isOpen: boolean }[]
-  contacts?: { phone?: { value: string }[]; www?: { value: string }[] }[]
-  references?: { supplier: { id: string }; id: string }[]
+  title: string;
+  position: { lat: number; lng: number };
+  distance: number;
+  categories?: { id: string; name: string; primary?: boolean }[];
+  foodTypes?: { id: string; name: string; primary?: boolean }[];
+  openingHours?: { text: string[]; isOpen: boolean }[];
+  contacts?: { phone?: { value: string }[]; www?: { value: string }[] }[];
+  references?: { supplier: { id: string }; id: string }[];
 }
 
-export async function enrichPlace(place: Place, apiKey: string): Promise<HereEnrichment> {
+export async function enrichPlace(
+  place: Place,
+  apiKey: string,
+): Promise<HereEnrichment> {
   try {
     // Search HERE for the same place by name + location
     const params = new URLSearchParams({
       q: place.name,
       at: `${place.latitude},${place.longitude}`,
-      limit: '1',
+      limit: "1",
       apiKey,
-    })
+    });
 
-    const response = await fetch(`${HERE_BASE}/discover?${params}`)
+    const response = await fetch(`${HERE_BASE}/discover?${params}`);
 
     if (!response.ok) {
-      console.error('HERE API error:', response.status)
-      return emptyEnrichment()
+      console.error("HERE API error:", response.status);
+      return emptyEnrichment();
     }
 
-    const data = await response.json()
-    const items: HerePlace[] = data.items || []
+    const data = await response.json();
+    const items: HerePlace[] = data.items || [];
 
-    if (items.length === 0) return emptyEnrichment()
+    if (items.length === 0) return emptyEnrichment();
 
-    const item = items[0]
+    const item = items[0];
 
     // Only use the result if it's within ~200m of our place
-    if (item.distance > 200) return emptyEnrichment()
+    if (item.distance > 200) return emptyEnrichment();
 
     return {
-      openingHours: item.openingHours?.[0]?.text?.join('; ') || null,
+      openingHours: item.openingHours?.[0]?.text?.join("; ") || null,
       isOpen: item.openingHours?.[0]?.isOpen ?? null,
       foodTypes: (item.foodTypes || []).map((f) => f.name),
       website: item.contacts?.[0]?.www?.[0]?.value || null,
@@ -62,37 +65,37 @@ export async function enrichPlace(place: Place, apiKey: string): Promise<HereEnr
         supplier: r.supplier.id,
         id: r.id,
       })),
-    }
+    };
   } catch (err) {
-    console.error('HERE enrichment error:', err)
-    return emptyEnrichment()
+    console.error("HERE enrichment error:", err);
+    return emptyEnrichment();
   }
 }
 
 export async function enrichPlaces(
   places: Place[],
   apiKey: string,
-  maxEnrich: number = 5
+  maxEnrich: number = 5,
 ): Promise<Map<string, HereEnrichment>> {
-  const enrichments = new Map<string, HereEnrichment>()
+  const enrichments = new Map<string, HereEnrichment>();
 
   // Only enrich top N places to conserve API quota
-  const toEnrich = places.slice(0, maxEnrich)
+  const toEnrich = places.slice(0, maxEnrich);
 
   const results = await Promise.allSettled(
     toEnrich.map(async (place) => {
-      const enrichment = await enrichPlace(place, apiKey)
-      return { id: place.id, enrichment }
-    })
-  )
+      const enrichment = await enrichPlace(place, apiKey);
+      return { id: place.id, enrichment };
+    }),
+  );
 
   for (const result of results) {
-    if (result.status === 'fulfilled') {
-      enrichments.set(result.value.id, result.value.enrichment)
+    if (result.status === "fulfilled") {
+      enrichments.set(result.value.id, result.value.enrichment);
     }
   }
 
-  return enrichments
+  return enrichments;
 }
 
 function emptyEnrichment(): HereEnrichment {
@@ -104,5 +107,5 @@ function emptyEnrichment(): HereEnrichment {
     phone: null,
     rating: null,
     references: [],
-  }
+  };
 }

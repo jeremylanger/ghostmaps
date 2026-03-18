@@ -114,7 +114,7 @@
 }
 
 .search-status::before {
-  content: '';
+  content: "";
   width: 12px;
   height: 12px;
   border: 2px solid #ddd;
@@ -124,7 +124,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .search-summary {
@@ -387,8 +389,12 @@
   color: #333;
 }
 
-.stat-open { color: #16a34a; }
-.stat-closed { color: #dc2626; }
+.stat-open {
+  color: #16a34a;
+}
+.stat-closed {
+  color: #dc2626;
+}
 
 .stat-address {
   font-weight: 400;
@@ -499,7 +505,7 @@
 }
 
 .place-panel-loading::before {
-  content: '';
+  content: "";
   width: 12px;
   height: 12px;
   border: 2px solid #ddd;
@@ -541,7 +547,9 @@
   width: 36px;
   height: 36px;
   border-width: 4px;
-  box-shadow: 0 0 0 4px rgba(66, 133, 244, 0.3), 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 0 4px rgba(66, 133, 244, 0.3),
+    0 2px 8px rgba(0, 0, 0, 0.4);
   z-index: 10;
 }
 
@@ -551,7 +559,9 @@
   background: #4285f4;
   border: 3px solid white;
   border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 0 0 2px rgba(66, 133, 244, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Auth button */
@@ -668,7 +678,7 @@
 }
 
 .reviews-loading::before {
-  content: '';
+  content: "";
   width: 12px;
   height: 12px;
   border: 2px solid #ddd;
@@ -1174,8 +1184,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .nav-header {
@@ -1504,14 +1519,27 @@
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-.skeleton-short { width: 40%; }
-.skeleton-stars { width: 30%; height: 14px; }
-.skeleton-long { width: 100%; }
-.skeleton-medium { width: 70%; }
+.skeleton-short {
+  width: 40%;
+}
+.skeleton-stars {
+  width: 30%;
+  height: 14px;
+}
+.skeleton-long {
+  width: 100%;
+}
+.skeleton-medium {
+  width: 70%;
+}
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Location prompt banner */

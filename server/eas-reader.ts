@@ -1,41 +1,45 @@
-const EAS_GRAPHQL = 'https://base-sepolia.easscan.org/graphql'
-const REVIEW_SCHEMA_UID = '0x968e91f0274b78a31037839b55e59b942dd1521daebf9190268137e450b7d69f'
+const EAS_GRAPHQL = "https://base-sepolia.easscan.org/graphql";
+const REVIEW_SCHEMA_UID =
+  "0x968e91f0274b78a31037839b55e59b942dd1521daebf9190268137e450b7d69f";
 
 export interface OnChainReview {
-  uid: string
-  attester: string
-  time: number
-  rating: number
-  text: string
-  placeId: string
-  placeName: string
-  photoHash: string
-  lat: number
-  lng: number
-  qualityScore: number
+  uid: string;
+  attester: string;
+  time: number;
+  rating: number;
+  text: string;
+  placeId: string;
+  placeName: string;
+  photoHash: string;
+  lat: number;
+  lng: number;
+  qualityScore: number;
 }
 
 interface DecodedField {
-  name: string
-  value: { value: string }
+  name: string;
+  value: { value: string };
 }
 
 function parseDecodedData(decodedDataJson: string): Record<string, string> {
-  const fields: DecodedField[] = JSON.parse(decodedDataJson)
-  const result: Record<string, string> = {}
+  const fields: DecodedField[] = JSON.parse(decodedDataJson);
+  const result: Record<string, string> = {};
   for (const f of fields) {
-    result[f.name] = f.value.value
+    result[f.name] = f.value.value;
   }
-  return result
+  return result;
 }
 
-const ZERO_BYTES32 = '0x0000000000000000000000000000000000000000000000000000000000000000'
+const ZERO_BYTES32 =
+  "0x0000000000000000000000000000000000000000000000000000000000000000";
 
 /** Fetch all reviews for a given placeId from EAS on Base Sepolia */
-export async function fetchReviewsForPlace(placeId: string): Promise<OnChainReview[]> {
+export async function fetchReviewsForPlace(
+  placeId: string,
+): Promise<OnChainReview[]> {
   const res = await fetch(EAS_GRAPHQL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: `query($schemaId: String!) {
         attestations(
@@ -51,20 +55,20 @@ export async function fetchReviewsForPlace(placeId: string): Promise<OnChainRevi
       }`,
       variables: { schemaId: REVIEW_SCHEMA_UID },
     }),
-  })
+  });
 
   if (!res.ok) {
-    throw new Error(`EAS GraphQL error: ${res.status}`)
+    throw new Error(`EAS GraphQL error: ${res.status}`);
   }
 
-  const data = await res.json()
-  const attestations = data.data?.attestations || []
+  const data = await res.json();
+  const attestations = data.data?.attestations || [];
 
-  const reviews: OnChainReview[] = []
+  const reviews: OnChainReview[] = [];
   for (const a of attestations) {
     try {
-      const fields = parseDecodedData(a.decodedDataJson)
-      if (fields.placeId !== placeId) continue
+      const fields = parseDecodedData(a.decodedDataJson);
+      if (fields.placeId !== placeId) continue;
 
       reviews.push({
         uid: a.id,
@@ -74,24 +78,26 @@ export async function fetchReviewsForPlace(placeId: string): Promise<OnChainRevi
         text: fields.text,
         placeId: fields.placeId,
         placeName: fields.placeName,
-        photoHash: fields.photoHash === ZERO_BYTES32 ? '' : fields.photoHash,
+        photoHash: fields.photoHash === ZERO_BYTES32 ? "" : fields.photoHash,
         lat: Number(fields.lat) !== 0 ? Number(fields.lat) / 1e6 : 0,
         lng: Number(fields.lng) !== 0 ? Number(fields.lng) / 1e6 : 0,
         qualityScore: Number(fields.qualityScore),
-      })
+      });
     } catch {
       // Skip malformed attestations
     }
   }
 
-  return reviews
+  return reviews;
 }
 
 /** Fetch the first attestation timestamp for an address (account age proxy) */
-export async function fetchAccountAge(attester: string): Promise<{ firstSeen: number; totalReviews: number }> {
+export async function fetchAccountAge(
+  attester: string,
+): Promise<{ firstSeen: number; totalReviews: number }> {
   const res = await fetch(EAS_GRAPHQL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       query: `query($schemaId: String!, $attester: String!) {
         attestations(
@@ -115,18 +121,18 @@ export async function fetchAccountAge(attester: string): Promise<{ firstSeen: nu
       }`,
       variables: { schemaId: REVIEW_SCHEMA_UID, attester },
     }),
-  })
+  });
 
   if (!res.ok) {
-    throw new Error(`EAS GraphQL error: ${res.status}`)
+    throw new Error(`EAS GraphQL error: ${res.status}`);
   }
 
-  const data = await res.json()
-  const first = data.data?.attestations?.[0]
-  const count = data.data?.aggregateAttestation?._count?.id || 0
+  const data = await res.json();
+  const first = data.data?.attestations?.[0];
+  const count = data.data?.aggregateAttestation?._count?.id || 0;
 
   return {
     firstSeen: first?.time || 0,
     totalReviews: count,
-  }
+  };
 }
