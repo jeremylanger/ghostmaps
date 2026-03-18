@@ -55,6 +55,7 @@ async function veniceChat(
 
 async function* veniceChatStream(
   messages: { role: string; content: string }[],
+  model: string,
   options: { temperature?: number } = {},
 ): AsyncGenerator<string> {
   const response = await fetch(VENICE_URL, {
@@ -64,7 +65,7 @@ async function* veniceChatStream(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: VENICE_MODEL,
+      model,
       messages,
       temperature: options.temperature ?? 0.3,
       stream: true,
