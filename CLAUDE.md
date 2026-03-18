@@ -11,6 +11,8 @@ All components should try to use shadcn/ui first, unless there's a good reason w
 
 Keep all code minimal and clean, while maintaining readability.
 
+Run `npm run format` after each task.
+
 ## Living Plans Directory
 
 The `plans/` directory is the source of truth for what we're building, how, and why. **It must always be kept up to date.**
