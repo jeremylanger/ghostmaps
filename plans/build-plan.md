@@ -152,7 +152,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 ### Day 10 — March 22
 **Deploy + Demo + Submit**
-- [ ] Deploy (Vercel for frontend, Railway/Fly.io for backend)
+- [ ] Deploy to Railway (Express server + Vite static build, single service)
 - [ ] Add production server IP to Google Places API key restrictions
 - [ ] Restrict CDP Project domain allowlist to production domain only
 - [ ] Add production domain to CDP Paymaster allowlist
@@ -211,7 +211,7 @@ Priority order (cut from bottom):
 4. ~~**App name**~~ — **RESOLVED: Ghost Maps** (ghostmaps.app)
 5. ~~**Photo storage**~~ — **RESOLVED:** Server-side filesystem storage keyed by SHA-256 hash. Photos uploaded alongside on-chain submission. Migrate to IPFS/S3 post-hackathon.
 6. ~~**Gas sponsorship**~~ — **RESOLVED:** CDP Paymaster on Base Sepolia. Users pay $0.
-7. **Deployment target** — Vercel (frontend) + Railway or Fly.io (backend)
+7. **Deployment target** — **RESOLVED: Railway** (single service — Express serves API + Vite static build). SSE streaming + file uploads need a long-running process, not serverless.
 
 ---
 

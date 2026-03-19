@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-import AuthButton from "./components/AuthButton";
+import HamburgerMenu from "./components/HamburgerMenu";
 import LocateButton from "./components/LocateButton";
 import Map from "./components/Map";
 import NavigationPanel from "./components/NavigationPanel";
@@ -66,23 +66,13 @@ function AppContent() {
   const selectedPlace = useAppStore((s) => s.selectedPlace);
   const showReviewForm = useAppStore((s) => s.showReviewForm);
   const routeData = useAppStore((s) => s.routeData);
-  const setShowPrivacy = useAppStore((s) => s.setShowPrivacy);
 
   return (
     <div className="app">
       <Map />
       <SearchBar />
       <LocationPrompt />
-      <div className="auth-container">
-        <AuthButton />
-      </div>
-      <button
-        className="privacy-btn"
-        onClick={() => setShowPrivacy(true)}
-        title="Privacy Comparison"
-      >
-        Privacy
-      </button>
+      <HamburgerMenu />
       {selectedPlace && !routeData && <PlacePanel />}
       {selectedPlace && showReviewForm && <ReviewForm />}
       {routeData && <NavigationPanel />}
