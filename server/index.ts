@@ -29,6 +29,10 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
+// Serve Vite build in production
+const clientDist = path.join(__dirname, "..", "client", "dist");
+app.use(express.static(clientDist));
+
 // In-memory place cache (search results are ephemeral, this lets us look up by ID)
 const placeCache = new Map<string, Place>();
 
@@ -443,6 +447,11 @@ app.post("/api/compare", async (req, res) => {
     console.error("Compare error:", err);
     res.status(500).json({ error: "Failed to compare places" });
   }
+});
+
+// SPA fallback — serve index.html for non-API routes
+app.get("/{*path}", (_req, res) => {
+  res.sendFile(path.join(clientDist, "index.html"));
 });
 
 app.listen(PORT, () => {
