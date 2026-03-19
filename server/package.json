@@ -7,8 +7,8 @@
     "start": "tsx index.ts",
     "dev": "tsx watch index.ts",
     "test": "vitest run",
-    "test:unit": "vitest run search.unit.test.ts venice.unit.test.ts here.unit.test.ts eas.unit.test.ts",
-    "test:integration": "vitest run search.integration.test.ts venice.integration.test.ts enrichment.integration.test.ts venice-quality.integration.test.ts eas.integration.test.ts"
+    "test:unit": "vitest run unit.test",
+    "test:integration": "vitest run integration.test"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +17,8 @@
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@ethereum-attestation-service/eas-sdk": "^2.9.0",

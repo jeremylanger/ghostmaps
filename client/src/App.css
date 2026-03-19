@@ -97,10 +97,28 @@
   text-transform: capitalize;
 }
 
+.result-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
+}
+
 .result-address {
   font-size: 13px;
   color: #999;
-  margin-top: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.result-distance {
+  font-size: 12px;
+  color: #1a73e8;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .search-status {
@@ -1232,7 +1250,8 @@
 }
 
 /* Navigation panel */
-.navigation-panel {
+/* Navigation: preview mode (not yet started) */
+.navigation-panel.nav-preview {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -1246,12 +1265,81 @@
   flex-direction: column;
 }
 
+/* Navigation: active overlays */
+.nav-top-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: white;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.nav-bottom-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+}
+
+.nav-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: white;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.nav-bottom-info {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.nav-bottom-eta {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1a73e8;
+}
+
+.nav-bottom-duration {
+  font-size: 22px;
+  color: #333;
+  font-weight: 700;
+}
+
+.nav-bottom-distance {
+  font-size: 18px;
+  color: #666;
+  font-weight: 600;
+}
+
+.nav-end-btn {
+  padding: 8px 20px;
+  background: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-end-btn:hover {
+  background: #c53030;
+}
+
 .nav-rerouting {
   background: #1a73e8;
   color: white;
   text-align: center;
-  padding: 8px;
-  font-size: 14px;
+  padding: 6px;
+  font-size: 13px;
   font-weight: 600;
   animation: pulse 1s ease-in-out infinite;
 }
@@ -1266,58 +1354,58 @@
   }
 }
 
-.nav-header {
-  padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
-  position: relative;
-  flex-shrink: 0;
+/* Imminent turn emphasis */
+.nav-next-turn.nav-imminent {
+  background: #fff3e0;
+  border-bottom-color: #ffe0b2;
 }
 
-.nav-eta {
+.nav-next-turn.nav-imminent .nav-next-turn-icon {
+  background: #e65100;
+}
+
+.nav-next-turn.nav-imminent .nav-next-turn-distance {
+  color: #e65100;
+}
+
+/* User arrow marker */
+.user-arrow-marker {
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+/* Destination marker */
+.destination-marker {
   display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
 }
 
-.nav-eta-time {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a73e8;
-}
-
-.nav-eta-distance {
-  font-size: 14px;
-  color: #666;
-}
-
-.nav-traffic-delay {
-  font-size: 12px;
-  color: #e53e3e;
-  font-weight: 600;
-  background: rgba(229, 62, 62, 0.08);
+.destination-label {
+  background: white;
   padding: 2px 6px;
   border-radius: 4px;
-}
-
-.nav-destination {
-  font-size: 14px;
+  font-size: 11px;
+  font-weight: 600;
   color: #333;
-  margin-top: 4px;
-  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  margin-bottom: 2px;
 }
 
-.nav-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #999;
-  cursor: pointer;
-  padding: 0 4px;
-  line-height: 1;
+.destination-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Step list in top overlay */
+.nav-step-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  background: white;
+  border-top: 1px solid #f0f0f0;
 }
 
 /* Big next-turn card */

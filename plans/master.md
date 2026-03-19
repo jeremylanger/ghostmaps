@@ -237,6 +237,14 @@ User taps a place → Backend sends [place name + coords] to Google → Gets hou
 - Critical path: Map → Venice Search → Enrichment → Reviews → Navigation → Polish
 - Cut list prioritized: navigation polish first to cut, core search last
 
+### 10. Deployment — RESOLVED
+- **Railway** — single service (Express serves API + Vite static build)
+- **Domain:** ghostmaps.app (Porkbun DNS → ALIAS to Railway edge)
+- **SSL:** Auto-provisioned by Railway (Let's Encrypt)
+- **Build:** Nixpacks (Node.js auto-detected), `npm install --legacy-peer-deps` for client (CDP React peer dep conflict)
+- **Env vars:** Set via `railway vars set` (not committed — VITE_* vars needed at build time)
+- **Deploy:** `railway up` from repo root
+
 ---
 
 ## Hackathon Timeline (March 13-22)
@@ -250,7 +258,7 @@ See detailed day-by-day build plan. Summary:
 - Day 6: On-chain reviews (read + display + summarization) ✅
 - Day 7: Navigation core (route display, turn-by-turn, GPS tracking) ✅
 - Day 8: Navigation polish (speed limits, lane guidance, rerouting) + privacy page ✅
-- Days 9-10: Documentation + polish + deploy
+- Days 9-10: Documentation + polish + deploy (deployed to ghostmaps.app via Railway)
 
 ---
 

@@ -9,6 +9,7 @@ export interface Place {
   confidence: number;
   longitude: number;
   latitude: number;
+  distanceMeters?: number;
 }
 
 export interface OvertureFeature {

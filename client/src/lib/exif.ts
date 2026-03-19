@@ -1,4 +1,5 @@
 import exifr from "exifr";
+import { haversine } from "./geo-utils";
 
 export interface PhotoLocation {
   latitude: number;
@@ -30,18 +31,12 @@ export function isNearLocation(
   target: { latitude: number; longitude: number },
   radiusMeters = 200,
 ): boolean {
-  const R = 6371000; // Earth radius in meters
-  const dLat = toRad(target.latitude - photo.latitude);
-  const dLng = toRad(target.longitude - photo.longitude);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(photo.latitude)) *
-      Math.cos(toRad(target.latitude)) *
-      Math.sin(dLng / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c <= radiusMeters;
-}
-
-function toRad(deg: number): number {
-  return (deg * Math.PI) / 180;
+  return (
+    haversine(
+      photo.latitude,
+      photo.longitude,
+      target.latitude,
+      target.longitude,
+    ) <= radiusMeters
+  );
 }

@@ -135,13 +135,80 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** Navigation complete with speed limits + rerouting. Privacy page tells the story. *App is a real product at this point.*
 
-### Day 9 — March 21
+### Day 9 — March 19 (IN PROGRESS)
+**Navigation & Search Polish (Drive Test Feedback)**
+
+#### Spec
+
+**Search**
+- Happy: User searches on ghostmaps.app (production) → Google Places enrichment data loads (photos, hours, rating)
+- Happy: User searches for a place 10+ miles away by name → result is found regardless of distance, closer matches ranked higher for category queries
+- Integration: Production Google Places requires adding Railway server IP to API key whitelist (config task)
+- Integration: Venice intent parsing distinguishes "specific place name" queries from "general category" queries
+- Integration: Name-match queries search Overture with no radius cap; category queries search locally with distance-weighted ranking
+- UX: Search results display distance from user's current position
+- Edge: If query is a specific place name, distance never filters it out — results returned globally
+- Edge: Distance shown on results so user understands why a far-away result appeared
+
+**Navigation UI Overhaul**
+- Happy: Next-turn card at top shows large direction icon, instruction text, and countdown distance; below it a smaller peek at the following turn
+- Happy: User can expand full step list (Apple Maps style), defaults to collapsed while driving
+- Happy: Bottom bar shows ETA (clock time), duration remaining, total route distance remaining, and "End" button
+- Happy: 80%+ of map remains visible during active navigation
+- UX: When turn is imminent (< 500 ft), next-turn card gets visual emphasis (color/size change)
+- UX: Rerouting shows brief "Rerouting..." flash, not a disruptive modal
+
+**Navigation: Live Distance Countdown**
+- Happy: Distance to next maneuver counts down in real time as user drives toward it
+- Integration: Distance calculated client-side from GPS position to next maneuver point, not static from TomTom
+- Edge: Units switch naturally as user approaches (miles → feet or km → meters)
+
+**Navigation: Position & Map**
+- Happy: Current position shown as directional arrow pointing user's heading; destination shown as pin with place name in small text above
+- Happy: Position animates smoothly between GPS updates (interpolated, not jumping)
+- Happy: Map rotates to match user's heading during active navigation
+- UX: Arrow rotation and map bearing changes are smooth/animated, not snapping
+- UX: Destination pin name visible at all zoom levels during navigation
+- Edge: If device doesn't provide heading, derive bearing from last two GPS positions
+- Integration: Position interpolation happens client-side between GPS fixes (GL animation)
+
+**Navigation: Rerouting**
+- Happy: Rerouting triggers when user is genuinely off-route, recalculates automatically
+- Edge: If user's position matches the current route geometry, reroute does NOT trigger — fixes the rapid-fire reroute loop
+- Edge: GPS drift (brief off-route blip) does not trigger rerouting — requires sustained off-route position
+
+**Navigation: Route Line**
+- Happy: Route line is trimmed behind user's current position — only remaining route ahead is visible
+
+#### Implementation
+- [ ] Add Railway server IP to Google Places API key whitelist
+- [x] Venice intent parsing: distinguish name/address/coordinate queries vs category queries
+- [x] Search backend: name search via Google Places, address geocoding, coordinate parsing
+- [x] Search results: show distance from user position
+- [x] Navigation UI overhaul: next-turn card (top), peek at following turn, bottom bar (ETA, duration, distance, End button)
+- [x] Expandable full step list (Apple Maps style, collapsed by default)
+- [x] Live distance countdown (client-side calculation from GPS to next maneuver)
+- [x] Distance unit switching (miles → feet / km → meters when close)
+- [x] Directional arrow for current position (heading-oriented)
+- [x] Destination pin with place name label
+- [x] Smooth position interpolation between GPS fixes (CSS transitions on marker)
+- [x] Map rotation to match user heading during navigation
+- [x] Fix rerouting: haversine-based segment distance + 3-reading debounce
+- [x] Rerouting: require sustained off-route position (debounce GPS drift)
+- [x] Trim route line behind current position
+- [x] Imminent turn emphasis (visual urgency at < 500 ft)
+- [x] "Rerouting..." flash indicator
+- [x] Tests: unit (TDD red/green) — 33 client + 45 server = 78 passing
+- [ ] Integration tests
+- [ ] E2E tests
+
+### Day 10 — March 21
 **Documentation + Polish**
 - [ ] Comprehensive README (architecture, setup, tech stack, privacy model)
 - [ ] API documentation (machine-readable for AI judges)
 - [ ] Architecture diagram
 - [ ] End-to-end flow testing: search → discover → reviews → navigate
-- [ ] Mobile-responsive layout
+- [x] Mobile-responsive layout (hamburger menu, search bar spacing)
 - [ ] Loading states, error handling, edge cases
 - [ ] UI/UX polish — smooth transitions, clean typography
 - [ ] Customize Liberty map style (colors, theming, brand identity)
@@ -150,9 +217,10 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** App is polished. Documentation is thorough enough for AI agents to understand the full system.
 
-### Day 10 — March 22
+### Day 11 — March 22
 **Deploy + Demo + Submit**
-- [ ] Deploy to Railway (Express server + Vite static build, single service)
+- [x] Deploy to Railway (Express server + Vite static build, single service) — live at https://ghostmaps.app
+- [x] Custom domain (ghostmaps.app) with SSL via Railway + Porkbun DNS
 - [ ] Add production server IP to Google Places API key restrictions
 - [ ] Restrict CDP Project domain allowlist to production domain only
 - [ ] Add production domain to CDP Paymaster allowlist

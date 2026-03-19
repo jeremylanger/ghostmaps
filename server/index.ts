@@ -7,9 +7,13 @@ import {
   fetchReviewsForPlace,
   type OnChainReview,
 } from "./eas-reader";
-import { enrichPlace } from "./google-places";
+import { enrichPlace, geocodeAddress, searchByName } from "./google-places";
 import { getPhotoPath, storePhoto } from "./photos";
-import { searchOverture } from "./search";
+import {
+  addDistanceToResults,
+  parseCoordinates,
+  searchOverture,
+} from "./search";
 import { calculateRoute } from "./tomtom";
 import type { Place } from "./types";
 import {
@@ -52,21 +56,22 @@ interface CachedReviews {
 const reviewCache = new Map<string, CachedReviews>();
 const REVIEW_CACHE_TTL = 2 * 60 * 1000; // 2 minutes
 const MAX_PLACE_CACHE = 500;
+const MAX_REVIEW_CACHE = 200;
 
-function trimPlaceCache() {
-  if (placeCache.size <= MAX_PLACE_CACHE) return;
+function trimMapCache<T>(cache: Map<string, T>, max: number) {
+  if (cache.size <= max) return;
   // Delete oldest entries (Map iterates in insertion order)
-  const excess = placeCache.size - MAX_PLACE_CACHE;
+  const excess = cache.size - max;
   let i = 0;
-  for (const key of placeCache.keys()) {
+  for (const key of cache.keys()) {
     if (i++ >= excess) break;
-    placeCache.delete(key);
+    cache.delete(key);
   }
 }
 
 function cachePlaces(places: Place[]) {
   for (const p of places) placeCache.set(p.id, p);
-  trimPlaceCache();
+  trimMapCache(placeCache, MAX_PLACE_CACHE);
 }
 
 // Basic search (category mapping, no AI)
@@ -159,19 +164,73 @@ app.get("/api/ai-search/stream", async (req, res) => {
   };
 
   try {
+    // Check for raw coordinates first (skip Venice)
+    const coords = parseCoordinates(q);
+    if (coords) {
+      const place: Place = {
+        id: `coords-${Date.now()}`,
+        name: `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`,
+        category: "coordinates",
+        address: `${coords.lat}, ${coords.lng}`,
+        phone: "",
+        website: "",
+        brand: "",
+        confidence: 1,
+        longitude: coords.lng,
+        latitude: coords.lat,
+      };
+      send("parsed", { query_type: "address" });
+      send("results", [place]);
+      send("done", {});
+      res.end();
+      return;
+    }
+
     send("status", { message: "Understanding your search..." });
     const parsed = await parseQuery(q);
     send("parsed", parsed);
 
-    send("status", { message: "Finding places..." });
-    const results = await searchOverture(
-      parsed.categories[0],
-      lat,
-      lng,
-      process.env.OVERTURE_API_KEY,
-      parsed.categories,
-      parsed.radius || undefined,
-    );
+    let results: Place[] = [];
+    const userLat = lat ? Number.parseFloat(lat) : undefined;
+    const userLng = lng ? Number.parseFloat(lng) : undefined;
+    const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
+
+    if (parsed.query_type === "name" && parsed.name_query && googleApiKey) {
+      // Name search via Google Places
+      send("status", { message: `Searching for "${parsed.name_query}"...` });
+      results = await searchByName(
+        parsed.name_query,
+        googleApiKey,
+        userLat,
+        userLng,
+      );
+    } else if (
+      parsed.query_type === "address" &&
+      parsed.address_query &&
+      googleApiKey
+    ) {
+      // Address geocoding via Google Places
+      send("status", { message: "Finding address..." });
+      const place = await geocodeAddress(parsed.address_query, googleApiKey);
+      if (place) results = [place];
+    } else {
+      // Category search via Overture (existing flow)
+      send("status", { message: "Finding places..." });
+      results = await searchOverture(
+        parsed.categories[0],
+        lat,
+        lng,
+        process.env.OVERTURE_API_KEY,
+        parsed.categories,
+        parsed.radius || undefined,
+      );
+    }
+
+    // Add distance from user to each result
+    if (userLat != null && userLng != null && results.length > 0) {
+      results = addDistanceToResults(results, userLat, userLng);
+    }
+
     cachePlaces(results);
     send("results", results);
 
@@ -181,12 +240,15 @@ app.get("/api/ai-search/stream", async (req, res) => {
       return;
     }
 
-    send("status", { message: "Picking the best options..." });
-    try {
-      const ranking = await rankResults(q, results, parsed.attributes);
-      send("ranking", ranking);
-    } catch (err) {
-      console.error("Ranking failed (non-fatal):", err);
+    // Only rank category searches (name/address results don't need AI ranking)
+    if (parsed.query_type === "category" && results.length > 1) {
+      send("status", { message: "Picking the best options..." });
+      try {
+        const ranking = await rankResults(q, results, parsed.attributes);
+        send("ranking", ranking);
+      } catch (err) {
+        console.error("Ranking failed (non-fatal):", err);
+      }
     }
 
     send("done", {});
@@ -363,6 +425,7 @@ app.get("/api/reviews/:placeId", async (req, res) => {
 
     // Cache the result
     reviewCache.set(placeId, { data, timestamp: Date.now() });
+    trimMapCache(reviewCache, MAX_REVIEW_CACHE);
 
     res.json(data);
   } catch (err) {

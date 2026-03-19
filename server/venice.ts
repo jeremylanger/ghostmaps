@@ -104,7 +104,10 @@ async function* veniceChatStream(
 }
 
 interface ParsedQuery {
+  query_type: "category" | "name" | "address";
   categories: string[];
+  name_query: string | null;
+  address_query: string | null;
   time_filter: string | null;
   attributes: string[];
   location_hint: string | null;
@@ -114,16 +117,22 @@ interface ParsedQuery {
 const PARSE_SYSTEM_PROMPT = `You are a search query parser for a maps app. Extract structured search intent from natural language queries.
 
 Return ONLY valid JSON (no markdown, no code blocks) with these fields:
-- categories: array of Overture Maps place categories (use snake_case like: restaurant, coffee_shop, pizza_restaurant, mexican_restaurant, bar, pub, brewery, gym, park, museum, hotel, gas_station, pharmacy, grocery_store, bakery, ice_cream_shop, bookstore, hair_salon, dentist, hospital, bank, parking, library, nightclub, movie_theater, spa, clothing_store, electronics_store, supermarket, shopping_mall, steakhouse, seafood_restaurant, sushi_restaurant, indian_restaurant, thai_restaurant, chinese_restaurant, italian_restaurant, japanese_restaurant, korean_restaurant, vietnamese_restaurant, burger_restaurant, breakfast_restaurant, barbecue_restaurant, ramen_restaurant, cafe, tea_house, juice_bar, dessert_shop)
+- query_type: "category" (searching for a type of place), "name" (searching for a specific place by name), or "address" (searching for a street address or coordinates)
+- categories: array of Overture Maps place categories (use snake_case like: restaurant, coffee_shop, pizza_restaurant, mexican_restaurant, bar, pub, brewery, gym, park, museum, hotel, gas_station, pharmacy, grocery_store, bakery, ice_cream_shop, bookstore, hair_salon, dentist, hospital, bank, parking, library, nightclub, movie_theater, spa, clothing_store, electronics_store, supermarket, shopping_mall, steakhouse, seafood_restaurant, sushi_restaurant, indian_restaurant, thai_restaurant, chinese_restaurant, italian_restaurant, japanese_restaurant, korean_restaurant, vietnamese_restaurant, burger_restaurant, breakfast_restaurant, barbecue_restaurant, ramen_restaurant, cafe, tea_house, juice_bar, dessert_shop). Only relevant for query_type "category".
+- name_query: the specific place name being searched for (only when query_type is "name"), or null
+- address_query: the address or coordinates being searched for (only when query_type is "address"), or null
 - time_filter: "open_now", "late_night", "morning", "lunch", or null
 - attributes: relevant attributes like ["outdoor_seating", "wifi", "delivery", "takeout", "pet_friendly", "live_music", "happy_hour", "vegan_options"]
 - location_hint: a neighborhood or area name if mentioned, or null
-- radius: search radius in meters if implied (e.g. "nearby"/"near me" = 5000, "walking distance" = 1500), or null. Default to null (server uses 5000m). Only set a small radius if the user explicitly asks for something very close.
+- radius: search radius in meters if implied (e.g. "nearby"/"near me" = 5000, "walking distance" = 1500), or null
 
 Examples:
-"best coffee near me" → {"categories":["coffee_shop","cafe"],"time_filter":null,"attributes":[],"location_hint":null,"radius":null}
-"late night tacos with outdoor seating" → {"categories":["mexican_restaurant"],"time_filter":"late_night","attributes":["outdoor_seating"],"location_hint":null,"radius":null}
-"quiet bar in silverlake" → {"categories":["bar","pub"],"time_filter":null,"attributes":[],"location_hint":"silverlake","radius":null}`;
+"best coffee near me" → {"query_type":"category","categories":["coffee_shop","cafe"],"name_query":null,"address_query":null,"time_filter":null,"attributes":[],"location_hint":null,"radius":null}
+"late night tacos with outdoor seating" → {"query_type":"category","categories":["mexican_restaurant"],"name_query":null,"address_query":null,"time_filter":"late_night","attributes":["outdoor_seating"],"location_hint":null,"radius":null}
+"Verve Coffee Roasters" → {"query_type":"name","categories":[],"name_query":"Verve Coffee Roasters","address_query":null,"time_filter":null,"attributes":[],"location_hint":null,"radius":null}
+"Target on Sepulveda" → {"query_type":"name","categories":[],"name_query":"Target on Sepulveda","address_query":null,"time_filter":null,"attributes":[],"location_hint":"sepulveda","radius":null}
+"123 Main St, Los Angeles" → {"query_type":"address","categories":[],"name_query":null,"address_query":"123 Main St, Los Angeles","time_filter":null,"attributes":[],"location_hint":null,"radius":null}
+"34.0522, -118.2437" → {"query_type":"address","categories":[],"name_query":null,"address_query":"34.0522, -118.2437","time_filter":null,"attributes":[],"location_hint":null,"radius":null}`;
 
 export async function parseQuery(query: string): Promise<ParsedQuery> {
   try {
@@ -144,7 +153,10 @@ export async function parseQuery(query: string): Promise<ParsedQuery> {
     const parsed = JSON.parse(jsonMatch[1]!.trim());
 
     return {
+      query_type: parsed.query_type || "category",
       categories: parsed.categories || ["restaurant"],
+      name_query: parsed.name_query || null,
+      address_query: parsed.address_query || null,
       time_filter: parsed.time_filter || null,
       attributes: parsed.attributes || [],
       location_hint: parsed.location_hint || null,
@@ -153,7 +165,10 @@ export async function parseQuery(query: string): Promise<ParsedQuery> {
   } catch (err) {
     console.error("Venice parse error:", err);
     return {
+      query_type: "category" as const,
       categories: [query.toLowerCase().replace(/\s+/g, "_")],
+      name_query: null,
+      address_query: null,
       time_filter: null,
       attributes: [],
       location_hint: null,

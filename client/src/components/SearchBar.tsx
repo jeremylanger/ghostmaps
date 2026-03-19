@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { useAISearch } from "../hooks/useAISearch";
+import { formatDistanceLive } from "../lib/geo-utils";
 import { useAppStore } from "../store";
 import type { Place } from "../types";
 
@@ -157,9 +158,16 @@ export default function SearchBar() {
                   {isTopPick && ranking?.topPickReason && (
                     <div className="result-reason">{ranking.topPickReason}</div>
                   )}
-                  {place.address && (
-                    <div className="result-address">{place.address}</div>
-                  )}
+                  <div className="result-meta">
+                    {place.address && (
+                      <span className="result-address">{place.address}</span>
+                    )}
+                    {place.distanceMeters != null && (
+                      <span className="result-distance">
+                        {formatDistanceLive(place.distanceMeters)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}

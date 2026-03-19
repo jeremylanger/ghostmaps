@@ -150,6 +150,119 @@ export async function enrichPlace(
   }
 }
 
+const SEARCH_FIELD_MASK = [
+  "places.id",
+  "places.displayName",
+  "places.formattedAddress",
+  "places.location",
+  "places.primaryType",
+  "places.types",
+  "places.rating",
+  "places.userRatingCount",
+].join(",");
+
+/** Search Google Places by name, returning results as Place objects. */
+export async function searchByName(
+  query: string,
+  apiKey: string,
+  userLat?: number,
+  userLng?: number,
+): Promise<Place[]> {
+  try {
+    const body: Record<string, unknown> = {
+      textQuery: query,
+      maxResultCount: 10,
+    };
+    if (userLat != null && userLng != null) {
+      body.locationBias = {
+        circle: {
+          center: { latitude: userLat, longitude: userLng },
+          radius: 50000,
+        },
+      };
+    }
+
+    const response = await fetch(`${PLACES_BASE}:searchText`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": SEARCH_FIELD_MASK,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    const items = data.places || [];
+
+    return items.map(
+      (item: {
+        id: string;
+        displayName?: { text: string };
+        formattedAddress?: string;
+        location?: { latitude: number; longitude: number };
+        primaryType?: string;
+        rating?: number;
+      }) => ({
+        id: `gp-${item.id}`,
+        name: item.displayName?.text || "Unknown",
+        category: item.primaryType?.replace(/_/g, " ") || "",
+        address: item.formattedAddress || "",
+        phone: "",
+        website: "",
+        brand: "",
+        confidence: 0.9,
+        longitude: item.location?.longitude || 0,
+        latitude: item.location?.latitude || 0,
+      }),
+    );
+  } catch (err) {
+    console.error("Google Places name search error:", err);
+    return [];
+  }
+}
+
+/** Geocode an address using Google Places Text Search. */
+export async function geocodeAddress(
+  address: string,
+  apiKey: string,
+): Promise<Place | null> {
+  try {
+    const response = await fetch(`${PLACES_BASE}:searchText`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask":
+          "places.displayName,places.formattedAddress,places.location",
+      },
+      body: JSON.stringify({ textQuery: address, maxResultCount: 1 }),
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    const item = data.places?.[0];
+    if (!item) return null;
+
+    return {
+      id: `addr-${Date.now()}`,
+      name: item.displayName?.text || address,
+      category: "address",
+      address: item.formattedAddress || address,
+      phone: "",
+      website: "",
+      brand: "",
+      confidence: 1,
+      longitude: item.location?.longitude || 0,
+      latitude: item.location?.latitude || 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function emptyEnrichment(): PlaceEnrichment {
   return {
     openingHours: null,

@@ -31,6 +31,8 @@ interface AppState {
   currentSpeedLimit: number | null;
   currentLanes: Lane[] | null;
   rerouting: boolean;
+  userHeading: number | null;
+  closestSegmentIndex: number;
 
   // UI
   showPrivacy: boolean;
@@ -54,6 +56,8 @@ interface AppState {
   setCurrentSpeedLimit: (limit: number | null) => void;
   setCurrentLanes: (lanes: Lane[] | null) => void;
   setRerouting: (rerouting: boolean) => void;
+  setUserHeading: (heading: number | null) => void;
+  setClosestSegmentIndex: (index: number) => void;
   setShowPrivacy: (show: boolean) => void;
   clearRoute: () => void;
 }
@@ -76,6 +80,8 @@ export const useAppStore = create<AppState>((set) => ({
   currentSpeedLimit: null,
   currentLanes: null,
   rerouting: false,
+  userHeading: null,
+  closestSegmentIndex: 0,
   showPrivacy: false,
 
   setSearchResults: (results) => set({ searchResults: results }),
@@ -118,6 +124,8 @@ export const useAppStore = create<AppState>((set) => ({
   setCurrentSpeedLimit: (currentSpeedLimit) => set({ currentSpeedLimit }),
   setCurrentLanes: (currentLanes) => set({ currentLanes }),
   setRerouting: (rerouting) => set({ rerouting }),
+  setUserHeading: (userHeading) => set({ userHeading }),
+  setClosestSegmentIndex: (closestSegmentIndex) => set({ closestSegmentIndex }),
   setShowPrivacy: (showPrivacy) => set({ showPrivacy }),
 
   clearRoute: () =>
@@ -130,5 +138,12 @@ export const useAppStore = create<AppState>((set) => ({
       currentSpeedLimit: null,
       currentLanes: null,
       rerouting: false,
+      userHeading: null,
+      closestSegmentIndex: 0,
     }),
 }));
+
+// Expose store for E2E testing
+if (typeof window !== "undefined") {
+  (window as any).__ghostmaps_store = useAppStore;
+}

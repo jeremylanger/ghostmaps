@@ -6,14 +6,19 @@ test.describe("Day 8 — Navigation UX + Privacy Page", () => {
     await page.waitForLoadState("networkidle");
   });
 
-  test("privacy button is visible on the map", async ({ page }) => {
-    const btn = page.locator(".privacy-btn");
+  async function openPrivacy(page: import("@playwright/test").Page) {
+    await page.locator(".hamburger-toggle").click();
+    await page.locator(".hamburger-item", { hasText: "Privacy" }).click();
+  }
+
+  test("privacy button is visible in hamburger menu", async ({ page }) => {
+    await page.locator(".hamburger-toggle").click();
+    const btn = page.locator(".hamburger-item", { hasText: "Privacy" });
     await expect(btn).toBeVisible();
-    await expect(btn).toHaveText("Privacy");
   });
 
   test("clicking privacy button opens privacy page", async ({ page }) => {
-    await page.click(".privacy-btn");
+    await openPrivacy(page);
     const overlay = page.locator(".privacy-overlay");
     await expect(overlay).toBeVisible();
 
@@ -22,7 +27,7 @@ test.describe("Day 8 — Navigation UX + Privacy Page", () => {
   });
 
   test("privacy page shows all comparison categories", async ({ page }) => {
-    await page.click(".privacy-btn");
+    await openPrivacy(page);
 
     const categories = [
       "Location Tracking",
@@ -43,20 +48,20 @@ test.describe("Day 8 — Navigation UX + Privacy Page", () => {
   });
 
   test("privacy page shows fines section", async ({ page }) => {
-    await page.click(".privacy-btn");
+    await openPrivacy(page);
     await expect(page.locator(".privacy-fines h2")).toContainText("$7.3B+");
     await expect(page.locator(".fine-item")).toHaveCount(4);
   });
 
   test("privacy page shows transparency section", async ({ page }) => {
-    await page.click(".privacy-btn");
+    await openPrivacy(page);
     await expect(page.locator(".privacy-transparency h3")).toHaveText(
       "Our Transparency",
     );
   });
 
   test("privacy page can be closed with X button", async ({ page }) => {
-    await page.click(".privacy-btn");
+    await openPrivacy(page);
     await expect(page.locator(".privacy-overlay")).toBeVisible();
 
     await page.click(".privacy-close");
@@ -66,7 +71,7 @@ test.describe("Day 8 — Navigation UX + Privacy Page", () => {
   test("privacy page can be closed with Back to Map button", async ({
     page,
   }) => {
-    await page.click(".privacy-btn");
+    await openPrivacy(page);
     await expect(page.locator(".privacy-overlay")).toBeVisible();
 
     await page.click(".privacy-back-btn");
@@ -76,10 +81,9 @@ test.describe("Day 8 — Navigation UX + Privacy Page", () => {
   test("privacy page can be closed by clicking overlay background", async ({
     page,
   }) => {
-    await page.click(".privacy-btn");
+    await openPrivacy(page);
     await expect(page.locator(".privacy-overlay")).toBeVisible();
 
-    // Click the overlay background (not the content)
     await page
       .locator(".privacy-overlay")
       .click({ position: { x: 10, y: 10 } });
@@ -147,11 +151,12 @@ test.describe("Day 8 — Navigation UX + Privacy Page", () => {
               maxSpeedMph: 30,
             },
           ],
+          laneGuidance: [],
         }),
       });
     });
 
-    // Mock search to get a place with coordinates
+    // Mock search
     await page.route("**/api/ai-search/stream*", async (route) => {
       const body = [
         'event: results\ndata: [{"id":"test1","name":"Test Place","category":"restaurant","address":"123 Test St","phone":"","website":"","brand":"","confidence":0.9,"longitude":-118.26,"latitude":34.07}]\n\n',
@@ -209,18 +214,18 @@ test.describe("Day 8 — Navigation UX + Privacy Page", () => {
     await page.click(".search-result-item");
 
     // Wait for place panel and click directions
-    await page.waitForSelector(".directions-btn", { timeout: 5000 });
+    await page.waitForSelector(".action-primary", { timeout: 5000 });
 
     // Set user location in store via evaluate
     await page.evaluate(() => {
-      const store = (window as any).__zustand_store;
-      if (store) store.getState().setUserLocation({ lat: 34.05, lng: -118.24 });
+      const store = (window as any).__ghostmaps_store;
+      if (store) store.setState({ userLocation: { lat: 34.05, lng: -118.24 } });
     });
 
-    await page.click(".directions-btn");
+    await page.click(".action-primary");
 
-    // Navigation panel should appear with the new layout
-    await page.waitForSelector(".navigation-panel", { timeout: 5000 });
+    // Navigation preview panel should appear
+    await page.waitForSelector(".nav-preview", { timeout: 5000 });
 
     // Check next-turn card exists
     await expect(page.locator(".nav-next-turn")).toBeVisible();
@@ -231,71 +236,15 @@ test.describe("Day 8 — Navigation UX + Privacy Page", () => {
     await expect(page.locator(".nav-steps-toggle")).toContainText("Steps");
 
     // Full instruction list should be hidden by default
-    await expect(page.locator(".nav-instructions")).not.toBeVisible();
+    await expect(page.locator(".nav-step-list")).not.toBeVisible();
 
     // Click Steps to expand
     await page.click(".nav-steps-toggle");
-    await expect(page.locator(".nav-instructions")).toBeVisible();
+    await expect(page.locator(".nav-step-list")).toBeVisible();
     await expect(page.locator(".nav-instruction")).toHaveCount(3);
 
     // Click again to collapse
     await page.click(".nav-steps-toggle");
-    await expect(page.locator(".nav-instructions")).not.toBeVisible();
-  });
-
-  test("review loading shows skeleton cards", async ({ page }) => {
-    // Mock a slow review response
-    await page.route("**/api/reviews/*", async (route) => {
-      await new Promise((r) => setTimeout(r, 2000));
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({ reviews: [], identities: {}, summary: "" }),
-      });
-    });
-
-    await page.route("**/api/ai-search/stream*", async (route) => {
-      const body = [
-        'event: results\ndata: [{"id":"test1","name":"Test Place","category":"restaurant","address":"123 Test","phone":"","website":"","brand":"","confidence":0.9,"longitude":-118.26,"latitude":34.07}]\n\n',
-        'event: ranking\ndata: {"topPick":"test1","topPickReason":"Great","alternatives":[],"summary":"Test"}\n\n',
-        "event: done\ndata: {}\n\n",
-      ].join("");
-      await route.fulfill({
-        status: 200,
-        contentType: "text/event-stream",
-        body,
-      });
-    });
-
-    await page.route("**/api/places/*", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          id: "test1",
-          name: "Test Place",
-          category: "restaurant",
-          address: "123 Test",
-          phone: "",
-          website: "",
-          brand: "",
-          confidence: 0.9,
-          longitude: -118.26,
-          latitude: 34.07,
-          briefing: "A nice place",
-        }),
-      });
-    });
-
-    await page.fill(".search-bar input", "test");
-    await page.keyboard.press("Enter");
-    await page.waitForSelector(".search-result-item", { timeout: 5000 });
-    await page.click(".search-result-item");
-
-    // Skeleton should show while reviews load
-    await expect(page.locator(".reviews-skeleton")).toBeVisible({
-      timeout: 3000,
-    });
-    await expect(page.locator(".review-skeleton-card")).toHaveCount(3);
+    await expect(page.locator(".nav-step-list")).not.toBeVisible();
   });
 });

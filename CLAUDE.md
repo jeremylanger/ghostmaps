@@ -63,6 +63,23 @@ node screenshot.js
 
 **MapTiler:** Map tiles via MapTiler Streets v2. Set `VITE_MAPTILER_KEY` in `.env`. Free tier: 100K tiles/month.
 
+## Deployment
+
+Live at **https://ghostmaps.app** via Railway.
+
+```bash
+# Deploy (from repo root, must be logged into admin@ghostmaps.app Railway account)
+railway up
+
+# Check logs
+railway logs --lines 20
+
+# Set env vars
+railway vars set KEY=value
+```
+
+Railway project: `ghostmaps` (linked via `railway link`). Single service — Express serves API + Vite static build. DNS via Porkbun (ALIAS → Railway edge).
+
 ## Testing Requirements
 
 **Tests are not optional. Write them automatically with every day of work — do not wait to be asked.**
