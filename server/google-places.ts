@@ -1,6 +1,11 @@
 import type { Place } from "./types";
 
 const PLACES_BASE = "https://places.googleapis.com/v1/places";
+const DEFAULT_BIAS_RADIUS = 50000; // 50km
+
+function locationBias(lat: number, lng: number, radius = DEFAULT_BIAS_RADIUS) {
+  return { circle: { center: { latitude: lat, longitude: lng }, radius } };
+}
 
 export interface PlaceEnrichment {
   openingHours: string[] | null;
@@ -78,12 +83,7 @@ export async function enrichPlace(
       },
       body: JSON.stringify({
         textQuery: `${place.name} ${place.address}`,
-        locationBias: {
-          circle: {
-            center: { latitude: place.latitude, longitude: place.longitude },
-            radius: 200,
-          },
-        },
+        locationBias: locationBias(place.latitude, place.longitude, 200),
         maxResultCount: 1,
       }),
     });
@@ -174,12 +174,7 @@ export async function searchByName(
       maxResultCount: 10,
     };
     if (userLat != null && userLng != null) {
-      body.locationBias = {
-        circle: {
-          center: { latitude: userLat, longitude: userLng },
-          radius: 50000,
-        },
-      };
+      body.locationBias = locationBias(userLat, userLng);
     }
 
     const response = await fetch(`${PLACES_BASE}:searchText`, {
@@ -234,8 +229,18 @@ export async function searchByName(
 export async function geocodeAddress(
   address: string,
   apiKey: string,
+  userLat?: number,
+  userLng?: number,
 ): Promise<Place | null> {
   try {
+    const body: Record<string, unknown> = {
+      textQuery: address,
+      maxResultCount: 1,
+    };
+    if (userLat != null && userLng != null) {
+      body.locationBias = locationBias(userLat, userLng);
+    }
+
     const response = await fetch(`${PLACES_BASE}:searchText`, {
       method: "POST",
       headers: {
@@ -244,7 +249,7 @@ export async function geocodeAddress(
         "X-Goog-FieldMask":
           "places.displayName,places.formattedAddress,places.location",
       },
-      body: JSON.stringify({ textQuery: address, maxResultCount: 1 }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {

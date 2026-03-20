@@ -251,6 +251,50 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Tests: 55 client tests passing (22 new: consolidation + step advancement + direction check), 78 server tests passing
 - [x] Code review: fixed prevPosRef bug, stale refs on re-nav, straight-line distance → route segments, sameRoad permissiveness, easeTo→jumpTo, ETA dedup
 
+### Day 9.75 — March 19 (Drive Test Feedback Round 3)
+**Navigation & Search Fixes from Live Driving**
+
+#### Spec
+
+**Navigation Step Progression (Critical)**
+- Happy: Current instruction always corresponds to the user's actual next maneuver
+- Happy: Instruction advances to the next one within 1-2 GPS updates after passing a maneuver point
+- Happy: After a reroute, the correct step is identified immediately — not stuck on step 1
+- Happy: Final "Arrive" instruction is shown when user reaches destination
+- Edge: Inaccurate first GPS fix (cold start) doesn't cause step to jump ahead
+- Edge: User on a parallel road close to the route doesn't cause premature advancement
+- Edge: Very short steps (e.g., "turn left then immediately turn right") don't get skipped
+- Edge: Momentary GPS jump backwards doesn't regress to a previous instruction
+- Failure: GPS accuracy >50m doesn't trigger advancement decisions on unreliable data
+- Failure: Malformed instruction points don't crash navigation — falls back to first/last valid instruction
+- UX: Instruction banner updates smoothly, no flickering between steps
+- UX: Distance to next maneuver counts down continuously, never grows unless rerouted
+
+**Trailing Path Not Clearing**
+- Happy: Route line behind user arrow is never visible — arrow "eats" the path as it moves
+- Happy: When user is stopped, trail behind them is still fully cleared up to their position
+- Edge: At navigation start, no trail visible behind starting position
+- Edge: Long straight roads with sparse coordinates still clear smoothly, not in chunk jumps
+- Failure: If closest segment snaps to a far-ahead segment, trail doesn't jump and reveal a gap
+- UX: Smooth transition from trail-visible to trail-cleared
+- UX: No visual gap between user arrow and start of remaining route line
+
+**Address Search Location Bias**
+- Happy: Partial address like "123" shows suggestions near user's current location
+- Happy: "123 maple" returns results biased toward user's location, not globally
+- Edge: Just numbers like "123" doesn't return zero results — shows nearby matches or waits for more input
+- Edge: Addresses beyond 50km still return results — bias is preference, not cutoff
+- Failure: Zero Google Places results for partial address shows meaningful empty state
+- Failure: Venice misclassifying "123" as category still attempts something reasonable
+- UX: "Understanding your search..." status visible while Venice classifies short queries
+- UX: No unnecessary delay — ranking skipped for address results
+
+#### Implementation
+- [x] Fix step progression: `findBestInstruction()` scans all instructions forward, uses proximity (80m) + dot product, gates on GPS accuracy (>50m ignored), can skip multiple steps
+- [x] Fix trailing path: `trimRouteAhead()` now projects user position onto closest segment (not slice at boundary), so trail clears smoothly at exact position
+- [x] Fix address search: `geocodeAddress()` now accepts userLat/userLng and sends 50km locationBias to Google Places; Venice prompt updated with partial address examples ("123", "123 maple")
+- [x] Tests: 59 client tests passing (10 new: skip-ahead, GPS accuracy gating, far-from-route, snap-to-nearest, short steps)
+
 ### Day 10 — March 21
 **Documentation + Polish**
 - [ ] Comprehensive README (architecture, setup, tech stack, privacy model)

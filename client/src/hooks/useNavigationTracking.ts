@@ -9,8 +9,8 @@ import {
   setArrowHeading,
 } from "../lib/map-markers";
 import {
+  findBestInstruction,
   isMovingAwayFromRoute,
-  shouldAdvanceInstruction,
 } from "../lib/nav-tracking-utils";
 import { useAppStore } from "../store";
 
@@ -256,11 +256,12 @@ export function useNavigationTracking(
         }
 
         // Advance instruction if user has passed the current maneuver point
-        const newIdx = shouldAdvanceInstruction(
+        const newIdx = findBestInstruction(
           store.currentInstructionIndex,
           route.instructions,
           loc.lat,
           loc.lng,
+          pos.coords.accuracy,
         );
         if (newIdx !== store.currentInstructionIndex) {
           store.setCurrentInstructionIndex(newIdx);

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { RouteInstruction } from "../../types";
 import {
+  findBestInstruction,
   isMovingAwayFromRoute,
-  shouldAdvanceInstruction,
 } from "../nav-tracking-utils";
 
 function makeInstruction(
@@ -23,7 +23,8 @@ function makeInstruction(
   };
 }
 
-describe("shouldAdvanceInstruction", () => {
+describe("findBestInstruction", () => {
+  // Instructions ~1.1km apart going north
   const instructions: RouteInstruction[] = [
     makeInstruction(-118.0, 34.0), // idx 0: start
     makeInstruction(-118.0, 34.01), // idx 1: ~1.1km north
@@ -32,43 +33,69 @@ describe("shouldAdvanceInstruction", () => {
 
   it("does not advance when user is before the current instruction point", () => {
     // User is south of instruction 0 — hasn't reached it yet
-    const result = shouldAdvanceInstruction(0, instructions, 33.999, -118.0);
+    const result = findBestInstruction(0, instructions, 33.999, -118.0, 10);
     expect(result).toBe(0);
   });
 
   it("advances when user has passed the current instruction point", () => {
-    // User is between instruction 0 and 1 (north of 0)
-    const result = shouldAdvanceInstruction(0, instructions, 34.005, -118.0);
+    // User is ~50m north of instruction 0 (within 80m radius, past it)
+    const result = findBestInstruction(0, instructions, 34.0004, -118.0, 10);
     expect(result).toBe(1);
   });
 
-  it("does not skip instructions (only advances by 1)", () => {
-    // User is past instruction 1, near instruction 2
-    // But starting from index 0, should only advance to 1
-    const result = shouldAdvanceInstruction(0, instructions, 34.015, -118.0);
-    expect(result).toBe(1);
-  });
-
-  it("does not advance past the last instruction", () => {
-    const result = shouldAdvanceInstruction(2, instructions, 34.03, -118.0);
+  it("skips to correct instruction when user is past multiple points", () => {
+    // User is ~50m north of instruction 1 — should jump to 2, not just 1
+    const result = findBestInstruction(0, instructions, 34.0104, -118.0, 10);
     expect(result).toBe(2);
   });
 
-  it("does not advance when user is beside the route but not past the point", () => {
-    // User is east of instruction 0 but not north of it (perpendicular)
-    // Route goes north, so east displacement has zero dot product with route direction
-    // Slightly south to ensure negative dot product
-    const result = shouldAdvanceInstruction(0, instructions, 33.9999, -117.999);
+  it("does not advance past the last instruction", () => {
+    const result = findBestInstruction(2, instructions, 34.03, -118.0, 10);
+    expect(result).toBe(2);
+  });
+
+  it("ignores GPS fix with poor accuracy (>50m)", () => {
+    const result = findBestInstruction(0, instructions, 34.0004, -118.0, 100);
     expect(result).toBe(0);
+  });
+
+  it("does not advance when user is far from route", () => {
+    // User is ~1km east — way too far from any instruction point
+    const result = findBestInstruction(0, instructions, 34.005, -117.99, 10);
+    expect(result).toBe(0);
+  });
+
+  it("never goes backwards", () => {
+    // User is between instruction 0 and 1, but currentIndex is already 1
+    const result = findBestInstruction(1, instructions, 34.005, -118.0, 10);
+    expect(result).toBe(1);
   });
 
   it("advances correctly on a west-heading route", () => {
     const westRoute: RouteInstruction[] = [
       makeInstruction(-118.0, 34.0),
-      makeInstruction(-118.01, 34.0), // west
+      makeInstruction(-118.001, 34.0), // ~90m west
     ];
-    // User is west of instruction 0 (past it in route direction)
-    const result = shouldAdvanceInstruction(0, westRoute, 34.0, -118.005);
+    // User is ~50m west of instruction 0 (within radius, past it)
+    const result = findBestInstruction(0, westRoute, 34.0, -118.0005, 10);
+    expect(result).toBe(1);
+  });
+
+  it("snaps to next instruction when very close to it", () => {
+    // User is ~30m from instruction 1 (within ARRIVAL_RADIUS/2 = 40m)
+    const result = findBestInstruction(0, instructions, 34.00975, -118.0, 10);
+    expect(result).toBe(1);
+  });
+
+  it("handles short consecutive steps without skipping", () => {
+    // Two instructions very close together (~50m apart)
+    const shortSteps: RouteInstruction[] = [
+      makeInstruction(-118.0, 34.0),
+      makeInstruction(-118.0, 34.00045), // ~50m north
+      makeInstruction(-118.001, 34.00045), // ~90m west
+    ];
+    // User is just past instruction 0 but before instruction 1
+    const result = findBestInstruction(0, shortSteps, 34.0002, -118.0, 10);
     expect(result).toBe(1);
   });
 });

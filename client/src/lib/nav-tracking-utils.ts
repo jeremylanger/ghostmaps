@@ -1,35 +1,63 @@
 import type { RouteInstruction } from "../types";
-import { bearing } from "./geo-utils";
+import { bearing, haversine } from "./geo-utils";
+
+/** Maximum GPS accuracy (meters) to trust for instruction advancement. */
+const MAX_ACCURACY_M = 50;
+
+/** Maximum distance (meters) from an instruction point to consider "arrived." */
+const ARRIVAL_RADIUS_M = 80;
+
+/** Stop scanning instructions when user is farther than this from both points. */
+const SCAN_ABORT_RADIUS_M = ARRIVAL_RADIUS_M * 3; // 240m
+
+/** Snap to next instruction when user is within this distance of it. */
+const SNAP_RADIUS_M = ARRIVAL_RADIUS_M / 2; // 40m
 
 /**
- * Check if user should advance to the next instruction.
- * Uses dot product: positive means user has passed the current instruction
- * point in the direction of the next instruction.
- * Returns the new instruction index (unchanged if not advancing).
+ * Find the best matching instruction index by scanning forward from currentIndex.
+ * Uses proximity + dot-product direction check. Never goes backwards.
+ * Ignores GPS fixes with poor accuracy (>50m).
  */
-export function shouldAdvanceInstruction(
+export function findBestInstruction(
   currentIndex: number,
   instructions: RouteInstruction[],
   userLat: number,
   userLng: number,
+  accuracy: number,
 ): number {
+  if (accuracy > MAX_ACCURACY_M) return currentIndex;
   if (currentIndex >= instructions.length - 1) return currentIndex;
 
-  const cur = instructions[currentIndex].point;
-  const nxt = instructions[currentIndex + 1].point;
+  let bestIndex = currentIndex;
 
-  // Vector from current instruction point to next instruction point
-  const routeDx = nxt[0] - cur[0];
-  const routeDy = nxt[1] - cur[1];
+  for (let i = currentIndex; i < instructions.length - 1; i++) {
+    const cur = instructions[i].point; // [lng, lat]
+    const nxt = instructions[i + 1].point;
 
-  // Vector from current instruction point to user position
-  const userDx = userLng - cur[0];
-  const userDy = userLat - cur[1];
+    const distToPoint = haversine(userLat, userLng, cur[1], cur[0]);
+    const distToNext = haversine(userLat, userLng, nxt[1], nxt[0]);
 
-  // Dot product: positive means user is "past" the current point
-  const dot = userDx * routeDx + userDy * routeDy;
+    // If user is far from both this point and the next, stop scanning
+    if (distToPoint > SCAN_ABORT_RADIUS_M && distToNext > SCAN_ABORT_RADIUS_M)
+      break;
 
-  return dot > 0 ? currentIndex + 1 : currentIndex;
+    // Dot product: positive means user has passed this point in route direction
+    const routeDx = nxt[0] - cur[0];
+    const routeDy = nxt[1] - cur[1];
+    const userDx = userLng - cur[0];
+    const userDy = userLat - cur[1];
+    const dot = userDx * routeDx + userDy * routeDy;
+
+    // Advance if: within radius AND past the point, OR very close to next point
+    if (
+      (distToPoint <= ARRIVAL_RADIUS_M && dot > 0) ||
+      distToNext <= SNAP_RADIUS_M
+    ) {
+      bestIndex = i + 1;
+    }
+  }
+
+  return bestIndex;
 }
 
 /**

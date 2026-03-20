@@ -132,7 +132,11 @@ Examples:
 "Verve Coffee Roasters" → {"query_type":"name","categories":[],"name_query":"Verve Coffee Roasters","address_query":null,"time_filter":null,"attributes":[],"location_hint":null,"radius":null}
 "Target on Sepulveda" → {"query_type":"name","categories":[],"name_query":"Target on Sepulveda","address_query":null,"time_filter":null,"attributes":[],"location_hint":"sepulveda","radius":null}
 "123 Main St, Los Angeles" → {"query_type":"address","categories":[],"name_query":null,"address_query":"123 Main St, Los Angeles","time_filter":null,"attributes":[],"location_hint":null,"radius":null}
-"34.0522, -118.2437" → {"query_type":"address","categories":[],"name_query":null,"address_query":"34.0522, -118.2437","time_filter":null,"attributes":[],"location_hint":null,"radius":null}`;
+"34.0522, -118.2437" → {"query_type":"address","categories":[],"name_query":null,"address_query":"34.0522, -118.2437","time_filter":null,"attributes":[],"location_hint":null,"radius":null}
+"123" → {"query_type":"address","categories":[],"name_query":null,"address_query":"123","time_filter":null,"attributes":[],"location_hint":null,"radius":null}
+"123 maple" → {"query_type":"address","categories":[],"name_query":null,"address_query":"123 maple","time_filter":null,"attributes":[],"location_hint":null,"radius":null}
+
+IMPORTANT: If the query starts with a number and looks like it could be a street address (even partial, like "123" or "123 maple"), classify it as "address" — not "category" or "name".`;
 
 export async function parseQuery(query: string): Promise<ParsedQuery> {
   try {

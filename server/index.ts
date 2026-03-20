@@ -211,7 +211,12 @@ app.get("/api/ai-search/stream", async (req, res) => {
     ) {
       // Address geocoding via Google Places
       send("status", { message: "Finding address..." });
-      const place = await geocodeAddress(parsed.address_query, googleApiKey);
+      const place = await geocodeAddress(
+        parsed.address_query,
+        googleApiKey,
+        userLat,
+        userLng,
+      );
       if (place) results = [place];
     } else {
       // Category search via Overture (existing flow)
