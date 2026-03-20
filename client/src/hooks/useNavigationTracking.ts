@@ -1,5 +1,6 @@
 import maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
+import { consolidateInstructions } from "../lib/consolidate-instructions";
 import { bearing, closestSegmentOnRoute } from "../lib/geo-utils";
 import {
   createDestinationMarker,
@@ -7,10 +8,16 @@ import {
   createUserDotElement,
   setArrowHeading,
 } from "../lib/map-markers";
+import {
+  isMovingAwayFromRoute,
+  shouldAdvanceInstruction,
+} from "../lib/nav-tracking-utils";
 import { useAppStore } from "../store";
 
-const OFF_ROUTE_THRESHOLD_M = 50;
+const OFF_ROUTE_THRESHOLD_M = 30;
 const OFF_ROUTE_REQUIRED_COUNT = 3;
+const CAMERA_OFFSET_DEG = 0.001; // ~111m forward offset to place user in lower third
+const INTERP_DURATION_MS = 1000; // interpolation between GPS fixes
 
 export function useNavigationTracking(
   mapRef: React.RefObject<maplibregl.Map | null>,
@@ -27,6 +34,13 @@ export function useNavigationTracking(
   const arrowElRef = useRef<HTMLDivElement | null>(null);
   const dotElRef = useRef<HTMLDivElement | null>(null);
 
+  // Position interpolation refs
+  const interpFromRef = useRef<{ lat: number; lng: number } | null>(null);
+  const interpToRef = useRef<{ lat: number; lng: number } | null>(null);
+  const interpStartRef = useRef(0);
+  const interpRafRef = useRef<number | null>(null);
+  const lastHeadingRef = useRef<number | null>(null);
+
   // Swap marker to arrow when navigation starts, back to dot when it ends
   useEffect(() => {
     if (!mapRef.current || !userMarkerRef.current) return;
@@ -34,6 +48,12 @@ export function useNavigationTracking(
     const currentLngLat = userMarkerRef.current.getLngLat();
 
     if (navigating) {
+      // Reset stale refs from previous navigation session
+      interpFromRef.current = null;
+      interpToRef.current = null;
+      prevPosRef.current = null;
+      lastHeadingRef.current = null;
+
       // Swap to arrow
       userMarkerRef.current.remove();
       if (!arrowElRef.current) arrowElRef.current = createUserArrowElement();
@@ -67,6 +87,12 @@ export function useNavigationTracking(
 
       // Reset map bearing to north
       map.easeTo({ bearing: 0, duration: 500 });
+
+      // Stop interpolation
+      if (interpRafRef.current != null) {
+        cancelAnimationFrame(interpRafRef.current);
+        interpRafRef.current = null;
+      }
     }
   }, [navigating]);
 
@@ -74,6 +100,70 @@ export function useNavigationTracking(
   useEffect(() => {
     offRouteCountRef.current = 0;
   }, [routeData]);
+
+  // Position interpolation loop
+  useEffect(() => {
+    if (!navigating) return;
+
+    function interpolate() {
+      const from = interpFromRef.current;
+      const to = interpToRef.current;
+      if (!from || !to) {
+        interpRafRef.current = requestAnimationFrame(interpolate);
+        return;
+      }
+
+      const elapsed = Date.now() - interpStartRef.current;
+      const t = Math.min(elapsed / INTERP_DURATION_MS, 1);
+
+      // Skip updates when interpolation is complete
+      if (t >= 1) {
+        interpRafRef.current = requestAnimationFrame(interpolate);
+        return;
+      }
+
+      // Ease-out for smooth deceleration
+      const eased = 1 - (1 - t) * (1 - t);
+
+      const lat = from.lat + (to.lat - from.lat) * eased;
+      const lng = from.lng + (to.lng - from.lng) * eased;
+
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setLngLat([lng, lat]);
+      }
+
+      // Offset camera: put user in lower third by shifting center forward
+      if (mapRef.current) {
+        const h = lastHeadingRef.current;
+        let centerLat = lat;
+        let centerLng = lng;
+        if (h != null) {
+          const rad = (h * Math.PI) / 180;
+          centerLat = lat + CAMERA_OFFSET_DEG * Math.cos(rad);
+          centerLng =
+            lng +
+            (CAMERA_OFFSET_DEG * Math.sin(rad)) /
+              Math.cos((lat * Math.PI) / 180);
+        }
+        mapRef.current.jumpTo({
+          center: [centerLng, centerLat],
+          ...(h != null ? { bearing: h } : {}),
+          zoom: 17,
+        });
+      }
+
+      interpRafRef.current = requestAnimationFrame(interpolate);
+    }
+
+    interpRafRef.current = requestAnimationFrame(interpolate);
+
+    return () => {
+      if (interpRafRef.current != null) {
+        cancelAnimationFrame(interpRafRef.current);
+        interpRafRef.current = null;
+      }
+    };
+  }, [navigating]);
 
   // GPS tracking during navigation
   useEffect(() => {
@@ -91,21 +181,22 @@ export function useNavigationTracking(
 
         useAppStore.setState({ userLocation: loc });
 
-        // Update marker position with smooth CSS transition
-        if (userMarkerRef.current) {
-          userMarkerRef.current.setLngLat([loc.lng, loc.lat]);
-        }
+        // Capture previous position BEFORE updating ref
+        const prevLoc = prevPosRef.current;
+
+        // Set up interpolation from current marker position to new GPS fix
+        const currentMarkerPos = userMarkerRef.current?.getLngLat();
+        interpFromRef.current = currentMarkerPos
+          ? { lat: currentMarkerPos.lat, lng: currentMarkerPos.lng }
+          : loc;
+        interpToRef.current = loc;
+        interpStartRef.current = Date.now();
 
         // Compute heading from GPS or from consecutive positions
         let heading = pos.coords.heading;
         if (heading == null || Number.isNaN(heading)) {
-          if (prevPosRef.current) {
-            heading = bearing(
-              prevPosRef.current.lat,
-              prevPosRef.current.lng,
-              loc.lat,
-              loc.lng,
-            );
+          if (prevLoc) {
+            heading = bearing(prevLoc.lat, prevLoc.lng, loc.lat, loc.lng);
           }
         }
 
@@ -116,18 +207,10 @@ export function useNavigationTracking(
         if (validHeading != null && arrowElRef.current) {
           setArrowHeading(arrowElRef.current, validHeading);
           useAppStore.setState({ userHeading: validHeading });
+          lastHeadingRef.current = validHeading;
         }
 
-        // Rotate map to match heading
-        if (mapRef.current) {
-          mapRef.current.easeTo({
-            center: [loc.lng, loc.lat],
-            ...(validHeading != null ? { bearing: validHeading } : {}),
-            zoom: 17,
-            duration: validHeading != null ? 1000 : 500,
-          });
-        }
-
+        // Update previous position AFTER using it
         prevPosRef.current = loc;
 
         // Route tracking
@@ -144,9 +227,24 @@ export function useNavigationTracking(
         }
         updateSpeedAndLanes(route, closestSegIdx, store);
 
-        // Off-route detection with debounce
+        // Off-route detection with debounce + direction check
         if (distFromRoute > OFF_ROUTE_THRESHOLD_M) {
-          offRouteCountRef.current++;
+          // Check if user is heading away from route (not just GPS drift)
+          const movingAway = isMovingAwayFromRoute(
+            loc,
+            prevLoc,
+            route.coordinates,
+            closestSegIdx,
+          );
+          if (movingAway) {
+            offRouteCountRef.current++;
+          } else {
+            // GPS drift but still heading toward route — softer penalty
+            offRouteCountRef.current = Math.max(
+              0,
+              offRouteCountRef.current - 1,
+            );
+          }
           if (
             offRouteCountRef.current >= OFF_ROUTE_REQUIRED_COUNT &&
             !store.rerouting
@@ -157,8 +255,16 @@ export function useNavigationTracking(
           offRouteCountRef.current = 0;
         }
 
-        // Find closest instruction
-        updateCurrentInstruction(route, loc, store);
+        // Advance instruction if user has passed the current maneuver point
+        const newIdx = shouldAdvanceInstruction(
+          store.currentInstructionIndex,
+          route.instructions,
+          loc.lat,
+          loc.lng,
+        );
+        if (newIdx !== store.currentInstructionIndex) {
+          store.setCurrentInstructionIndex(newIdx);
+        }
       },
       (err) => console.error("GPS error:", err),
       { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 },
@@ -204,28 +310,6 @@ function updateSpeedAndLanes(
   }
 }
 
-function updateCurrentInstruction(
-  route: NonNullable<ReturnType<typeof useAppStore.getState>["routeData"]>,
-  loc: { lat: number; lng: number },
-  store: ReturnType<typeof useAppStore.getState>,
-) {
-  let closestIdx = 0;
-  let closestDist = Infinity;
-  for (let i = 0; i < route.instructions.length; i++) {
-    const inst = route.instructions[i];
-    const dx = inst.point[0] - loc.lng;
-    const dy = inst.point[1] - loc.lat;
-    const dist = dx * dx + dy * dy;
-    if (dist < closestDist) {
-      closestDist = dist;
-      closestIdx = i;
-    }
-  }
-  if (closestIdx !== store.currentInstructionIndex) {
-    store.setCurrentInstructionIndex(closestIdx);
-  }
-}
-
 function triggerReroute(
   loc: { lat: number; lng: number },
   store: ReturnType<typeof useAppStore.getState>,
@@ -251,6 +335,7 @@ function triggerReroute(
   })
     .then((res) => res.json())
     .then((newRoute) => {
+      newRoute.instructions = consolidateInstructions(newRoute.instructions);
       useAppStore.setState({ routeData: newRoute, rerouting: false });
     })
     .catch(() => {

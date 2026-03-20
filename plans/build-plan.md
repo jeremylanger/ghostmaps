@@ -201,6 +201,56 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Tests: 151 passing (33 client unit + 78 server unit + 40 E2E)
 - [x] Code review: deduplicated haversine in exif.ts, bounded reviewCache, optimized route display renders
 
+### Day 9.5 — March 19 (Drive Test Feedback Round 2)
+**Navigation Fixes from Live Driving**
+
+#### Spec
+
+**Route Preview**
+- Happy: Clicking "Directions" shows estimated time, distance, and route on map before navigation starts — user decides whether to go
+- UX: Loading indicator shown while route calculates after clicking "Directions"
+
+**Instruction Consolidation**
+- Happy: Highway stretches show "In 5 mi, take exit 250" instead of individual keep-left/keep-right maneuvers for slight curves
+- Edge: Consecutive same-road maneuvers (keep-left, keep-right, slight curves) merge into single "continue for X miles" — genuine decision points (exits, forks, turns) still show individually
+- Edge: When two maneuvers are close together (e.g., "exit then immediately turn right"), both show in sequence without skipping the first
+- Integration: Consolidation logic testable with sample TomTom instruction arrays — no real driving needed
+
+**Step Advancement**
+- Happy: As soon as user passes a maneuver point, instructions advance to the next one — no 10-second lag
+- Happy: Full steps panel highlights the correct current step based on actual progress, not premature proximity
+- Integration: Must require passing the current maneuver point before advancing — not just being closest to the next one
+
+**Live ETA**
+- Happy: Remaining duration recalculates from current position as user drives — not frozen from initial route calculation
+- Happy: Arrival time updates accordingly — duration and clock time always stay consistent
+
+**Camera Position**
+- Happy: User's position marker sits in the lower third of the screen, giving ~70% forward visibility of the road ahead
+
+**Position Smoothing**
+- UX: Position marker animates between GPS fixes by interpolating lat/lng over time via requestAnimationFrame — no visible jumping
+- Integration: Browser watchPosition fires every 1-3 seconds — interpolation fills gaps smoothly between fixes
+- Edge: If GPS signal drops briefly (tunnel, overpass), position interpolates forward along the route rather than freezing or jumping
+
+**Rerouting**
+- Happy: Rerouting triggers when user is genuinely off-route, recalculates automatically
+- UX: Brief "Rerouting..." indicator, no modal
+- Edge: Tighten off-route threshold (current 50m too forgiving) — parallel roads 100-200 ft away should trigger reroute
+- Edge: GPS drift on the correct road does not trigger rerouting — factor in direction of travel
+- Edge: Reroute generates fresh consolidated instructions — doesn't patch the old set
+
+#### Implementation
+- [x] Route preview: show time/distance/traffic after clicking "Directions", before starting navigation
+- [x] Instruction consolidation: merge consecutive same-road keep-left/keep-right into "continue for X miles"
+- [x] Step advancement: require passing maneuver point before advancing (dot product directional check)
+- [x] Live ETA: recalculate remaining duration and arrival time from current position (avg speed extrapolation)
+- [x] Camera position: offset map center ~111m forward in heading direction so user sits in lower third
+- [x] Position smoothing: requestAnimationFrame interpolation between GPS fixes with ease-out curve
+- [x] Rerouting: tightened to 30m threshold + direction-of-travel check (>60° divergence = off-route)
+- [x] Tests: 55 client tests passing (22 new: consolidation + step advancement + direction check), 78 server tests passing
+- [x] Code review: fixed prevPosRef bug, stale refs on re-nav, straight-line distance → route segments, sameRoad permissiveness, easeTo→jumpTo, ETA dedup
+
 ### Day 10 — March 21
 **Documentation + Polish**
 - [ ] Comprehensive README (architecture, setup, tech stack, privacy model)

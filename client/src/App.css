@@ -1265,6 +1265,31 @@
   flex-direction: column;
 }
 
+.nav-preview-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.nav-preview-duration {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a73e8;
+}
+
+.nav-preview-distance {
+  font-size: 1rem;
+  color: #555;
+}
+
+.nav-preview-traffic {
+  font-size: 0.85rem;
+  color: #d93025;
+  font-weight: 500;
+}
+
 /* Navigation: active overlays */
 .nav-top-overlay {
   position: absolute;

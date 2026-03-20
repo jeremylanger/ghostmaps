@@ -263,6 +263,7 @@ See detailed day-by-day build plan. Summary:
 - Day 7: Navigation core (route display, turn-by-turn, GPS tracking) ✅
 - Day 8: Navigation polish (speed limits, lane guidance, rerouting) + privacy page ✅
 - Day 9: Navigation overhaul (drive test feedback), search by name/address/coordinates ✅
+- Day 9.5: Navigation fixes round 2 (instruction consolidation, step advancement, live ETA, position smoothing, camera offset, rerouting sensitivity) ✅
 - Days 10-11: Documentation + polish + deploy (deployed to ghostmaps.app via Railway)
 
 ---

@@ -1,4 +1,5 @@
 import { usePlaceDetails } from "../hooks/usePlaceDetails";
+import { consolidateInstructions } from "../lib/consolidate-instructions";
 import { useAppStore } from "../store";
 import ReviewList from "./ReviewList";
 
@@ -67,6 +68,7 @@ export default function PlacePanel() {
       });
       if (!res.ok) throw new Error("Route failed");
       const route = await res.json();
+      route.instructions = consolidateInstructions(route.instructions);
       store.setRouteData(route);
     } catch (err) {
       console.error("Route error:", err);

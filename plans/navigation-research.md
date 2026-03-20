@@ -96,6 +96,15 @@
 - Server-side review cache (2min TTL) + parallel identity/summary fetch
 - Privacy comparison page (8 categories, $7.3B fines, transparency section)
 
+### Day 9.5 — Done ✅ (Drive Test Feedback Round 2)
+- Instruction consolidation: merge keep-left/keep-right noise into "Continue on {road}" (client-side post-processing)
+- Step advancement: dot-product directional check replaces naive closest-point (fixes premature/stale instructions)
+- Live ETA: remaining time recalculated from route-segment distance + avg speed (not stale TomTom summary)
+- Position smoothing: requestAnimationFrame interpolation with ease-out between GPS fixes
+- Camera offset: map center shifted ~111m forward in heading direction (user in lower third)
+- Rerouting: tightened to 30m + direction-of-travel check (>60° divergence from route bearing)
+- Route preview: time/distance/traffic shown before starting navigation
+
 ### Skipping for hackathon
 - Voice navigation
 - Offline maps

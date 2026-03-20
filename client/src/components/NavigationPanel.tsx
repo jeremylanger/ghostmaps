@@ -1,4 +1,5 @@
-import { maneuverIcon } from "../lib/nav-helpers";
+import { formatDistanceLive } from "../lib/geo-utils";
+import { formatDuration, maneuverIcon } from "../lib/nav-helpers";
 import { useAppStore } from "../store";
 import NavBottomBar from "./NavBottomBar";
 import NavLaneGuidance from "./NavLaneGuidance";
@@ -22,7 +23,19 @@ export default function NavigationPanel() {
   if (!navigating) {
     return (
       <div className="navigation-panel nav-preview">
-        <NavNextTurn currentInst={currentInst} nextInst={nextInst} />
+        <div className="nav-preview-summary">
+          <span className="nav-preview-duration">
+            {formatDuration(summary.travelTimeInSeconds)}
+          </span>
+          <span className="nav-preview-distance">
+            {formatDistanceLive(summary.lengthInMeters)}
+          </span>
+          {summary.trafficDelayInSeconds > 60 && (
+            <span className="nav-preview-traffic">
+              +{formatDuration(summary.trafficDelayInSeconds)} traffic
+            </span>
+          )}
+        </div>
         <NavStepList />
         <div className="nav-footer">
           <button
