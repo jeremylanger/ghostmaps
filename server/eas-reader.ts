@@ -83,8 +83,8 @@ export async function fetchReviewsForPlace(
         lng: Number(fields.lng) !== 0 ? Number(fields.lng) / 1e6 : 0,
         qualityScore: Number(fields.qualityScore),
       });
-    } catch {
-      // Skip malformed attestations
+    } catch (err) {
+      console.error("EAS: skipping malformed attestation:", err);
     }
   }
 

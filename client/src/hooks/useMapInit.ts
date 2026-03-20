@@ -48,8 +48,8 @@ export function useMapInit(
           }
         }
         style = json;
-      } catch {
-        /* fall back to URL */
+      } catch (err) {
+        console.error("Map style fetch failed, using URL fallback:", err);
       }
 
       const map = new maplibregl.Map({
@@ -70,7 +70,7 @@ export function useMapInit(
             duration: 1200,
           });
         },
-        () => {},
+        (err) => console.error("Geolocation error:", err.message),
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 },
       );
 

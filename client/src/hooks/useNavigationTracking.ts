@@ -338,7 +338,8 @@ function triggerReroute(
       newRoute.instructions = consolidateInstructions(newRoute.instructions);
       useAppStore.setState({ routeData: newRoute, rerouting: false });
     })
-    .catch(() => {
+    .catch((err) => {
+      console.error("Reroute failed:", err);
       useAppStore.getState().setRerouting(false);
     });
 }

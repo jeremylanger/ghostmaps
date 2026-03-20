@@ -247,7 +247,13 @@ export async function geocodeAddress(
       body: JSON.stringify({ textQuery: address, maxResultCount: 1 }),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      console.error(
+        `Google Places geocode failed: ${response.status} ${errText}`,
+      );
+      return null;
+    }
     const data = await response.json();
     const item = data.places?.[0];
     if (!item) return null;
@@ -264,7 +270,8 @@ export async function geocodeAddress(
       longitude: item.location?.longitude || 0,
       latitude: item.location?.latitude || 0,
     };
-  } catch {
+  } catch (err) {
+    console.error("Google Places geocode error:", err);
     return null;
   }
 }

@@ -95,8 +95,8 @@ export function useAISearch() {
                 case "done":
                   break;
               }
-            } catch {
-              // skip malformed data
+            } catch (err) {
+              console.error("AI search: malformed SSE data:", err);
             }
           }
         }

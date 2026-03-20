@@ -95,8 +95,8 @@ async function* veniceChatStream(
           const json = JSON.parse(line.slice(6));
           const content = json.choices?.[0]?.delta?.content || "";
           if (content) yield content;
-        } catch {
-          // skip malformed chunks
+        } catch (err) {
+          console.error("Venice stream: malformed chunk:", err);
         }
       }
     }

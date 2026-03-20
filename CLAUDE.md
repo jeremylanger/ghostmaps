@@ -11,6 +11,8 @@ All components should try to use shadcn/ui first, unless there's a good reason w
 
 Keep all code minimal and clean, while maintaining readability.
 
+**Never swallow errors silently.** Every `catch` block and error branch must log with `console.error`. No empty catch blocks, no `catch {}`, no `if (!response.ok) return` without logging. It's fine to return a fallback value — just log first.
+
 Run `npm run format` after each task.
 
 ## Living Plans Directory
@@ -79,6 +81,8 @@ railway vars set KEY=value
 ```
 
 Railway project: `ghostmaps` (linked via `railway link`). Single service — Express serves API + Vite static build. DNS via Porkbun (ALIAS → Railway edge).
+
+**Server IP endpoint:** `GET /api/server-ip` returns Railway's outbound IP (via ipify). Use this to whitelist the server in API key restrictions (e.g. Google Places).
 
 ## Testing Requirements
 
