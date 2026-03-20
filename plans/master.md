@@ -202,10 +202,14 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 
 ### 7. Venice + Overture Search Integration — RESOLVED
 - Venice receives natural language query + user lat/lng (zero retention)
-- Venice extracts intent → structured query (categories, radius, time)
-- Backend queries Overture REST API, enriches with Google Places (details)
-- Venice receives enriched results, ranks them, recommends top pick with "why not" for alternatives
-- Two Venice round trips, second one streamed via SSE
+- Venice extracts intent → structured query with `query_type`: "category", "name", or "address"
+- **Category queries** (e.g. "best tacos near me"): Overture REST API with radius + distance-weighted ranking
+- **Name queries** (e.g. "Verve Coffee"): Google Places Text Search API (no radius cap)
+- **Address queries** (e.g. "123 Main St, LA"): Google Places geocoding
+- **Raw coordinates** (e.g. "34.0522, -118.2437"): parsed client-side, skip Venice
+- All results include distance from user's position
+- Venice ranks category results, recommends top pick with "why not" for alternatives
+- Streamed via SSE
 - Smart search bar UX (not chat interface)
 
 ### 10. Google Places Enrichment — RESOLVED
@@ -258,7 +262,8 @@ See detailed day-by-day build plan. Summary:
 - Day 6: On-chain reviews (read + display + summarization) ✅
 - Day 7: Navigation core (route display, turn-by-turn, GPS tracking) ✅
 - Day 8: Navigation polish (speed limits, lane guidance, rerouting) + privacy page ✅
-- Days 9-10: Documentation + polish + deploy (deployed to ghostmaps.app via Railway)
+- Day 9: Navigation overhaul (drive test feedback), search by name/address/coordinates ✅
+- Days 10-11: Documentation + polish + deploy (deployed to ghostmaps.app via Railway)
 
 ---
 

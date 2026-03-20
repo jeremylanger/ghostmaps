@@ -198,9 +198,8 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Trim route line behind current position
 - [x] Imminent turn emphasis (visual urgency at < 500 ft)
 - [x] "Rerouting..." flash indicator
-- [x] Tests: unit (TDD red/green) — 33 client + 45 server = 78 passing
-- [ ] Integration tests
-- [ ] E2E tests
+- [x] Tests: 151 passing (33 client unit + 78 server unit + 40 E2E)
+- [x] Code review: deduplicated haversine in exif.ts, bounded reviewCache, optimized route display renders
 
 ### Day 10 — March 21
 **Documentation + Polish**
