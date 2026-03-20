@@ -6,12 +6,12 @@ import {
 } from "../lib/nav-helpers";
 import { useAppStore } from "../store";
 import type { RouteSummary } from "../types";
+import { Button } from "./ui/button";
 
 interface Props {
   summary: RouteSummary;
 }
 
-/** Sum haversine distances along remaining route segments from closestSegIdx onward. */
 function remainingRouteDistance(
   coordinates: [number, number][],
   closestSegIdx: number,
@@ -20,11 +20,9 @@ function remainingRouteDistance(
 ): number {
   if (closestSegIdx >= coordinates.length - 1) return 0;
 
-  // Distance from user to next route point
   const [nextLng, nextLat] = coordinates[closestSegIdx + 1];
   let total = haversine(userLat, userLng, nextLat, nextLng);
 
-  // Sum remaining segments
   for (let i = closestSegIdx + 1; i < coordinates.length - 1; i++) {
     const [lng1, lat1] = coordinates[i];
     const [lng2, lat2] = coordinates[i + 1];
@@ -40,7 +38,6 @@ export default function NavBottomBar({ summary }: Props) {
   const routeData = useAppStore((s) => s.routeData);
   const closestSegmentIndex = useAppStore((s) => s.closestSegmentIndex);
 
-  // Compute remaining distance along route segments (not straight-line)
   let remainingDistance = summary.lengthInMeters;
   if (userLocation && routeData?.coordinates.length) {
     remainingDistance = remainingRouteDistance(
@@ -51,7 +48,6 @@ export default function NavBottomBar({ summary }: Props) {
     );
   }
 
-  // Estimate remaining time based on proportion of distance remaining
   const avgSpeedMps =
     summary.travelTimeInSeconds > 0
       ? summary.lengthInMeters / summary.travelTimeInSeconds
@@ -64,19 +60,21 @@ export default function NavBottomBar({ summary }: Props) {
   const eta = formatClockETA(undefined, remainingTime);
 
   return (
-    <div className="nav-bottom-bar">
-      <div className="nav-bottom-info">
-        <span className="nav-bottom-eta">{eta}</span>
-        <span className="nav-bottom-duration">
+    <div className="flex items-center justify-between px-5 py-4 bg-surface/95 backdrop-blur-md shadow-panel-up border-t border-edge">
+      <div className="flex items-baseline gap-4">
+        <span className="text-[28px] font-extrabold text-cyan font-mono">
+          {eta}
+        </span>
+        <span className="text-[22px] font-bold text-bone font-mono">
           {formatDuration(remainingTime)}
         </span>
-        <span className="nav-bottom-distance">
+        <span className="text-lg font-semibold text-blue-gray font-mono">
           {formatDistance(remainingDistance)}
         </span>
       </div>
-      <button className="nav-end-btn" onClick={clearRoute}>
+      <Button variant="destructive" onClick={clearRoute}>
         End
-      </button>
+      </Button>
     </div>
   );
 }

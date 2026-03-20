@@ -13,6 +13,7 @@ import {
   SELECTED_LAYER,
   SOURCE_ID,
 } from "../lib/map-constants";
+import { THEME } from "../lib/theme";
 import { useAppStore } from "../store";
 import type { Place } from "../types";
 
@@ -35,7 +36,7 @@ export function useMapInit(
     initRef.current = true;
 
     const container = containerRef.current;
-    const styleUrl = `https://api.maptiler.com/maps/streets-v2/style.json?key=${import.meta.env.VITE_MAPTILER_KEY || "cNjmhoHsVnBLG2X16UtK"}`;
+    const styleUrl = `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${import.meta.env.VITE_MAPTILER_KEY || "cNjmhoHsVnBLG2X16UtK"}`;
 
     const initMap = async () => {
       let style: any = styleUrl;
@@ -130,21 +131,26 @@ function addLayers(map: maplibregl.Map) {
     type: "circle",
     source: SOURCE_ID,
     filter: ["!", ["get", "selected"]],
-    paint: { "circle-radius": 10, "circle-color": "#ffffff" },
+    paint: { "circle-radius": 10, "circle-color": `${THEME.cyan}26` },
   });
   map.addLayer({
     id: CIRCLE_LAYER,
     type: "circle",
     source: SOURCE_ID,
     filter: ["!", ["get", "selected"]],
-    paint: { "circle-radius": 7, "circle-color": "#e53e3e" },
+    paint: {
+      "circle-radius": 7,
+      "circle-color": THEME.cyan,
+      "circle-stroke-width": 2,
+      "circle-stroke-color": THEME.void,
+    },
   });
   map.addLayer({
     id: SELECTED_BORDER_LAYER,
     type: "circle",
     source: SOURCE_ID,
     filter: ["get", "selected"],
-    paint: { "circle-radius": 16, "circle-color": "rgba(66, 133, 244, 0.25)" },
+    paint: { "circle-radius": 18, "circle-color": `${THEME.cyan}33` },
   });
   map.addLayer({
     id: SELECTED_LAYER,
@@ -153,9 +159,9 @@ function addLayers(map: maplibregl.Map) {
     filter: ["get", "selected"],
     paint: {
       "circle-radius": 10,
-      "circle-color": "#4285f4",
+      "circle-color": THEME.cyan,
       "circle-stroke-width": 3,
-      "circle-stroke-color": "#ffffff",
+      "circle-stroke-color": THEME.void,
     },
   });
 
@@ -169,7 +175,11 @@ function addLayers(map: maplibregl.Map) {
       type: "line",
       source: ROUTE_SOURCE,
       layout: { "line-join": "round", "line-cap": "round" },
-      paint: { "line-color": "#1a56db", "line-width": 8, "line-opacity": 0.4 },
+      paint: {
+        "line-color": `${THEME.cyan}33`,
+        "line-width": 10,
+        "line-opacity": 0.6,
+      },
     },
     CIRCLE_BORDER_LAYER,
   );
@@ -179,7 +189,7 @@ function addLayers(map: maplibregl.Map) {
       type: "line",
       source: ROUTE_SOURCE,
       layout: { "line-join": "round", "line-cap": "round" },
-      paint: { "line-color": "#4285f4", "line-width": 5 },
+      paint: { "line-color": THEME.cyan, "line-width": 4 },
     },
     CIRCLE_BORDER_LAYER,
   );

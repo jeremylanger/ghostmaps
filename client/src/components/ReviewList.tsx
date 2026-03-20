@@ -1,13 +1,7 @@
 import { useReviews } from "../hooks/useReviews";
 import { EASSCAN_URL } from "../lib/eas";
+import { QUALITY_STYLES, qualityLabel, truncateAddress } from "../lib/theme";
 import type { OnChainReview, ReviewIdentity } from "../types";
-
-function qualityLabel(score: number): string {
-  if (score >= 81) return "exceptional";
-  if (score >= 51) return "detailed";
-  if (score >= 21) return "decent";
-  return "generic";
-}
 
 function timeAgo(timestamp: number): string {
   const seconds = Math.floor(Date.now() / 1000 - timestamp);
@@ -16,10 +10,6 @@ function timeAgo(timestamp: number): string {
   if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
   if (seconds < 2592000) return `${Math.floor(seconds / 86400)}d ago`;
   return `${Math.floor(seconds / 2592000)}mo ago`;
-}
-
-function truncateAddress(addr: string): string {
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 }
 
 function accountAgeLabel(firstSeen: number): string {
@@ -41,36 +31,42 @@ function ReviewCard({
   const label = qualityLabel(review.qualityScore);
 
   return (
-    <div className="review-card">
-      <div className="review-card-header">
-        <div className="review-card-identity">
-          <span className="review-card-address">
+    <div className="bg-surface-raised rounded-lg p-3 border border-edge/50">
+      <div className="flex justify-between items-start mb-1">
+        <div className="flex flex-col gap-px">
+          <span className="text-xs font-mono text-blue-gray">
             {truncateAddress(review.attester)}
           </span>
           {identity && (
-            <span className="review-card-account-age">
+            <span className="text-[11px] text-muted">
               {accountAgeLabel(identity.firstSeen)}
               {identity.totalReviews > 1 &&
-                ` \u00b7 ${identity.totalReviews} reviews`}
+                ` · ${identity.totalReviews} reviews`}
             </span>
           )}
         </div>
-        <span className="review-card-time">{timeAgo(review.time)}</span>
+        <span className="text-[11px] text-muted shrink-0">
+          {timeAgo(review.time)}
+        </span>
       </div>
 
-      <div className="review-card-rating">
-        <span className="rating-stars">
+      <div className="flex items-center gap-1.5 mb-1">
+        <span className="text-amber text-sm">
           {"★".repeat(review.rating)}
           {"☆".repeat(5 - review.rating)}
         </span>
-        <span className={`quality-badge-sm quality-${label}`}>{label}</span>
+        <span
+          className={`text-[10px] font-semibold px-1.5 py-px rounded ${QUALITY_STYLES[label]}`}
+        >
+          {label}
+        </span>
       </div>
 
-      <p className="review-card-text">{review.text}</p>
+      <p className="text-sm text-bone leading-snug mb-1">{review.text}</p>
 
       {review.photoHash && (
         <img
-          className="review-card-photo"
+          className="w-full max-h-[120px] object-cover rounded-md mb-1"
           src={`/api/photos/${review.photoHash}`}
           alt="Review photo"
           loading="lazy"
@@ -81,7 +77,7 @@ function ReviewCard({
         href={`${EASSCAN_URL}/attestation/view/${review.uid}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="review-card-proof"
+        className="text-[11px] text-cyan no-underline hover:underline"
       >
         On-chain proof
       </a>
@@ -94,15 +90,20 @@ export default function ReviewList({ placeId }: { placeId: string }) {
 
   if (isLoading) {
     return (
-      <div className="reviews-section">
-        <h3 className="reviews-heading">Community Reviews</h3>
-        <div className="reviews-skeleton">
+      <div className="mt-4 px-6">
+        <h3 className="text-base font-bold text-bone mb-2 font-display">
+          Community Reviews
+        </h3>
+        <div className="flex flex-col gap-2">
           {[0, 1, 2].map((i) => (
-            <div key={i} className="review-skeleton-card">
-              <div className="skeleton-line skeleton-short" />
-              <div className="skeleton-line skeleton-stars" />
-              <div className="skeleton-line skeleton-long" />
-              <div className="skeleton-line skeleton-medium" />
+            <div
+              key={i}
+              className="bg-surface-raised rounded-lg p-3 flex flex-col gap-2"
+            >
+              <div className="h-3 w-2/5 rounded-md bg-gradient-to-r from-edge via-edge-bright to-edge bg-[length:200%_100%] animate-shimmer" />
+              <div className="h-3.5 w-[30%] rounded-md bg-gradient-to-r from-edge via-edge-bright to-edge bg-[length:200%_100%] animate-shimmer" />
+              <div className="h-3 w-full rounded-md bg-gradient-to-r from-edge via-edge-bright to-edge bg-[length:200%_100%] animate-shimmer" />
+              <div className="h-3 w-[70%] rounded-md bg-gradient-to-r from-edge via-edge-bright to-edge bg-[length:200%_100%] animate-shimmer" />
             </div>
           ))}
         </div>
@@ -116,9 +117,11 @@ export default function ReviewList({ placeId }: { placeId: string }) {
 
   if (reviews.length === 0) {
     return (
-      <div className="reviews-section">
-        <h3 className="reviews-heading">Community Reviews</h3>
-        <p className="reviews-empty">
+      <div className="mt-4 px-6">
+        <h3 className="text-base font-bold text-bone mb-2 font-display">
+          Community Reviews
+        </h3>
+        <p className="text-sm text-muted">
           No reviews yet. Be the first to review this place!
         </p>
       </div>
@@ -129,26 +132,34 @@ export default function ReviewList({ placeId }: { placeId: string }) {
     reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
 
   return (
-    <div className="reviews-section">
-      <h3 className="reviews-heading">
+    <div className="mt-4 px-6">
+      <h3 className="text-base font-bold text-bone mb-2 font-display flex items-baseline gap-2">
         Community Reviews
-        <span className="reviews-count">
+        <span className="text-xs font-normal text-muted">
           {reviews.length} on-chain{" "}
           {reviews.length === 1 ? "review" : "reviews"}
         </span>
       </h3>
 
-      <div className="reviews-aggregate">
-        <span className="rating-stars">
+      <div className="flex items-center gap-1.5 mb-2">
+        <span className="text-amber text-sm">
           {"★".repeat(Math.round(avgRating))}
         </span>
-        <span className="reviews-avg">{avgRating.toFixed(1)}</span>
-        <span className="reviews-chain-badge">Verified on Base</span>
+        <span className="font-semibold text-sm text-bone">
+          {avgRating.toFixed(1)}
+        </span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-cyan bg-cyan-muted px-1.5 py-0.5 rounded">
+          Verified on Base
+        </span>
       </div>
 
-      {summary && <div className="reviews-summary">{summary}</div>}
+      {summary && (
+        <div className="text-sm text-bone leading-relaxed p-2.5 bg-surface-raised rounded-lg border-l-2 border-l-cyan mb-2.5">
+          {summary}
+        </div>
+      )}
 
-      <div className="reviews-list">
+      <div className="flex flex-col gap-2">
         {reviews.map((review) => (
           <ReviewCard
             key={review.uid}

@@ -301,6 +301,7 @@ All research from Day 1 planning is captured in these files:
 - [hackathon-strategy.md](hackathon-strategy.md) — Judging criteria (AI agents + humans), Venice bounty criteria, winning strategy
 - [reviews.md](reviews.md) — 6-layer review authenticity system, hackathon MVP scope, why previous on-chain review projects failed
 - [token-incentivized-reviews-research.md](token-incentivized-reviews-research.md) — Deep research on token incentive models (decided to skip for hackathon)
+- [branding.md](branding.md) — "Phantom Protocol" brand system: Tron Legacy-inspired dark/cyan aesthetic, color palette, typography, component strategy, logo details
 
 Day-by-day build plan is at: `~/.claude/plans/iridescent-swinging-island.md`
 

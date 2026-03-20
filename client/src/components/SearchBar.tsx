@@ -1,3 +1,4 @@
+import { Search, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useAISearch } from "../hooks/useAISearch";
 import { formatDistanceLive } from "../lib/geo-utils";
@@ -66,7 +67,6 @@ export default function SearchBar() {
     [selectPlace],
   );
 
-  // Sort results: top pick first, then alternatives in order
   const sortedResults = ranking
     ? [...results].sort((a, b) => {
         if (a.id === ranking.topPick) return -1;
@@ -87,45 +87,49 @@ export default function SearchBar() {
   };
 
   return (
-    <div className="search-container">
-      <form className="search-bar" onSubmit={handleSubmit}>
-        <svg
-          className="search-icon"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
+    <div className="absolute top-4 left-16 right-4 z-10 max-w-[480px]">
+      <form
+        className="group flex items-center gap-2.5 rounded-xl border border-edge bg-surface/90 px-4 h-12 shadow-panel backdrop-blur-md transition-all focus-within:border-cyan focus-within:shadow-glow"
+        onSubmit={handleSubmit}
+      >
+        <Search className="size-5 shrink-0 text-blue-gray group-focus-within:text-cyan transition-colors" />
         <input
           type="text"
           placeholder="Search places..."
           value={query}
           onChange={handleChange}
           autoComplete="off"
+          className="flex-1 bg-transparent border-none outline-none text-bone text-base font-body placeholder:text-blue-gray"
         />
         {query && (
-          <button type="button" className="search-clear" onClick={handleClear}>
-            &times;
+          <button
+            type="button"
+            onClick={handleClear}
+            className="text-blue-gray hover:text-bone transition-colors p-1"
+          >
+            <X className="size-4" />
           </button>
         )}
       </form>
 
       {(loading || error || (results.length > 0 && showResults)) && query && (
-        <div className="search-results">
+        <div className="mt-2 rounded-xl border border-edge bg-surface/95 shadow-panel backdrop-blur-md max-h-[60vh] overflow-y-auto animate-decloak">
           {statusMessage && (
-            <div className="search-status">{statusMessage}</div>
+            <div className="flex items-center gap-2 px-4 py-3 text-sm text-blue-gray border-b border-edge">
+              <span className="size-3 rounded-full border-2 border-edge border-t-cyan animate-spin" />
+              {statusMessage}
+            </div>
           )}
-          {error && <div className="search-error">{error}</div>}
+          {error && (
+            <div className="px-4 py-4 text-center text-sm text-coral">
+              {error}
+            </div>
+          )}
 
           {ranking?.summary && !loading && (
-            <div className="search-summary">{ranking.summary}</div>
+            <div className="px-4 py-2.5 text-sm text-blue-gray italic bg-surface-raised border-b border-edge">
+              {ranking.summary}
+            </div>
           )}
 
           {!error &&
@@ -136,34 +140,48 @@ export default function SearchBar() {
               return (
                 <div
                   key={place.id}
-                  className={`search-result-item ${isTopPick ? "top-pick" : ""}`}
+                  className={`px-4 py-3 cursor-pointer border-b border-edge/50 transition-colors last:border-b-0 ${
+                    isTopPick
+                      ? "bg-cyan-muted border-l-2 border-l-cyan hover:bg-cyan-muted/80"
+                      : "hover:bg-surface-raised"
+                  }`}
                   onClick={() => handleSelectResult(place)}
                 >
-                  <div className="result-header">
+                  <div className="flex justify-between items-start gap-2">
                     <div>
-                      <div className="result-name">
+                      <div className="font-semibold text-[15px] text-bone">
                         {isTopPick && (
-                          <span className="top-pick-badge">Top Pick</span>
+                          <span className="inline-block bg-cyan text-void text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1.5 align-middle">
+                            Top Pick
+                          </span>
                         )}
                         {place.name}
                       </div>
                       {place.category && (
-                        <div className="result-category">
+                        <div className="text-sm text-blue-gray capitalize mt-0.5">
                           {place.category.replace(/_/g, " ")}
                         </div>
                       )}
                     </div>
-                    {whyNot && <div className="result-why-not">{whyNot}</div>}
+                    {whyNot && (
+                      <div className="text-[11px] text-muted shrink-0 mt-0.5">
+                        {whyNot}
+                      </div>
+                    )}
                   </div>
                   {isTopPick && ranking?.topPickReason && (
-                    <div className="result-reason">{ranking.topPickReason}</div>
+                    <div className="text-sm text-cyan-dim mt-1 leading-snug">
+                      {ranking.topPickReason}
+                    </div>
                   )}
-                  <div className="result-meta">
+                  <div className="flex items-baseline gap-2 mt-0.5">
                     {place.address && (
-                      <span className="result-address">{place.address}</span>
+                      <span className="text-sm text-muted flex-1 min-w-0 truncate">
+                        {place.address}
+                      </span>
                     )}
                     {place.distanceMeters != null && (
-                      <span className="result-distance">
+                      <span className="text-xs font-semibold text-cyan font-mono shrink-0">
                         {formatDistanceLive(place.distanceMeters)}
                       </span>
                     )}

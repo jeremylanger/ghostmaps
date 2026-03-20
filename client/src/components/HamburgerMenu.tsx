@@ -1,77 +1,57 @@
-import { useCallback, useState } from "react";
+import { Menu, Shield } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAppStore } from "../store";
 import AuthButton from "./AuthButton";
 
 export default function HamburgerMenu() {
-  const [open, setOpen] = useState(false);
   const setShowPrivacy = useAppStore((s) => s.setShowPrivacy);
 
-  const close = useCallback(() => setOpen(false), []);
-
   return (
-    <>
-      {open && (
-        <button
-          type="button"
-          className="hamburger-backdrop"
-          aria-label="Close menu"
-          onClick={close}
-        />
-      )}
-      <div className="hamburger-menu">
-        <button
-          type="button"
-          className="hamburger-toggle"
-          onClick={() => setOpen((prev) => !prev)}
-          aria-label="Menu"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            role="img"
-            aria-label="Menu icon"
+    <div className="absolute top-4 left-4 z-10">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="size-10 rounded-lg border border-edge bg-surface/90 backdrop-blur-md flex items-center justify-center text-blue-gray hover:text-cyan hover:border-cyan/50 hover:shadow-glow transition-all cursor-pointer outline-none"
+            aria-label="Menu"
           >
-            <rect y="3" width="20" height="2" rx="1" fill="#333" />
-            <rect y="9" width="20" height="2" rx="1" fill="#333" />
-            <rect y="15" width="20" height="2" rx="1" fill="#333" />
-          </svg>
-        </button>
-
-        {open && (
-          <div className="hamburger-dropdown">
-            <div className="hamburger-item hamburger-auth">
-              <AuthButton />
-            </div>
-            <button
-              type="button"
-              className="hamburger-item"
-              onClick={() => {
-                setShowPrivacy(true);
-                close();
-              }}
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                role="img"
-                aria-label="Shield icon"
-              >
-                <path
-                  d="M8 1L2 4v4c0 3.5 2.5 6.4 6 7 3.5-.6 6-3.5 6-7V4L8 1z"
-                  stroke="#333"
-                  strokeWidth="1.5"
-                  fill="none"
-                />
-              </svg>
-              Privacy
-            </button>
+            <Menu className="size-5" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          sideOffset={8}
+          className="min-w-[220px] bg-surface border-edge shadow-panel animate-decloak p-0 rounded-xl"
+        >
+          {/* Logo branding */}
+          <div className="flex items-center gap-2.5 px-4 py-3 border-b border-edge">
+            <img src="/logo.png" alt="GhostMaps" className="size-7 rounded" />
+            <span className="font-display text-sm font-bold text-bone tracking-wide">
+              GhostMaps
+            </span>
           </div>
-        )}
-      </div>
-    </>
+
+          <div className="px-3 py-2">
+            <AuthButton />
+          </div>
+
+          <DropdownMenuSeparator className="bg-edge" />
+
+          <DropdownMenuItem
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-bone cursor-pointer focus:bg-surface-raised focus:text-cyan"
+            onSelect={() => setShowPrivacy(true)}
+          >
+            <Shield className="size-4 text-cyan" />
+            Privacy
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

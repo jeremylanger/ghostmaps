@@ -4,7 +4,17 @@ import {
   useIsSignedIn,
   useSendUserOperation,
 } from "@coinbase/cdp-hooks";
+import { Camera, CheckCircle } from "lucide-react";
 import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import type { ReviewData } from "../lib/eas";
 import {
   buildAttestCalldata,
@@ -16,6 +26,7 @@ import {
   REVIEW_SCHEMA_UID,
 } from "../lib/eas";
 import { extractPhotoGPS, isNearLocation } from "../lib/exif";
+import { QUALITY_STYLES } from "../lib/theme";
 import { useAppStore } from "../store";
 
 interface QualityResult {
@@ -59,7 +70,6 @@ export default function ReviewForm() {
     setPhoto(file);
     setPhotoPreview(URL.createObjectURL(file));
 
-    // Extract EXIF GPS
     const gps = await extractPhotoGPS(file);
     setPhotoLocation(gps);
 
@@ -78,7 +88,6 @@ export default function ReviewForm() {
     if (rating === 0 || text.trim().length < 5) return;
 
     try {
-      // Step 1: Venice quality scoring
       setStep("scoring");
       const scoreRes = await fetch("/api/reviews/score", {
         method: "POST",
@@ -96,7 +105,6 @@ export default function ReviewForm() {
       const qualityResult: QualityResult = await scoreRes.json();
       setQuality(qualityResult);
 
-      // Check for critical flags
       if (qualityResult.flags.includes("sentiment_mismatch")) {
         setErrorMsg(
           "Your rating and review text seem to contradict each other. Please adjust before submitting.",
@@ -105,13 +113,11 @@ export default function ReviewForm() {
         return;
       }
 
-      // Step 2: Upload photo and submit on-chain
       setStep("submitting");
 
       let photoHashStr =
         "0x0000000000000000000000000000000000000000000000000000000000000000";
       if (photo) {
-        // Upload photo to server for retrieval, and get hash
         const photoBuffer = await photo.arrayBuffer();
         const uploadRes = await fetch("/api/photos", {
           method: "POST",
@@ -122,7 +128,6 @@ export default function ReviewForm() {
           const { hash } = await uploadRes.json();
           photoHashStr = hash;
         } else {
-          // Fallback to client-side hash if upload fails
           photoHashStr = await hashPhoto(photo);
         }
       }
@@ -172,49 +177,45 @@ export default function ReviewForm() {
 
   if (!isSignedIn) {
     return (
-      <div className="review-form-overlay">
-        <div className="review-form">
-          <div className="review-form-header">
-            <h3>Write a Review</h3>
-            <button
-              className="review-form-close"
-              onClick={() => setShowReviewForm(false)}
-            >
-              &times;
-            </button>
-          </div>
-          <p className="review-form-signin-prompt">
+      <Dialog open={true} onOpenChange={() => setShowReviewForm(false)}>
+        <DialogContent className="bg-surface border-edge shadow-panel max-w-[480px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-bone">
+              Write a Review
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-blue-gray leading-relaxed">
             Sign in with your email to write a review.
           </p>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (step === "success") {
     return (
-      <div className="review-form-overlay">
-        <div className="review-form">
-          <div className="review-form-header">
-            <h3>Review Submitted!</h3>
-            <button
-              className="review-form-close"
-              onClick={() => setShowReviewForm(false)}
-            >
-              &times;
-            </button>
-          </div>
-          <div className="review-success">
-            <div className="review-success-icon">&#10003;</div>
-            <p>
+      <Dialog open={true} onOpenChange={() => setShowReviewForm(false)}>
+        <DialogContent className="bg-surface border-edge shadow-panel max-w-[480px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-bone">
+              Review Submitted!
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-4">
+            <div className="size-12 bg-phosphor/15 text-phosphor rounded-full flex items-center justify-center mx-auto mb-3">
+              <CheckCircle className="size-6" />
+            </div>
+            <p className="text-sm text-bone">
               Your review for <strong>{place.name}</strong> is now on-chain.
             </p>
             {quality && (
-              <div className={`quality-badge quality-${quality.label}`}>
+              <div
+                className={`inline-block text-sm font-semibold px-3 py-1 rounded-md mt-2 ${QUALITY_STYLES[quality.label]}`}
+              >
                 Quality: {quality.label} ({quality.score}/100)
               </div>
             )}
-            <p className="review-success-detail">
+            <p className="text-sm text-muted mt-2">
               Permanently stored on Base. No one can delete, modify, or censor
               it.
             </p>
@@ -223,90 +224,76 @@ export default function ReviewForm() {
                 href={`${EASSCAN_URL}/schema/view/${REVIEW_SCHEMA_UID}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="review-tx-link"
+                className="inline-block mt-3 text-sm text-cyan no-underline hover:underline"
               >
                 View on EAS Explorer
               </a>
             )}
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (step === "error") {
     return (
-      <div className="review-form-overlay">
-        <div className="review-form">
-          <div className="review-form-header">
-            <h3>Something went wrong</h3>
-            <button
-              className="review-form-close"
-              onClick={() => setShowReviewForm(false)}
-            >
-              &times;
-            </button>
-          </div>
-          <p className="review-error-msg">{errorMsg}</p>
-          <button className="review-btn" onClick={() => setStep("form")}>
+      <Dialog open={true} onOpenChange={() => setShowReviewForm(false)}>
+        <DialogContent className="bg-surface border-edge shadow-panel max-w-[480px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display text-bone">
+              Something went wrong
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-coral mb-3">{errorMsg}</p>
+          <Button variant="outline" onClick={() => setStep("form")}>
             Try Again
-          </button>
-        </div>
-      </div>
+          </Button>
+        </DialogContent>
+      </Dialog>
     );
   }
 
-  if (step === "scoring") {
+  if (step === "scoring" || step === "submitting") {
     return (
-      <div className="review-form-overlay">
-        <div className="review-form">
-          <div className="review-form-status">
-            <div className="review-spinner" />
-            <p>AI is evaluating your review quality...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (step === "submitting") {
-    return (
-      <div className="review-form-overlay">
-        <div className="review-form">
-          <div className="review-form-status">
-            <div className="review-spinner" />
-            <p>Submitting your review...</p>
-            {quality && (
-              <div className={`quality-badge quality-${quality.label}`}>
+      <Dialog open={true} onOpenChange={() => setShowReviewForm(false)}>
+        <DialogContent className="bg-surface border-edge shadow-panel max-w-[480px] max-h-[85vh] overflow-y-auto">
+          <div className="text-center py-8">
+            <div className="size-8 border-[3px] border-edge border-t-cyan rounded-full animate-spin mx-auto" />
+            <p className="text-sm text-blue-gray mt-3">
+              {step === "scoring"
+                ? "AI is evaluating your review quality..."
+                : "Submitting your review..."}
+            </p>
+            {quality && step === "submitting" && (
+              <div
+                className={`inline-block text-sm font-semibold px-3 py-1 rounded-md mt-2 ${QUALITY_STYLES[quality.label]}`}
+              >
                 Quality score: {quality.score}/100 ({quality.label})
               </div>
             )}
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     );
   }
 
-  // Main form
   return (
-    <div className="review-form-overlay">
-      <div className="review-form">
-        <div className="review-form-header">
-          <h3>Review {place.name}</h3>
-          <button
-            className="review-form-close"
-            onClick={() => setShowReviewForm(false)}
-          >
-            &times;
-          </button>
-        </div>
+    <Dialog open={true} onOpenChange={() => setShowReviewForm(false)}>
+      <DialogContent className="bg-surface border-edge shadow-panel max-w-[480px] max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-display text-bone">
+            Review {place.name}
+          </DialogTitle>
+        </DialogHeader>
 
         {/* Star rating */}
-        <div className="review-stars">
+        <div className="flex gap-1 mb-3">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
-              className={`review-star ${n <= (hoverRating || rating) ? "active" : ""}`}
+              className={`bg-transparent border-none text-[32px] cursor-pointer p-0 transition-colors ${
+                n <= (hoverRating || rating) ? "text-amber" : "text-edge-bright"
+              }`}
               onClick={() => setRating(n)}
               onMouseEnter={() => setHoverRating(n)}
               onMouseLeave={() => setHoverRating(0)}
@@ -317,8 +304,8 @@ export default function ReviewForm() {
         </div>
 
         {/* Review text */}
-        <textarea
-          className="review-textarea"
+        <Textarea
+          className="bg-surface-raised border-edge text-bone placeholder:text-muted focus-visible:border-cyan focus-visible:ring-cyan/30 resize-y"
           placeholder="What was your experience like?"
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -326,25 +313,26 @@ export default function ReviewForm() {
         />
 
         {/* Structured prompts */}
-        <input
-          className="review-input"
+        <Input
+          className="bg-surface-raised border-edge text-bone placeholder:text-muted focus-visible:border-cyan focus-visible:ring-cyan/30"
           placeholder="What did you order? (optional)"
           value={whatOrdered}
           onChange={(e) => setWhatOrdered(e.target.value)}
         />
-        <input
-          className="review-input"
+        <Input
+          className="bg-surface-raised border-edge text-bone placeholder:text-muted focus-visible:border-cyan focus-visible:ring-cyan/30"
           placeholder="One thing future visitors should know? (optional)"
           value={oneThingToKnow}
           onChange={(e) => setOneThingToKnow(e.target.value)}
         />
 
         {/* Photo upload */}
-        <div className="review-photo-section">
+        <div className="my-2">
           <button
-            className="review-photo-btn"
+            className="w-full flex items-center justify-center gap-2 bg-surface-raised border border-dashed border-edge-bright rounded-lg py-2.5 px-4 text-sm text-blue-gray cursor-pointer transition-colors hover:border-cyan/50 hover:text-cyan"
             onClick={() => fileInputRef.current?.click()}
           >
+            <Camera className="size-4" />
             {photo ? "Change Photo" : "Add Photo (proof of visit)"}
           </button>
           <input
@@ -356,20 +344,24 @@ export default function ReviewForm() {
             hidden
           />
           {photoPreview && (
-            <div className="review-photo-preview">
-              <img src={photoPreview} alt="Review photo" />
+            <div className="relative mt-2">
+              <img
+                src={photoPreview}
+                alt="Review photo"
+                className="w-full max-h-[160px] object-cover rounded-lg"
+              />
               {photoNearPlace === true && (
-                <span className="photo-location-badge verified">
+                <span className="absolute bottom-2 left-2 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-phosphor/90 text-void">
                   Location verified
                 </span>
               )}
               {photoNearPlace === false && (
-                <span className="photo-location-badge unverified">
+                <span className="absolute bottom-2 left-2 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber/90 text-void">
                   Photo taken elsewhere
                 </span>
               )}
               {photoLocation === null && photo && (
-                <span className="photo-location-badge no-gps">
+                <span className="absolute bottom-2 left-2 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-void/60 text-bone">
                   No GPS in photo
                 </span>
               )}
@@ -378,18 +370,18 @@ export default function ReviewForm() {
         </div>
 
         {/* Submit */}
-        <button
-          className="review-submit-btn"
+        <Button
+          className="w-full font-display text-[15px]"
           onClick={handleSubmit}
           disabled={rating === 0 || text.trim().length < 5}
         >
           Submit Review
-        </button>
+        </Button>
 
-        <p className="review-footnote">
+        <p className="text-[11px] text-muted text-center mt-2 mb-0">
           Your review will be permanently stored on Base. Free, no fees.
         </p>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

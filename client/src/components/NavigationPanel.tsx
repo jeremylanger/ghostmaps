@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import { formatDistanceLive } from "../lib/geo-utils";
 import { formatDuration, maneuverIcon } from "../lib/nav-helpers";
 import { useAppStore } from "../store";
@@ -5,6 +6,7 @@ import NavBottomBar from "./NavBottomBar";
 import NavLaneGuidance from "./NavLaneGuidance";
 import NavNextTurn from "./NavNextTurn";
 import NavStepList from "./NavStepList";
+import { Button } from "./ui/button";
 
 export default function NavigationPanel() {
   const routeData = useAppStore((s) => s.routeData);
@@ -22,28 +24,37 @@ export default function NavigationPanel() {
 
   if (!navigating) {
     return (
-      <div className="navigation-panel nav-preview">
-        <div className="nav-preview-summary">
-          <span className="nav-preview-duration">
+      <div className="absolute bottom-0 left-0 right-0 z-10 bg-surface/95 backdrop-blur-md border-t border-edge rounded-t-2xl shadow-panel-up max-h-[70vh] flex flex-col animate-decloak">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-edge">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 text-blue-gray hover:text-cyan size-8"
+            onClick={() => useAppStore.getState().clearRoute()}
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
+          <span className="text-[1.4rem] font-bold text-cyan font-mono">
             {formatDuration(summary.travelTimeInSeconds)}
           </span>
-          <span className="nav-preview-distance">
+          <span className="text-base text-blue-gray">
             {formatDistanceLive(summary.lengthInMeters)}
           </span>
           {summary.trafficDelayInSeconds > 60 && (
-            <span className="nav-preview-traffic">
+            <span className="text-sm font-medium text-coral">
               +{formatDuration(summary.trafficDelayInSeconds)} traffic
             </span>
           )}
         </div>
         <NavStepList />
-        <div className="nav-footer">
-          <button
-            className="nav-start-btn"
+        <div className="px-5 py-4 border-t border-edge shrink-0">
+          <Button
+            size="lg"
+            className="w-full font-display text-[15px] h-12 rounded-xl shadow-glow"
             onClick={() => useAppStore.getState().setNavigating(true)}
           >
             Start Navigation
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -52,16 +63,22 @@ export default function NavigationPanel() {
   return (
     <>
       {/* Top: next turn + steps */}
-      <div className="nav-top-overlay">
-        {rerouting && <div className="nav-rerouting">Rerouting...</div>}
+      <div className="absolute top-0 left-0 right-0 z-20 bg-surface/95 backdrop-blur-md rounded-b-xl shadow-panel overflow-hidden border-b border-edge">
+        {rerouting && (
+          <div className="bg-cyan text-void text-center py-1.5 text-sm font-semibold animate-pulse">
+            Rerouting...
+          </div>
+        )}
         <NavNextTurn currentInst={currentInst} nextInst={nextInst} />
         {currentLanes && currentLanes.length > 0 && (
           <NavLaneGuidance lanes={currentLanes} />
         )}
         {peekInst && nextInst && (
-          <div className="nav-upcoming">
-            <span className="nav-upcoming-icon">{maneuverIcon(nextInst)}</span>
-            <span className="nav-upcoming-text">
+          <div className="flex items-center gap-2 px-4 py-2 bg-surface-raised border-b border-edge text-sm text-blue-gray shrink-0">
+            <span className="text-base w-5 text-center">
+              {maneuverIcon(nextInst)}
+            </span>
+            <span className="flex-1">
               Then {nextInst.message.toLowerCase()}
             </span>
           </div>
@@ -69,8 +86,8 @@ export default function NavigationPanel() {
         <NavStepList />
       </div>
 
-      {/* Bottom: ETA bar with hero numbers */}
-      <div className="nav-bottom-overlay">
+      {/* Bottom: ETA bar */}
+      <div className="absolute bottom-0 left-0 right-0 z-20">
         <NavBottomBar summary={summary} />
       </div>
     </>

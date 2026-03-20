@@ -25,14 +25,14 @@ export default function NavStepList() {
   return (
     <>
       <button
-        className="nav-steps-toggle"
+        className="w-full py-2.5 bg-surface-raised border-none border-b border-b-edge text-sm font-semibold text-cyan cursor-pointer transition-colors hover:bg-edge shrink-0"
         onClick={() => setShowSteps(!showSteps)}
       >
         {showSteps ? "Hide Steps" : `Steps (${instructions.length})`}
       </button>
 
       {showSteps && (
-        <div className="nav-step-list">
+        <div className="max-h-[50vh] overflow-y-auto bg-surface border-t border-edge">
           {instructions.map((inst, i) => {
             const isActive = i === currentIndex;
             const isPast = navigating && i < currentIndex;
@@ -44,16 +44,26 @@ export default function NavStepList() {
               <div
                 key={i}
                 ref={isActive ? activeRef : undefined}
-                className={`nav-instruction ${isActive ? "active" : ""} ${isPast ? "past" : ""}`}
+                className={`flex items-start gap-3 px-4 py-3 border-b border-edge/50 transition-colors ${
+                  isActive
+                    ? "bg-cyan-muted border-l-[3px] border-l-cyan pl-[13px]"
+                    : ""
+                } ${isPast ? "opacity-40" : ""}`}
               >
-                <div className="nav-instruction-icon">{maneuverIcon(inst)}</div>
-                <div className="nav-instruction-content">
-                  <div className="nav-instruction-text">{inst.message}</div>
+                <div className="text-xl w-7 text-center shrink-0 mt-px">
+                  {maneuverIcon(inst)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-bone leading-tight">
+                    {inst.message}
+                  </div>
                   {inst.street && (
-                    <div className="nav-instruction-street">{inst.street}</div>
+                    <div className="text-sm text-blue-gray mt-0.5">
+                      {inst.street}
+                    </div>
                   )}
                   {nextDist > 0 && (
-                    <div className="nav-instruction-distance">
+                    <div className="text-xs text-muted mt-1 font-mono">
                       {formatDistance(nextDist)}
                     </div>
                   )}

@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MapPin, X } from "lucide-react";
 import { useState } from "react";
 import HamburgerMenu from "./components/HamburgerMenu";
 import LocateButton from "./components/LocateButton";
@@ -9,9 +10,9 @@ import PrivacyPage from "./components/PrivacyPage";
 import RegisterSchema from "./components/RegisterSchema";
 import ReviewForm from "./components/ReviewForm";
 import SearchBar from "./components/SearchBar";
+import { Button } from "./components/ui/button";
 import { CDPProvider } from "./lib/cdp";
 import { useAppStore } from "./store";
-import "./App.css";
 
 const queryClient = new QueryClient();
 
@@ -23,15 +24,16 @@ function LocationPrompt() {
   if (userLocation || dismissed) return null;
 
   return (
-    <div className="location-prompt">
+    <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 bg-surface/95 backdrop-blur-md border border-edge rounded-xl shadow-panel px-3.5 py-2.5 flex items-center gap-2.5 text-sm text-bone whitespace-nowrap animate-decloak">
+      <MapPin className="size-4 text-cyan" />
       <span>
         {locating
           ? "Getting location..."
           : "Enable location for nearby results"}
       </span>
       {!locating && (
-        <button
-          className="location-prompt-btn"
+        <Button
+          size="sm"
           onClick={() => {
             setLocating(true);
             navigator.geolocation.getCurrentPosition(
@@ -50,14 +52,16 @@ function LocationPrompt() {
           }}
         >
           Allow
-        </button>
+        </Button>
       )}
-      <button
-        className="location-prompt-dismiss"
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        className="text-muted hover:text-bone"
         onClick={() => setDismissed(true)}
       >
-        &times;
-      </button>
+        <X className="size-4" />
+      </Button>
     </div>
   );
 }
@@ -68,7 +72,7 @@ function AppContent() {
   const routeData = useAppStore((s) => s.routeData);
 
   return (
-    <div className="app">
+    <div className="absolute inset-0">
       <Map />
       <SearchBar />
       <LocationPrompt />

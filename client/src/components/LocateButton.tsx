@@ -1,3 +1,4 @@
+import { Crosshair } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useAppStore } from "../store";
 
@@ -29,26 +30,16 @@ export default function LocateButton() {
 
   return (
     <button
-      className={`locate-btn ${active ? "active" : ""}`}
+      type="button"
+      className={`absolute bottom-6 right-4 z-10 size-11 rounded-lg border bg-surface/90 backdrop-blur-md flex items-center justify-center transition-all cursor-pointer ${
+        active
+          ? "border-cyan text-cyan shadow-glow"
+          : "border-edge text-blue-gray hover:text-cyan hover:border-cyan/50 hover:shadow-glow"
+      }`}
       onClick={handleClick}
       title="Show my location"
     >
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="12" cy="12" r="4" />
-        <line x1="12" y1="2" x2="12" y2="6" />
-        <line x1="12" y1="18" x2="12" y2="22" />
-        <line x1="2" y1="12" x2="6" y2="12" />
-        <line x1="18" y1="12" x2="22" y2="12" />
-      </svg>
+      <Crosshair className="size-5" />
     </button>
   );
 }
