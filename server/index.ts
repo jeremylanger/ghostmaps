@@ -512,6 +512,17 @@ app.post("/api/compare", async (req, res) => {
   }
 });
 
+// Server outbound IP (for API key whitelisting)
+app.get("/api/server-ip", async (_req, res) => {
+  try {
+    const r = await fetch("https://api.ipify.org");
+    const ip = await r.text();
+    res.json({ ip });
+  } catch {
+    res.status(500).json({ error: "Could not determine IP" });
+  }
+});
+
 // SPA fallback — serve index.html for non-API routes
 app.get("/{*path}", (_req, res) => {
   res.sendFile(path.join(clientDist, "index.html"));

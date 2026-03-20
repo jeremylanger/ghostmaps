@@ -192,7 +192,13 @@ export async function searchByName(
       body: JSON.stringify(body),
     });
 
-    if (!response.ok) return [];
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      console.error(
+        `Google Places name search failed: ${response.status} ${errText}`,
+      );
+      return [];
+    }
 
     const data = await response.json();
     const items = data.places || [];
