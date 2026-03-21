@@ -128,7 +128,7 @@ Immutable reviews solve real problems (Yelp pay-to-play, platform censorship), b
 - **EXIF GPS proof-of-visit** — optional photo verification confirms the reviewer was physically at the location
 - **Account age and review count** — credibility signals displayed on each review
 
-**What about harassment or defamatory content?** Reviews are pre-screened by Venice AI and server-side checks before going on-chain. Content with threats, hate speech, or doxxing is blocked. On-chain data is permanent, but display is not — the client can filter reviews below a quality threshold or surface community counter-attestations.
+**What about harassment or defamatory content?** Reviews with threats, hate speech, adult content, or doxxing are blocked *before* they reach the chain — they never become attestations. For edge cases that pass automated checks, the client can filter reviews below a quality threshold or surface community counter-attestations.
 
 **What about sybil attacks (mass fake accounts)?** This is the hardest problem. CDP wallets are free to create. Planned defenses (v2): stake-and-challenge (reviewers put skin in the game), soulbound reputation (non-transferable credibility), and quadratic decay (diminishing impact from a single identity). See `plans/reviews.md` for the full 6-layer defense design.
 
