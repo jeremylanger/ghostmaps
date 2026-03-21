@@ -31,7 +31,23 @@ dotenv.config({ path: path.join(__dirname, "..", ".env") });
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+const ALLOWED_ORIGINS = [
+  process.env.CORS_ORIGIN || "https://ghostmaps.app",
+  "http://localhost:5174",
+  "https://localhost:5174",
+];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (server-to-server, curl, etc.)
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  }),
+);
 app.use(express.json());
 
 // Serve Vite build in production
@@ -129,10 +145,7 @@ app.get("/api/ai-search", async (req, res) => {
       return;
     }
 
-    console.log(`AI search: "${q}"`);
-
     const parsed = await parseQuery(q);
-    console.log("Parsed:", parsed);
 
     const userLat = lat ? Number.parseFloat(lat) : undefined;
     const userLng = lng ? Number.parseFloat(lng) : undefined;

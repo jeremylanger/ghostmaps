@@ -5,7 +5,7 @@ This document records the collaboration between Jeremy Langer (human) and Claude
 **Agent harness:** Claude Code (CLI)
 **Model:** Claude Opus 4.6 (1M context)
 **Duration:** March 13–22, 2026 (10 days)
-**Sessions:** 17 total (8 synthesis planning + 9 ghostmaps implementation)
+**Sessions:** 17 total
 **Commits:** 43
 
 ---
@@ -272,7 +272,7 @@ After the switch, searching "coffee" returned no Starbucks. Claude initially bla
 |---|---|
 | Total commits | 43 |
 | Lines of code (approx.) | ~5,000 (client) + ~2,500 (server) |
-| Tests passing | 70 server unit + integration tests |
+| Tests passing | 120 server + 65 client = 185 total |
 | API endpoints | 12 |
 | Venice AI integration points | 6 |
 | External APIs | 4 (Venice, Google Places, TomTom, EAS/Base) |

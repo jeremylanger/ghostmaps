@@ -11,7 +11,6 @@ async function veniceChat(
   model: string,
   options: { temperature?: number } = {},
 ): Promise<string> {
-  console.log("[venice] Starting chat request...");
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 45000);
 
@@ -33,8 +32,6 @@ async function veniceChat(
       keepalive: false,
     } as RequestInit);
 
-    console.log("[venice] Response status:", response.status);
-
     if (!response.ok) {
       const text = await response.text();
       throw new Error(`Venice API error: ${response.status} ${text}`);
@@ -44,8 +41,6 @@ async function veniceChat(
     const msg = data.choices?.[0]?.message;
     const content = msg?.content || "";
     const reasoning = msg?.reasoning_content || "";
-    console.log("[venice] content:", content.slice(0, 100) || "(empty)");
-    console.log("[venice] reasoning:", reasoning.slice(0, 100) || "(empty)");
     // Venice sometimes puts structured output in reasoning_content when content is empty
     return content || reasoning;
   } finally {

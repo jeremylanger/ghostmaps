@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 620" font-family="'Inter', 'SF Pro Display', -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#080c14"/>
+      <stop offset="100%" stop-color="#0a1018"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00ff9d" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#00ff9d" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="amberGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="lavGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8b7ec8" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#8b7ec8" stop-opacity="0.05"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glowStrong">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="620" fill="url(#bgGrad)" rx="12"/>
+
+  <!-- Subtle grid -->
+  <g stroke="#1a2535" stroke-width="0.5" opacity="0.3">
+    <line x1="0" y1="100" x2="900" y2="100"/>
+    <line x1="0" y1="200" x2="900" y2="200"/>
+    <line x1="0" y1="300" x2="900" y2="300"/>
+    <line x1="0" y1="400" x2="900" y2="400"/>
+    <line x1="0" y1="500" x2="900" y2="500"/>
+    <line x1="300" y1="0" x2="300" y2="620"/>
+    <line x1="600" y1="0" x2="600" y2="620"/>
+  </g>
+
+  <!-- Title -->
+  <text x="450" y="38" text-anchor="middle" fill="#e8e6e1" font-size="20" font-weight="700" letter-spacing="2">GHOST MAPS</text>
+  <text x="450" y="58" text-anchor="middle" fill="#6b7a8d" font-size="11" letter-spacing="1">ARCHITECTURE</text>
+
+  <!-- ═══════════ USER LAYER ═══════════ -->
+  <rect x="325" y="78" width="250" height="52" rx="8" fill="url(#cyanGrad)" stroke="#00e5ff" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="450" y="101" text-anchor="middle" fill="#00e5ff" font-size="13" font-weight="600">User (Browser)</text>
+  <text x="450" y="118" text-anchor="middle" fill="#6b7a8d" font-size="10">React 19 + MapLibre GL JS + Zustand</text>
+
+  <!-- Arrow: User → Express -->
+  <line x1="450" y1="130" x2="450" y2="165" stroke="#00e5ff" stroke-width="1.5" opacity="0.6" marker-end="url(#arrowCyan)"/>
+  <defs>
+    <marker id="arrowCyan" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#00e5ff" opacity="0.6"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#00ff9d" opacity="0.6"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#f59e0b" opacity="0.6"/>
+    </marker>
+    <marker id="arrowLav" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#8b7ec8" opacity="0.6"/>
+    </marker>
+  </defs>
+
+  <!-- ═══════════ EXPRESS SERVER ═══════════ -->
+  <rect x="295" y="168" width="310" height="52" rx="8" fill="url(#cyanGrad)" stroke="#1a2535" stroke-width="1"/>
+  <text x="450" y="191" text-anchor="middle" fill="#e8e6e1" font-size="13" font-weight="600">Express API Server</text>
+  <text x="450" y="208" text-anchor="middle" fill="#6b7a8d" font-size="10">Node.js + TypeScript · 12 endpoints · SSE streaming</text>
+
+  <!-- ═══════════ FOUR SERVICE BOXES ═══════════ -->
+
+  <!-- Venice AI (left) -->
+  <rect x="30" y="280" width="190" height="120" rx="8" fill="url(#greenGrad)" stroke="#00ff9d" stroke-width="1" filter="url(#glow)"/>
+  <text x="125" y="305" text-anchor="middle" fill="#00ff9d" font-size="13" font-weight="600">Venice AI</text>
+  <text x="125" y="322" text-anchor="middle" fill="#6b7a8d" font-size="9">ZERO DATA RETENTION</text>
+  <text x="125" y="342" text-anchor="middle" fill="#e8e6e1" font-size="9.5">1. Search parsing + ranking</text>
+  <text x="125" y="356" text-anchor="middle" fill="#e8e6e1" font-size="9.5">2. Place intelligence briefing</text>
+  <text x="125" y="370" text-anchor="middle" fill="#e8e6e1" font-size="9.5">3. Review scoring + summary</text>
+  <text x="125" y="384" text-anchor="middle" fill="#e8e6e1" font-size="9.5">4. Photo verify + compare</text>
+
+  <!-- Google Places (center-left) -->
+  <rect x="240" y="280" width="190" height="120" rx="8" fill="url(#amberGrad)" stroke="#f59e0b" stroke-width="1"/>
+  <text x="335" y="305" text-anchor="middle" fill="#f59e0b" font-size="13" font-weight="600">Google Places</text>
+  <text x="335" y="322" text-anchor="middle" fill="#6b7a8d" font-size="9">SERVER-SIDE · NO USER DATA</text>
+  <text x="335" y="342" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Nearby Search (categories)</text>
+  <text x="335" y="356" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Text Search (names)</text>
+  <text x="335" y="370" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Enrichment: hours, photos,</text>
+  <text x="335" y="384" text-anchor="middle" fill="#e8e6e1" font-size="9.5">ratings, price, services</text>
+
+  <!-- TomTom (center-right) -->
+  <rect x="450" y="280" width="190" height="120" rx="8" fill="url(#lavGrad)" stroke="#8b7ec8" stroke-width="1"/>
+  <text x="545" y="305" text-anchor="middle" fill="#8b7ec8" font-size="13" font-weight="600">TomTom Routing</text>
+  <text x="545" y="322" text-anchor="middle" fill="#6b7a8d" font-size="9">ANONYMOUS COORDS ONLY</text>
+  <text x="545" y="342" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Traffic-aware routing</text>
+  <text x="545" y="356" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Turn-by-turn instructions</text>
+  <text x="545" y="370" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Speed limits + lane guidance</text>
+  <text x="545" y="384" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Live rerouting</text>
+
+  <!-- EAS on Base (right) -->
+  <rect x="660" y="280" width="210" height="120" rx="8" fill="url(#cyanGrad)" stroke="#00e5ff" stroke-width="1" filter="url(#glow)"/>
+  <text x="765" y="305" text-anchor="middle" fill="#00e5ff" font-size="13" font-weight="600">EAS on Base</text>
+  <text x="765" y="322" text-anchor="middle" fill="#6b7a8d" font-size="9">IMMUTABLE · COMPOSABLE</text>
+  <text x="765" y="342" text-anchor="middle" fill="#e8e6e1" font-size="9.5">On-chain review attestations</text>
+  <text x="765" y="356" text-anchor="middle" fill="#e8e6e1" font-size="9.5">ERC-8004 identity</text>
+  <text x="765" y="370" text-anchor="middle" fill="#e8e6e1" font-size="9.5">CDP embedded wallets</text>
+  <text x="765" y="384" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Gas sponsored ($0 for users)</text>
+
+  <!-- ═══════════ ARROWS: Server → Services ═══════════ -->
+  <!-- Server → Venice -->
+  <path d="M350,220 Q125,250 125,278" fill="none" stroke="#00ff9d" stroke-width="1.5" opacity="0.5" marker-end="url(#arrowGreen)"/>
+  <!-- Server → Google -->
+  <line x1="400" y1="220" x2="350" y2="278" stroke="#f59e0b" stroke-width="1.5" opacity="0.5" marker-end="url(#arrowAmber)"/>
+  <!-- Server → TomTom -->
+  <line x1="500" y1="220" x2="540" y2="278" stroke="#8b7ec8" stroke-width="1.5" opacity="0.5" marker-end="url(#arrowLav)"/>
+  <!-- Server → EAS -->
+  <path d="M550,220 Q765,250 765,278" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity="0.5" marker-end="url(#arrowCyan)"/>
+
+  <!-- ═══════════ DATA FLOW LABELS ═══════════ -->
+  <text x="200" y="248" text-anchor="middle" fill="#00ff9d" font-size="8" opacity="0.7">NL query + lat/lng</text>
+  <text x="360" y="255" text-anchor="middle" fill="#f59e0b" font-size="8" opacity="0.7">place name + coords</text>
+  <text x="540" y="255" text-anchor="middle" fill="#8b7ec8" font-size="8" opacity="0.7">origin + destination</text>
+  <text x="700" y="248" text-anchor="middle" fill="#00e5ff" font-size="8" opacity="0.7">attestation calldata</text>
+
+  <!-- ═══════════ PRIVACY SHIELD BAR ═══════════ -->
+  <rect x="30" y="430" width="840" height="44" rx="6" fill="#0d1420" stroke="#00ff9d" stroke-width="1" stroke-dasharray="4,3" opacity="0.8"/>
+  <text x="450" y="448" text-anchor="middle" fill="#00ff9d" font-size="11" font-weight="600" letter-spacing="3">PRIVACY BOUNDARY</text>
+  <text x="450" y="464" text-anchor="middle" fill="#6b7a8d" font-size="9">No user identity, location history, or search queries cross this line</text>
+
+  <!-- ═══════════ WHAT SERVICES SEE ═══════════ -->
+  <text x="450" y="500" text-anchor="middle" fill="#6b7a8d" font-size="10" font-weight="600" letter-spacing="1">WHAT EACH SERVICE SEES</text>
+
+  <rect x="30" y="512" width="190" height="40" rx="4" fill="#0d1420" stroke="#1a2535" stroke-width="0.5"/>
+  <text x="125" y="530" text-anchor="middle" fill="#00ff9d" font-size="9" font-weight="600">Venice</text>
+  <text x="125" y="544" text-anchor="middle" fill="#6b7a8d" font-size="8.5">Query text only. Deleted after.</text>
+
+  <rect x="240" y="512" width="190" height="40" rx="4" fill="#0d1420" stroke="#1a2535" stroke-width="0.5"/>
+  <text x="335" y="530" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="600">Google</text>
+  <text x="335" y="544" text-anchor="middle" fill="#6b7a8d" font-size="8.5">"A server searched for pizza"</text>
+
+  <rect x="450" y="512" width="190" height="40" rx="4" fill="#0d1420" stroke="#1a2535" stroke-width="0.5"/>
+  <text x="545" y="530" text-anchor="middle" fill="#8b7ec8" font-size="9" font-weight="600">TomTom</text>
+  <text x="545" y="544" text-anchor="middle" fill="#6b7a8d" font-size="8.5">Anonymous A→B coordinates</text>
+
+  <rect x="660" y="512" width="210" height="40" rx="4" fill="#0d1420" stroke="#1a2535" stroke-width="0.5"/>
+  <text x="765" y="530" text-anchor="middle" fill="#00e5ff" font-size="9" font-weight="600">Base (EAS)</text>
+  <text x="765" y="544" text-anchor="middle" fill="#6b7a8d" font-size="8.5">Wallet address + review only</text>
+
+  <!-- ═══════════ MAP TILES (side note) ═══════════ -->
+  <rect x="30" y="568" width="130" height="36" rx="4" fill="#0d1420" stroke="#1a2535" stroke-width="0.5"/>
+  <text x="95" y="584" text-anchor="middle" fill="#6b7a8d" font-size="9" font-weight="600">MapTiler</text>
+  <text x="95" y="596" text-anchor="middle" fill="#6b7a8d" font-size="8">Vector tiles (direct)</text>
+
+  <!-- Client-side label -->
+  <rect x="180" y="568" width="130" height="36" rx="4" fill="#0d1420" stroke="#1a2535" stroke-width="0.5"/>
+  <text x="245" y="584" text-anchor="middle" fill="#6b7a8d" font-size="9" font-weight="600">CDP Wallets</text>
+  <text x="245" y="596" text-anchor="middle" fill="#6b7a8d" font-size="8">Client-side signing</text>
+
+  <rect x="330" y="568" width="130" height="36" rx="4" fill="#0d1420" stroke="#1a2535" stroke-width="0.5"/>
+  <text x="395" y="584" text-anchor="middle" fill="#6b7a8d" font-size="9" font-weight="600">ERC-8004</text>
+  <text x="395" y="596" text-anchor="middle" fill="#6b7a8d" font-size="8">Agent identity on Base</text>
+
+  <!-- Tech stats -->
+  <text x="620" y="582" fill="#1a2535" font-size="9">|</text>
+  <text x="640" y="582" fill="#6b7a8d" font-size="9">43 commits</text>
+  <text x="720" y="582" fill="#1a2535" font-size="9">|</text>
+  <text x="740" y="582" fill="#6b7a8d" font-size="9">12 endpoints</text>
+  <text x="835" y="582" fill="#1a2535" font-size="9">|</text>
+  <text x="855" y="582" fill="#6b7a8d" font-size="9">6 AI</text>
+  <text x="640" y="598" fill="#6b7a8d" font-size="9">10 days</text>
+  <text x="720" y="598" fill="#1a2535" font-size="9">|</text>
+  <text x="740" y="598" fill="#6b7a8d" font-size="9">17 sessions</text>
+  <text x="835" y="598" fill="#1a2535" font-size="9">|</text>
+  <text x="855" y="598" fill="#6b7a8d" font-size="9">MIT</text>
+</svg>

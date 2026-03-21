@@ -20,6 +20,8 @@ Google Maps tracks your location every 2 minutes and has paid $7.3B+ in privacy 
 
 ## Architecture
 
+![Ghost Maps Architecture](client/public/architecture.svg)
+
 ```
 Browser (React + MapLibre GL JS)
   │
@@ -54,7 +56,13 @@ Browser (React + MapLibre GL JS)
 | 11,500+ geofence warrants/year | Nothing to hand over |
 | Tracked 98M users who opted out | No opt-out needed — data never exists |
 
-**Transparency:** TomTom sees anonymous origin/destination coordinates for route calculation. Google Places sees search queries and place coordinates — but all requests come from our server, so Google never sees who's searching, user identity, or user location. Google sees "a server searched for pizza" — not "Jeremy in Brooklyn searched for pizza."
+**Transparency:** We disclose exactly what each service sees:
+
+- **TomTom** sees anonymous origin/destination coordinates for route calculation. No user identity.
+- **Google Places** sees search queries and location coordinates (needed to find nearby places) — but all requests come from our server, so Google never sees *who* is searching. Google sees "a server searched for pizza near 40.15, -105.10" — not "Jeremy searched for pizza." No user identity, session, or device info is sent.
+- **MapTiler** serves map tiles directly to the browser. Tile requests reveal approximate area (city/neighborhood level, not precise location) via standard HTTP. This is the same as loading any map — no more identifying than browsing a weather site. No user identity is sent.
+- **Coinbase CDP** handles wallet creation via email OTP. Coinbase holds the email-to-wallet mapping — but we don't store emails ourselves, and email-based auth is standard across every app. The alternative (asking users to manage seed phrases) would make the app unusable. CDP is a bridge to invisible crypto UX, not a surveillance vector.
+- **Server logs** contain only errors and startup messages. No search queries, locations, or user data are logged.
 
 ---
 
@@ -107,6 +115,21 @@ Reviews are Ethereum Attestation Service attestations — immutable, composable,
 - Gas is sponsored via CDP Paymaster — users pay $0
 
 **Review quality tiers:** Generic (0-25) → Decent (26-50) → Detailed (51-75) → Exceptional (76-100)
+
+### Immutability Tradeoffs
+
+Immutable reviews solve real problems (Yelp pay-to-play, platform censorship), but they create new ones. We've thought about this:
+
+**What about fake reviews?** Current defenses (hackathon MVP):
+- Venice AI quality scoring rejects sentiment-rating mismatches and flags low-effort content
+- EXIF GPS proof-of-visit verifies the reviewer was physically at the location
+- Account age and review count provide credibility signals
+
+**What about harassment or defamatory content?** On-chain data is permanent, but display is not. The client can filter reviews below a quality threshold, hide flagged content, or surface community counter-attestations. The data layer is immutable; the presentation layer has moderation.
+
+**What about sybil attacks (mass fake accounts)?** This is the hardest problem. CDP wallets are free to create. Planned defenses (v2): stake-and-challenge (reviewers put skin in the game), soulbound reputation (non-transferable credibility), and quadratic decay (diminishing impact from a single identity). See `plans/reviews.md` for the full 6-layer defense design.
+
+**Our position:** Centralized moderation is a solved problem — and it's been solved badly (Yelp extortion, Google's 240M removed fakes in 2024). We'd rather build robust decentralized quality signals than recreate the system we're replacing.
 
 ---
 
@@ -172,7 +195,7 @@ ghostmaps/
 ### Setup
 
 ```bash
-git clone https://github.com/ghostmaps/ghostmaps.git
+git clone https://github.com/jeremylanger/ghostmaps.git
 cd ghostmaps
 
 # Create .env with required keys

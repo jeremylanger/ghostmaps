@@ -28,6 +28,7 @@ import {
 import { extractPhotoGPS, isNearLocation } from "../lib/exif";
 import { QUALITY_STYLES } from "../lib/theme";
 import { useAppStore } from "../store";
+import AuthButton from "./AuthButton";
 
 interface QualityResult {
   score: number;
@@ -184,9 +185,10 @@ export default function ReviewForm() {
               Write a Review
             </DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-blue-gray leading-relaxed">
+          <p className="text-sm text-blue-gray leading-relaxed mb-3">
             Sign in with your email to write a review.
           </p>
+          <AuthButton />
         </DialogContent>
       </Dialog>
     );

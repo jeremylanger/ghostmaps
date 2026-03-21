@@ -295,7 +295,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Fix address search: `geocodeAddress()` now accepts userLat/userLng and sends 50km locationBias to Google Places; Venice prompt updated with partial address examples ("123", "123 maple")
 - [x] Tests: 59 client tests passing (10 new: skip-ahead, GPS accuracy gating, far-from-route, snap-to-nearest, short steps)
 
-### Day 10 — March 20 (IN PROGRESS)
+### Day 10 — March 20-21 (IN PROGRESS)
 **Documentation + Polish + Architecture Simplification**
 - [x] Comprehensive README (architecture, setup, tech stack, privacy model)
 - [x] API documentation (machine-readable for AI judges)
@@ -311,11 +311,37 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Redesign place panel action buttons (Apple Maps style: 4-col grid, icon+label)
 - [x] Move rating/address into scrollable area (only header + buttons pinned)
 - [x] Mobile-responsive layout (hamburger menu, search bar spacing)
-- [ ] Architecture diagram
+- [x] Architecture diagram (`client/public/architecture.svg` — Phantom Protocol branded, shows data flow + privacy boundary)
 - [ ] End-to-end flow testing: search → discover → reviews → navigate
 - [ ] Loading states, error handling, edge cases
 - [ ] Performance optimization (debounce search, cache results)
 - [ ] Tests: unit, integration, E2E
+
+**Judge Panel Fixes (from `plans/judging/round-1.md`):**
+
+#### Spec
+- Happy: README clone URL `git clone https://github.com/jeremylanger/ghostmaps.git` works
+- Happy: API requests from origins other than `ghostmaps.app` and `localhost` are rejected by CORS
+- Happy: README includes "Immutability Tradeoffs" section acknowledging content risks + mitigation approach
+- Happy: Dead test file `here.unit.test.ts` deleted, test counts in docs reflect reality
+- Happy: README transparency section clarifies why MapTiler tile requests and Coinbase email-to-wallet are not meaningful privacy concerns
+- Security: CORS allows `https://ghostmaps.app` in production, `http://localhost:*` in development
+- Security: CORS restriction applies to all API routes including SSE endpoints
+- Security: Server logs audited — only errors logged, no user data (search queries, locations, IPs) in logs
+- Edge: CORS doesn't break Vite dev proxy (proxied requests come from server, not browser)
+- Edge: If `CORS_ORIGIN` env var is not set, default to `https://ghostmaps.app`
+
+#### Implementation
+- [x] Fix README clone URL (`ghostmaps/ghostmaps` → `jeremylanger/ghostmaps`)
+- [x] Restrict CORS to production domain + localhost (allowlist: ghostmaps.app, localhost:5174)
+- [x] Audit server logs — removed search query logging from index.ts, Venice content logging from venice.ts
+- [x] Clarify MapTiler + Coinbase in README transparency section (why these aren't real concerns)
+- [x] Add "Immutability Tradeoffs" section to README (moderation approach, sybil defense roadmap)
+- [x] Delete `here.unit.test.ts`, fix test count (actual: 120 server + 65 client = 185 total)
+
+**Open Items (high priority, needs further design):**
+- [ ] ERC-8004 — evaluate: integrate for reviewer identity or defer? Decision needed before submission.
+- [ ] Review authenticity / fake review prevention — work through enforcement strategy: quality score thresholds, rate limiting, proof-of-visit requirements, soft moderation. High priority.
 
 **End of day:** App is polished. Documentation is thorough enough for AI agents to understand the full system.
 
