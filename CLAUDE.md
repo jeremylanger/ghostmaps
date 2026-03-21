@@ -13,6 +13,8 @@ Keep all code minimal and clean, while maintaining readability.
 
 **Never swallow errors silently.** Every `catch` block and error branch must log with `console.error`. No empty catch blocks, no `catch {}`, no `if (!response.ok) return` without logging. It's fine to return a fallback value — just log first.
 
+**All tests must pass before pushing.** Run both `cd server && npm test` and `cd client && npx vitest run` and confirm zero failures before every push. Do not dismiss failures as "flaky," "pre-existing," or "missing env vars" — investigate the actual cause. Every failure we've excused turned out to be a real bug (wrong types, stale fields, tests hitting wrong endpoints). Fix the test or fix the code. No exceptions.
+
 Run `npm run format` after each task.
 
 ## Living Plans Directory
