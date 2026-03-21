@@ -27,7 +27,6 @@ export interface EnrichedPlace extends Place {
   wheelchairAccessible: boolean | null;
   photoUri: string | null;
   photoUris: string[];
-  briefing: string;
 }
 
 export interface Ranking {

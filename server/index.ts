@@ -296,7 +296,6 @@ app.get("/api/places/:id", async (req, res) => {
       wheelchairAccessible: enrichment?.wheelchairAccessible ?? null,
       photoUri: enrichment?.photoUri ?? null,
       photoUris: enrichment?.photoUris ?? [],
-      briefing: "",
     });
   } catch (err) {
     console.error("Place detail error:", err);

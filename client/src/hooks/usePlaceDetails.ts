@@ -3,13 +3,19 @@ import type { EnrichedPlace } from "../types";
 
 async function fetchPlaceDetails(id: string): Promise<EnrichedPlace> {
   const res = await fetch(`/api/places/${encodeURIComponent(id)}`);
-  if (!res.ok) throw new Error("Failed to fetch place details");
+  if (!res.ok) {
+    console.error("Failed to fetch place details:", res.status, res.statusText);
+    throw new Error("Failed to fetch place details");
+  }
   return res.json();
 }
 
 async function fetchBriefing(id: string): Promise<string> {
   const res = await fetch(`/api/places/${encodeURIComponent(id)}/briefing`);
-  if (!res.ok) throw new Error("Failed to fetch briefing");
+  if (!res.ok) {
+    console.error("Failed to fetch briefing:", res.status, res.statusText);
+    throw new Error("Failed to fetch briefing");
+  }
   const data = await res.json();
   return data.briefing;
 }
