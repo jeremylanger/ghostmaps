@@ -280,7 +280,7 @@ export interface PlaceBriefingData {
 
 // --- Review Quality Scoring ---
 
-const QUALITY_SYSTEM_PROMPT = `You are a review quality scorer for Ghost Maps. Score a review on specificity and authenticity.
+const QUALITY_SYSTEM_PROMPT = `You are a review quality scorer and content moderator for Ghost Maps. Score a review on specificity and authenticity, and flag harmful content.
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
@@ -296,11 +296,19 @@ Scoring guide:
 - 51-80 (detailed): specific items, prices, experiences, comparisons
 - 81-100 (exceptional): detailed with photos, insider tips, specific staff mentions, unique observations
 
-Flags (array of strings):
+Flags (array of strings) — include ALL that apply:
+
+BLOCKING flags (review will be rejected):
 - "sentiment_mismatch" — text sentiment contradicts the numeric rating (e.g. "terrible food" with 5 stars)
-- "too_short" — under 10 words
-- "possible_spam" — repetitive, all caps, or promotional language
-- "ai_generated" — suspiciously perfect prose, lacks personal voice`;
+- "too_short" — under 25 characters of meaningful content
+- "possible_spam" — repetitive, all caps, promotional language, or URLs
+- "offensive_content" — slurs, threats, or gratuitously vulgar language (mild profanity in context like "the damn burger was incredible" is fine)
+- "hate_speech" — content targeting people based on race, gender, religion, sexuality, etc.
+- "adult_content" — sexually explicit content
+- "doxxing" — sharing private personal information (home addresses, phone numbers of private individuals). Naming public-facing staff in a complaint is fine.
+
+NON-BLOCKING flags (review is allowed but marked):
+- "ai_generated" — suspiciously perfect prose, lacks personal voice, reads like a template`;
 
 export interface ReviewQualityInput {
   rating: number;
@@ -361,12 +369,7 @@ export async function scoreReviewQuality(
     };
   } catch (err) {
     console.error("Venice quality scoring error:", err);
-    return {
-      score: 30,
-      label: "decent",
-      flags: [],
-      reason: "Could not score — defaulting to decent.",
-    };
+    throw new Error("Review quality scoring failed");
   }
 }
 

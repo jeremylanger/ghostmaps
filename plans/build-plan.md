@@ -341,7 +341,36 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **Open Items (high priority, needs further design):**
 - [ ] ERC-8004 — evaluate: integrate for reviewer identity or defer? Decision needed before submission.
-- [ ] Review authenticity / fake review prevention — work through enforcement strategy: quality score thresholds, rate limiting, proof-of-visit requirements, soft moderation. High priority.
+
+### Review Quality Enforcement + Content Moderation
+
+#### Spec
+- Happy: genuine detailed review scores 60+, no flags, submits on-chain normally
+- Happy: short but honest review scores 25, no blocking flags, submits with "Generic" quality badge
+- Happy: offensive language flagged `offensive_content`, submission blocked with generic message
+- Happy: spam/promotional content flagged `possible_spam`, submission blocked with generic message
+- Failure: Venice API down or timeout → review not submitted (fail closed), user sees "Unable to verify review quality, please try again"
+- Failure: Venice returns malformed JSON → fail closed, same error message
+- Failure: Venice flags incorrectly (false positive) → user can edit and resubmit but cannot bypass
+- Edge: minimum review length is 25 characters (enforced client-side, submit button disabled below 25)
+- Edge: mild profanity in context is NOT flagged as offensive
+- Edge: naming public-facing staff in a complaint is NOT flagged as doxxing
+- Edge: AI-generated reviews flagged `ai_generated` but NOT blocked
+- Security: review text sent to Venice under zero data retention, no server-side logging of content
+- Security: blocked review content never stored anywhere
+- UX: blocked review shows generic message "Your review didn't meet our quality standards. Please revise and try again."
+- UX: blocked review returns user to form with text preserved, not cleared
+- UX: re-submit triggers fresh Venice scoring
+- Blocking flags: `sentiment_mismatch`, `offensive_content`, `hate_speech`, `adult_content`, `doxxing`, `possible_spam`, `too_short`
+- Non-blocking flags: `ai_generated`
+
+#### Implementation
+- [x] Add content moderation flags to Venice quality scoring prompt (offensive_content, hate_speech, adult_content, doxxing)
+- [x] Enforce blocking on all dangerous flags (7 blocking, 1 non-blocking)
+- [x] Update minimum review length from 5 to 25 characters
+- [x] Update error UX: generic blocked message, preserve form text on block
+- [x] Fail closed: Venice scoring errors throw instead of returning default score
+- [x] Tests: 14 unit tests for flag enforcement logic (204 total passing)
 
 **End of day:** App is polished. Documentation is thorough enough for AI agents to understand the full system.
 

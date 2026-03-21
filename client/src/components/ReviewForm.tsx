@@ -81,7 +81,7 @@ export default function ReviewForm() {
   };
 
   const handleSubmit = async () => {
-    if (rating === 0 || text.trim().length < 5) return;
+    if (rating === 0 || text.trim().length < 25) return;
 
     try {
       setStep("scoring");
@@ -98,12 +98,29 @@ export default function ReviewForm() {
           },
         }),
       });
+      if (!scoreRes.ok) {
+        setErrorMsg("Unable to verify review quality. Please try again.");
+        setStep("error");
+        return;
+      }
       const qualityResult: QualityResult = await scoreRes.json();
       setQuality(qualityResult);
 
-      if (qualityResult.flags.includes("sentiment_mismatch")) {
+      const BLOCKING_FLAGS = [
+        "sentiment_mismatch",
+        "offensive_content",
+        "hate_speech",
+        "adult_content",
+        "doxxing",
+        "possible_spam",
+        "too_short",
+      ];
+      const blocked = qualityResult.flags.some((f) =>
+        BLOCKING_FLAGS.includes(f),
+      );
+      if (blocked) {
         setErrorMsg(
-          "Your rating and review text seem to contradict each other. Please adjust before submitting.",
+          "Your review didn't meet our quality standards. Please revise and try again.",
         );
         setStep("error");
         return;
@@ -370,7 +387,7 @@ export default function ReviewForm() {
         <Button
           className="w-full font-display text-[15px]"
           onClick={handleSubmit}
-          disabled={rating === 0 || text.trim().length < 5}
+          disabled={rating === 0 || text.trim().length < 25}
         >
           Submit Review
         </Button>

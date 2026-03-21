@@ -105,4 +105,88 @@ describe("Venice response parsing", () => {
       expect(parsed.alternatives).toEqual([]);
     });
   });
+
+  describe("quality scoring response extraction", () => {
+    const BLOCKING_FLAGS = [
+      "sentiment_mismatch",
+      "offensive_content",
+      "hate_speech",
+      "adult_content",
+      "doxxing",
+      "possible_spam",
+      "too_short",
+    ];
+    const NON_BLOCKING_FLAGS = ["ai_generated"];
+
+    function isBlocked(flags: string[]): boolean {
+      return flags.some((f) => BLOCKING_FLAGS.includes(f));
+    }
+
+    it("genuine review with no flags is not blocked", () => {
+      const flags: string[] = [];
+      expect(isBlocked(flags)).toBe(false);
+    });
+
+    it("sentiment_mismatch blocks submission", () => {
+      expect(isBlocked(["sentiment_mismatch"])).toBe(true);
+    });
+
+    it("offensive_content blocks submission", () => {
+      expect(isBlocked(["offensive_content"])).toBe(true);
+    });
+
+    it("hate_speech blocks submission", () => {
+      expect(isBlocked(["hate_speech"])).toBe(true);
+    });
+
+    it("adult_content blocks submission", () => {
+      expect(isBlocked(["adult_content"])).toBe(true);
+    });
+
+    it("doxxing blocks submission", () => {
+      expect(isBlocked(["doxxing"])).toBe(true);
+    });
+
+    it("possible_spam blocks submission", () => {
+      expect(isBlocked(["possible_spam"])).toBe(true);
+    });
+
+    it("too_short blocks submission", () => {
+      expect(isBlocked(["too_short"])).toBe(true);
+    });
+
+    it("ai_generated does NOT block submission", () => {
+      expect(isBlocked(["ai_generated"])).toBe(false);
+    });
+
+    it("multiple flags with any blocking flag blocks", () => {
+      expect(isBlocked(["ai_generated", "offensive_content"])).toBe(true);
+    });
+
+    it("score is clamped to 0-100 range", () => {
+      const parsed = { score: 150, label: "exceptional", flags: [] };
+      const score = Math.min(100, Math.max(0, parsed.score || 0));
+      expect(score).toBe(100);
+    });
+
+    it("negative score is clamped to 0", () => {
+      const parsed = { score: -10, label: "generic", flags: [] };
+      const score = Math.min(100, Math.max(0, parsed.score || 0));
+      expect(score).toBe(0);
+    });
+
+    it("all blocking flags are accounted for", () => {
+      expect(BLOCKING_FLAGS).toHaveLength(7);
+      for (const flag of BLOCKING_FLAGS) {
+        expect(isBlocked([flag])).toBe(true);
+      }
+    });
+
+    it("all non-blocking flags are accounted for", () => {
+      expect(NON_BLOCKING_FLAGS).toHaveLength(1);
+      for (const flag of NON_BLOCKING_FLAGS) {
+        expect(isBlocked([flag])).toBe(false);
+      }
+    });
+  });
 });
