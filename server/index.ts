@@ -276,30 +276,9 @@ app.get("/api/places/:id", async (req, res) => {
       return;
     }
 
-    // Enrich with Google Places data if API key available
-    let enrichment = null;
+    // Enrich via Google Places (photos, hours, rating)
     const googleKey = process.env.GOOGLE_PLACES_API_KEY;
-    if (googleKey) {
-      enrichment = await enrichPlace(place, googleKey);
-    }
-
-    // Generate Venice briefing with all available data
-    let briefing = "";
-    try {
-      briefing = await generatePlaceBriefing({
-        name: place.name,
-        category: place.category,
-        address: place.address,
-        phone: enrichment?.phone || place.phone,
-        website: enrichment?.website || place.website,
-        brand: place.brand,
-        openingHours: enrichment?.openingHours || null,
-        isOpen: enrichment?.isOpen ?? null,
-        foodTypes: enrichment?.foodTypes || [],
-      });
-    } catch (err) {
-      console.error("Briefing failed (non-fatal):", err);
-    }
+    const enrichment = googleKey ? await enrichPlace(place, googleKey) : null;
 
     res.json({
       ...place,
@@ -317,11 +296,41 @@ app.get("/api/places/:id", async (req, res) => {
       wheelchairAccessible: enrichment?.wheelchairAccessible ?? null,
       photoUri: enrichment?.photoUri ?? null,
       photoUris: enrichment?.photoUris ?? [],
-      briefing,
+      briefing: "",
     });
   } catch (err) {
     console.error("Place detail error:", err);
     res.status(500).json({ error: "Failed to get place details" });
+  }
+});
+
+// Venice AI briefing (separate from enrichment for speed)
+app.get("/api/places/:id/briefing", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const place = placeCache.get(id);
+
+    if (!place) {
+      res.status(404).json({ error: "Place not found." });
+      return;
+    }
+
+    const briefing = await generatePlaceBriefing({
+      name: place.name,
+      category: place.category,
+      address: place.address,
+      phone: place.phone,
+      website: place.website,
+      brand: place.brand,
+      openingHours: null,
+      isOpen: null,
+      foodTypes: [],
+    });
+
+    res.json({ briefing });
+  } catch (err) {
+    console.error("Briefing error:", err);
+    res.status(500).json({ error: "Failed to generate briefing" });
   }
 });
 

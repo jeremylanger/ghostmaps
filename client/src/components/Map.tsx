@@ -60,7 +60,7 @@ export default function Map() {
       map.flyTo({
         center: [flyTo.lng, flyTo.lat],
         zoom: hasSheet ? 15 : 17,
-        duration: 1200,
+        duration: 600,
         padding,
       });
     };

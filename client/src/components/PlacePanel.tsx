@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDragScroll } from "../hooks/useDragScroll";
-import { usePlaceDetails } from "../hooks/usePlaceDetails";
+import { usePlaceBriefing, usePlaceDetails } from "../hooks/usePlaceDetails";
 import { consolidateInstructions } from "../lib/consolidate-instructions";
 import { useAppStore } from "../store";
 import ReviewList from "./ReviewList";
@@ -54,7 +54,11 @@ export default function PlacePanel() {
   const place = useAppStore((s) => s.selectedPlace);
   const clearSelection = useAppStore((s) => s.clearSelection);
   const routeLoading = useAppStore((s) => s.routeLoading);
+  const setShowReviewForm = useAppStore((s) => s.setShowReviewForm);
   const { data: enriched, isLoading } = usePlaceDetails(place?.id ?? "");
+  const { data: briefing, isLoading: briefingLoading } = usePlaceBriefing(
+    place?.id ?? "",
+  );
   const [activeSnap, setActiveSnap] = useState<number | string | null>(0.45);
   const galleryRef = useDragScroll<HTMLDivElement>();
 
@@ -207,7 +211,7 @@ export default function PlacePanel() {
           <Button
             variant="outline"
             className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl hover:border-cyan/50 hover:text-cyan"
-            onClick={() => useAppStore.getState().setShowReviewForm(true)}
+            onClick={() => setShowReviewForm(true)}
           >
             <PenLine className="size-5" />
             <span>Review</span>
@@ -266,14 +270,6 @@ export default function PlacePanel() {
                 ))}
               </div>
             </div>
-          ) : enriched?.photoUri ? (
-            <div className="mx-6 mt-3 h-[200px] overflow-hidden rounded-lg">
-              <img
-                src={enriched.photoUri}
-                alt={displayPlace.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
           ) : null}
 
           {(enriched?.dineIn !== null ||
@@ -310,11 +306,13 @@ export default function PlacePanel() {
             </div>
           )}
 
-          {enriched?.briefing && (
+          {briefingLoading ? (
+            <Skeleton className="mx-6 mt-3 h-[60px] rounded-lg bg-surface-raised" />
+          ) : briefing ? (
             <div className="text-sm text-bone leading-relaxed mx-6 mt-3 p-3 bg-surface-raised rounded-lg border-l-2 border-l-cyan">
-              {enriched.briefing}
+              {briefing}
             </div>
-          )}
+          ) : null}
 
           {enriched?.openingHours && enriched.openingHours.length > 0 && (
             <HoursList hours={enriched.openingHours} />

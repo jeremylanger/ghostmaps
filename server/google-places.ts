@@ -2,6 +2,13 @@ import type { Place } from "./types";
 
 const PLACES_BASE = "https://places.googleapis.com/v1/places";
 const DEFAULT_BIAS_RADIUS = 50000; // 50km
+const PRICE_LEVEL_MAP: Record<string, string> = {
+  PRICE_LEVEL_FREE: "Free",
+  PRICE_LEVEL_INEXPENSIVE: "$",
+  PRICE_LEVEL_MODERATE: "$$",
+  PRICE_LEVEL_EXPENSIVE: "$$$",
+  PRICE_LEVEL_VERY_EXPENSIVE: "$$$$",
+};
 
 function locationBias(lat: number, lng: number, radius = DEFAULT_BIAS_RADIUS) {
   return { circle: { center: { latitude: lat, longitude: lng }, radius } };
@@ -104,13 +111,7 @@ export async function enrichPlace(
     const hours = item.currentOpeningHours || item.regularOpeningHours;
 
     // Price level mapping
-    const priceLevelMap: Record<string, string> = {
-      PRICE_LEVEL_FREE: "Free",
-      PRICE_LEVEL_INEXPENSIVE: "$",
-      PRICE_LEVEL_MODERATE: "$$",
-      PRICE_LEVEL_EXPENSIVE: "$$$",
-      PRICE_LEVEL_VERY_EXPENSIVE: "$$$$",
-    };
+    const priceLevel = PRICE_LEVEL_MAP[item.priceLevel as string];
 
     // Build photo URIs if available
     let photoUri: string | null = null;
@@ -141,9 +142,7 @@ export async function enrichPlace(
       phone: item.internationalPhoneNumber || item.nationalPhoneNumber || null,
       rating: item.rating || null,
       reviewCount: item.userRatingCount || null,
-      priceLevel: item.priceLevel
-        ? priceLevelMap[item.priceLevel] || null
-        : null,
+      priceLevel: priceLevel || null,
       dineIn: item.dineIn ?? null,
       takeout: item.takeout ?? null,
       delivery: item.delivery ?? null,
@@ -214,6 +213,7 @@ export async function searchByName(
         location?: { latitude: number; longitude: number };
         primaryType?: string;
         rating?: number;
+        userRatingCount?: number;
       }) => ({
         id: `gp-${item.id}`,
         name: item.displayName?.text || "Unknown",
@@ -225,6 +225,8 @@ export async function searchByName(
         confidence: 0.9,
         longitude: item.location?.longitude || 0,
         latitude: item.location?.latitude || 0,
+        rating: item.rating,
+        reviewCount: item.userRatingCount,
       }),
     );
   } catch (err) {

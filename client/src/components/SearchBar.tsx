@@ -179,6 +179,15 @@ export default function SearchBar() {
                     </div>
                   )}
                   <div className="flex items-baseline gap-2 mt-0.5">
+                    {place.rating && (
+                      <span className="text-sm text-muted shrink-0">
+                        <span className="text-amber">★</span>{" "}
+                        {place.rating.toFixed(1)}
+                        {place.reviewCount
+                          ? ` (${place.reviewCount.toLocaleString()})`
+                          : ""}
+                      </span>
+                    )}
                     {place.address && (
                       <span className="text-sm text-muted flex-1 min-w-0 truncate">
                         {place.address}

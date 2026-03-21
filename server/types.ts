@@ -10,6 +10,8 @@ export interface Place {
   longitude: number;
   latitude: number;
   distanceMeters?: number;
+  rating?: number;
+  reviewCount?: number;
 }
 
 export interface OvertureFeature {
