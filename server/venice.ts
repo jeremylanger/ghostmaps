@@ -280,7 +280,9 @@ export interface PlaceBriefingData {
 
 // --- Review Quality Scoring ---
 
-const QUALITY_SYSTEM_PROMPT = `You are a review quality scorer and content moderator for Ghost Maps. Score a review on specificity and authenticity, and flag harmful content.
+const QUALITY_SYSTEM_PROMPT = `You are a review quality scorer and content moderator for Ghost Maps. You have TWO jobs:
+1. Score the review on specificity and authenticity.
+2. Flag harmful or policy-violating content. THIS IS CRITICAL — you must catch threats, hate speech, spam, and other violations.
 
 Return ONLY valid JSON (no markdown, no code blocks):
 {
@@ -296,16 +298,16 @@ Scoring guide:
 - 51-80 (detailed): specific items, prices, experiences, comparisons
 - 81-100 (exceptional): detailed with photos, insider tips, specific staff mentions, unique observations
 
-Flags (array of strings) — include ALL that apply:
+CONTENT MODERATION — you MUST flag violations. Check EVERY review for these. When in doubt, flag it.
 
-BLOCKING flags (review will be rejected):
+BLOCKING flags (review will be rejected — include ALL that apply):
 - "sentiment_mismatch" — text sentiment contradicts the numeric rating (e.g. "terrible food" with 5 stars)
 - "too_short" — under 25 characters of meaningful content
 - "possible_spam" — repetitive, all caps, promotional language, or URLs
-- "offensive_content" — slurs, threats, or gratuitously vulgar language (mild profanity in context like "the damn burger was incredible" is fine)
-- "hate_speech" — content targeting people based on race, gender, religion, sexuality, etc.
+- "offensive_content" — threats of violence, death threats, wishes of harm, slurs, or gratuitously vulgar language. Examples: "I hope they die", "someone should burn this place down", "kill the owner". Mild profanity in context is OK ("the damn burger was incredible").
+- "hate_speech" — content targeting people based on race, gender, religion, sexuality, disability, etc.
 - "adult_content" — sexually explicit content
-- "doxxing" — sharing private personal information (home addresses, phone numbers of private individuals). Naming public-facing staff in a complaint is fine.
+- "doxxing" — sharing private personal information (home addresses, personal phone numbers). Naming public-facing staff in a legitimate complaint is fine.
 
 NON-BLOCKING flags (review is allowed but marked):
 - "ai_generated" — suspiciously perfect prose, lacks personal voice, reads like a template`;
@@ -328,9 +330,57 @@ export interface ReviewQualityResult {
   reason: string;
 }
 
+const THREAT_PATTERNS = [
+  /\b(kill|murder|shoot|stab|bomb|attack)\b.*\b(them|him|her|owner|staff|manager|employee)\b/i,
+  /\b(hope|wish|want)\b.*\b(die|dead|death|burn|suffer)\b/i,
+  /\bdeserve[s]?\s+to\s+(die|burn|suffer)\b/i,
+  /\b(going\s+to|gonna)\s+(kill|hurt|attack|destroy)\b/i,
+];
+
+const SPAM_PATTERNS = [
+  /\b(visit|check\s+out|click|go\s+to)\b.*\b(my|our)\b.*\b(website|site|link|page)\b/i,
+  /https?:\/\/\S+/i,
+  /www\.\S+/i,
+  /(.)\1{5,}/i, // 6+ repeated characters
+];
+
+/** Server-side content pre-check — catches obvious violations Venice models may miss */
+export function preCheckContent(text: string): string[] {
+  const flags: string[] = [];
+  const lower = text.toLowerCase();
+
+  for (const pattern of THREAT_PATTERNS) {
+    if (pattern.test(text)) {
+      flags.push("offensive_content");
+      break;
+    }
+  }
+
+  for (const pattern of SPAM_PATTERNS) {
+    if (pattern.test(text)) {
+      flags.push("possible_spam");
+      break;
+    }
+  }
+
+  // All caps check (more than 50% uppercase, min 20 chars)
+  if (text.length >= 20) {
+    const upperCount = (text.match(/[A-Z]/g) || []).length;
+    const letterCount = (text.match(/[a-zA-Z]/g) || []).length;
+    if (letterCount > 0 && upperCount / letterCount > 0.5) {
+      flags.push("possible_spam");
+    }
+  }
+
+  return [...new Set(flags)];
+}
+
 export async function scoreReviewQuality(
   input: ReviewQualityInput,
 ): Promise<ReviewQualityResult> {
+  // Server-side content pre-check — catches obvious violations Venice may miss
+  const preCheckFlags = preCheckContent(input.text);
+
   try {
     const details = [
       `Rating: ${input.rating}/5`,
@@ -361,10 +411,13 @@ export async function scoreReviewQuality(
     ];
     const parsed = JSON.parse(jsonMatch[1]!.trim());
 
+    const veniceFlags: string[] = parsed.flags || [];
+    const allFlags = [...new Set([...veniceFlags, ...preCheckFlags])];
+
     return {
       score: Math.min(100, Math.max(0, parsed.score || 0)),
       label: parsed.label || "generic",
-      flags: parsed.flags || [],
+      flags: allFlags,
       reason: parsed.reason || "",
     };
   } catch (err) {

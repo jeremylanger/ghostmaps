@@ -75,7 +75,7 @@ describe("Review Quality Scoring — Input Validation", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         rating: 5,
-        text: "Great place!",
+        text: "Great place! Really loved it.",
         hasPhoto: false,
       }),
     });
@@ -84,5 +84,82 @@ describe("Review Quality Scoring — Input Validation", () => {
     const data = await res.json();
     expect(data.score).toBeLessThanOrEqual(30);
     expect(data.label).toBe("generic");
+  });
+
+  it("should flag offensive content", async () => {
+    const res = await fetch("http://localhost:3001/api/reviews/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rating: 1,
+        text: "I want to kill the owner of this place. They deserve to die. Worst experience ever and I hope they suffer.",
+        hasPhoto: false,
+      }),
+    });
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    const hasBlockingFlag = data.flags.some((f: string) =>
+      ["offensive_content", "hate_speech"].includes(f),
+    );
+    expect(hasBlockingFlag).toBe(true);
+  });
+
+  it("should flag spam/promotional content", async () => {
+    const res = await fetch("http://localhost:3001/api/reviews/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rating: 5,
+        text: "VISIT MY WEBSITE WWW.BESTDEALS.COM FOR AMAZING OFFERS!!! CLICK NOW FOR 50% OFF ALL ITEMS!!!",
+        hasPhoto: false,
+      }),
+    });
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.flags).toContain("possible_spam");
+  });
+
+  it("should NOT flag mild profanity in context", async () => {
+    const res = await fetch("http://localhost:3001/api/reviews/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rating: 5,
+        text: "The damn burger was incredible, honestly one of the best I have ever had. Fries were crispy and the shake was thick.",
+        hasPhoto: false,
+      }),
+    });
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    const hasBlockingFlag = data.flags.some((f: string) =>
+      ["offensive_content", "hate_speech"].includes(f),
+    );
+    expect(hasBlockingFlag).toBe(false);
+  });
+
+  it("should return all required fields in response", async () => {
+    const res = await fetch("http://localhost:3001/api/reviews/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        rating: 3,
+        text: "Decent coffee, nothing special but not bad either. The latte was a bit watery.",
+        hasPhoto: false,
+      }),
+    });
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data).toHaveProperty("score");
+    expect(data).toHaveProperty("label");
+    expect(data).toHaveProperty("flags");
+    expect(data).toHaveProperty("reason");
+    expect(typeof data.score).toBe("number");
+    expect(typeof data.label).toBe("string");
+    expect(Array.isArray(data.flags)).toBe(true);
+    expect(typeof data.reason).toBe("string");
   });
 });

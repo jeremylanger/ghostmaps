@@ -120,12 +120,15 @@ Reviews are Ethereum Attestation Service attestations — immutable, composable,
 
 Immutable reviews solve real problems (Yelp pay-to-play, platform censorship), but they create new ones. We've thought about this:
 
-**What about fake reviews?** Current defenses (hackathon MVP):
-- Venice AI quality scoring rejects sentiment-rating mismatches and flags low-effort content
-- EXIF GPS proof-of-visit verifies the reviewer was physically at the location
-- Account age and review count provide credibility signals
+**What about fake or harmful reviews?** Current defenses (hackathon MVP):
+- **Venice AI content moderation** — reviews are scored and checked for threats, hate speech, adult content, doxxing, spam, and sentiment-rating mismatches. 7 blocking flags prevent harmful content from reaching the chain.
+- **Server-side pre-check** — pattern matching catches obvious threats and spam that LLMs may miss (death threats, URLs, all-caps spam)
+- **Minimum quality threshold** — reviews must be at least 25 characters
+- **Fail closed** — if Venice scoring fails, the review is rejected (not defaulted to "acceptable")
+- **EXIF GPS proof-of-visit** — optional photo verification confirms the reviewer was physically at the location
+- **Account age and review count** — credibility signals displayed on each review
 
-**What about harassment or defamatory content?** On-chain data is permanent, but display is not. The client can filter reviews below a quality threshold, hide flagged content, or surface community counter-attestations. The data layer is immutable; the presentation layer has moderation.
+**What about harassment or defamatory content?** Reviews are pre-screened by Venice AI and server-side checks before going on-chain. Content with threats, hate speech, or doxxing is blocked. On-chain data is permanent, but display is not — the client can filter reviews below a quality threshold or surface community counter-attestations.
 
 **What about sybil attacks (mass fake accounts)?** This is the hardest problem. CDP wallets are free to create. Planned defenses (v2): stake-and-challenge (reviewers put skin in the game), soulbound reputation (non-transferable credibility), and quadratic decay (diminishing impact from a single identity). See `plans/reviews.md` for the full 6-layer defense design.
 

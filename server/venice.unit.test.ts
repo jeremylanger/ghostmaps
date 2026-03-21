@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { preCheckContent } from "./venice";
 
 // We test the parseQuery and rankResults response parsing logic
 // by simulating Venice responses. The actual Venice calls are tested
@@ -187,6 +188,88 @@ describe("Venice response parsing", () => {
       for (const flag of NON_BLOCKING_FLAGS) {
         expect(isBlocked([flag])).toBe(false);
       }
+    });
+  });
+
+  describe("preCheckContent — server-side content moderation", () => {
+    it("flags death threats", () => {
+      expect(preCheckContent("I want to kill the owner")).toContain(
+        "offensive_content",
+      );
+    });
+
+    it("flags wishes of harm", () => {
+      expect(
+        preCheckContent("I hope they die and suffer for what they did"),
+      ).toContain("offensive_content");
+    });
+
+    it("flags 'deserve to die'", () => {
+      expect(
+        preCheckContent("They deserve to die for serving cold food"),
+      ).toContain("offensive_content");
+    });
+
+    it("does NOT flag mild profanity in context", () => {
+      expect(
+        preCheckContent("The damn burger was incredible, best I ever had"),
+      ).not.toContain("offensive_content");
+    });
+
+    it("does NOT flag legitimate negative reviews", () => {
+      expect(
+        preCheckContent(
+          "Terrible service, waited an hour for cold food, will never return",
+        ),
+      ).not.toContain("offensive_content");
+    });
+
+    it("flags URLs as spam", () => {
+      expect(
+        preCheckContent("Check out https://mysite.com for deals on food"),
+      ).toContain("possible_spam");
+    });
+
+    it("flags www links as spam", () => {
+      expect(preCheckContent("Visit www.bestdeals.com for coupons")).toContain(
+        "possible_spam",
+      );
+    });
+
+    it("flags promotional language as spam", () => {
+      expect(
+        preCheckContent("Visit my website for amazing offers and discounts"),
+      ).toContain("possible_spam");
+    });
+
+    it("flags ALL CAPS text as spam", () => {
+      expect(
+        preCheckContent("THIS PLACE IS THE BEST EVER GO THERE NOW"),
+      ).toContain("possible_spam");
+    });
+
+    it("does NOT flag normal mixed-case text", () => {
+      expect(
+        preCheckContent(
+          "Great tacos, I really enjoyed the fish ones with the verde sauce",
+        ),
+      ).not.toContain("possible_spam");
+    });
+
+    it("returns empty array for clean review", () => {
+      expect(
+        preCheckContent(
+          "Had a wonderful brunch here, the eggs benedict were perfectly poached",
+        ),
+      ).toEqual([]);
+    });
+
+    it("returns unique flags (no duplicates)", () => {
+      const flags = preCheckContent(
+        "VISIT MY WEBSITE WWW.SPAM.COM FOR DEALS CHECK OUT MY SITE NOW",
+      );
+      const spamCount = flags.filter((f) => f === "possible_spam").length;
+      expect(spamCount).toBe(1);
     });
   });
 });
