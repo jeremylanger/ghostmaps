@@ -54,11 +54,9 @@ export default function ReviewForm() {
   const [oneThingToKnow, setOneThingToKnow] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
-  const [photoLocation, setPhotoLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [photoNearPlace, setPhotoNearPlace] = useState<boolean | null>(null);
+  const [photoNearFlags, setPhotoNearFlags] = useState<
+    (boolean | null)[]
+  >([]);
   const [quality, setQuality] = useState<QualityResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [txHash, setTxHash] = useState("");
@@ -78,28 +76,28 @@ export default function ReviewForm() {
       ...toAdd.map((f) => URL.createObjectURL(f)),
     ]);
 
-    // Check GPS on the first new photo (for proof of visit)
-    if (photoLocation === null) {
-      const gps = await extractPhotoGPS(files[0]);
-      setPhotoLocation(gps);
-
+    // Check GPS on each new photo
+    const flags: (boolean | null)[] = [];
+    for (const file of toAdd) {
+      const gps = await extractPhotoGPS(file);
       if (gps) {
-        const near = isNearLocation(gps, {
-          latitude: place.latitude,
-          longitude: place.longitude,
-        });
-        setPhotoNearPlace(near);
+        flags.push(
+          isNearLocation(gps, {
+            latitude: place.latitude,
+            longitude: place.longitude,
+          }),
+        );
+      } else {
+        flags.push(null);
       }
     }
+    setPhotoNearFlags((prev) => [...prev, ...flags]);
   };
 
   const removePhoto = (index: number) => {
     setPhotos((prev) => prev.filter((_, i) => i !== index));
     setPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
-    if (photos.length <= 1) {
-      setPhotoLocation(null);
-      setPhotoNearPlace(null);
-    }
+    setPhotoNearFlags((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -389,12 +387,12 @@ export default function ReviewForm() {
                   >
                     ×
                   </button>
-                  {i === 0 && photoNearPlace === true && (
+                  {photoNearFlags[i] === true && (
                     <span className="absolute bottom-1 left-1 text-[9px] font-semibold px-1 py-0.5 rounded bg-phosphor/90 text-void">
                       GPS ✓
                     </span>
                   )}
-                  {i === 0 && photoNearPlace === false && (
+                  {photoNearFlags[i] === false && (
                     <span className="absolute bottom-1 left-1 text-[9px] font-semibold px-1 py-0.5 rounded bg-amber/90 text-void">
                       Elsewhere
                     </span>
