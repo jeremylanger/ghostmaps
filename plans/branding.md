@@ -1,4 +1,4 @@
-# GhostMaps — "Phantom Protocol" Brand System
+# Ghost Maps — "Phantom Protocol" Brand System
 
 ## Aesthetic Direction
 

@@ -20,7 +20,7 @@ export default function HamburgerMenu() {
           className="shrink-0 size-12 rounded-l-xl flex items-center justify-center transition-all cursor-pointer outline-none hover:brightness-125"
           aria-label="Menu"
         >
-          <img src="/favicon.png" alt="GhostMaps" className="size-6" />
+          <img src="/favicon.png" alt="Ghost Maps" className="size-6" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -30,9 +30,9 @@ export default function HamburgerMenu() {
       >
         {/* Logo branding */}
         <div className="flex items-center gap-2.5 px-4 py-3 border-b border-edge">
-          <img src="/logo.png" alt="GhostMaps" className="size-7 rounded" />
+          <img src="/logo.png" alt="Ghost Maps" className="size-7 rounded" />
           <span className="font-display text-sm font-bold text-bone tracking-wide">
-            GhostMaps
+            Ghost Maps
           </span>
         </div>
 

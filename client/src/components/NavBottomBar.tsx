@@ -11,7 +11,10 @@ import { Button } from "./ui/button";
 function ValueWithUnit({
   text,
   className,
-}: { text: string; className: string }) {
+}: {
+  text: string;
+  className: string;
+}) {
   const lastSpace = text.lastIndexOf(" ");
   if (lastSpace === -1)
     return (

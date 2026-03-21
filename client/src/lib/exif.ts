@@ -20,7 +20,8 @@ export async function extractPhotoGPS(
       return { latitude: gps.latitude, longitude: gps.longitude };
     }
     return null;
-  } catch {
+  } catch (err) {
+    console.error("EXIF extraction failed:", err);
     return null;
   }
 }
@@ -29,7 +30,7 @@ export async function extractPhotoGPS(
 export function isNearLocation(
   photo: PhotoLocation,
   target: { latitude: number; longitude: number },
-  radiusMeters = 805,
+  radiusMeters = 805, // ~0.5 miles
 ): boolean {
   return (
     haversine(

@@ -347,7 +347,6 @@ const SPAM_PATTERNS = [
 /** Server-side content pre-check — catches obvious violations Venice models may miss */
 export function preCheckContent(text: string): string[] {
   const flags: string[] = [];
-  const lower = text.toLowerCase();
 
   for (const pattern of THREAT_PATTERNS) {
     if (pattern.test(text)) {
@@ -380,6 +379,16 @@ export async function scoreReviewQuality(
 ): Promise<ReviewQualityResult> {
   // Server-side content pre-check — catches obvious violations Venice may miss
   const preCheckFlags = preCheckContent(input.text);
+
+  // Short-circuit: if pre-check already found blocking content, skip Venice API call
+  if (preCheckFlags.length > 0) {
+    return {
+      score: 0,
+      label: "generic",
+      flags: preCheckFlags,
+      reason: "Content flagged by pre-check.",
+    };
+  }
 
   try {
     const details = [

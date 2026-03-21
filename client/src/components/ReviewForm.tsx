@@ -39,6 +39,18 @@ interface QualityResult {
 
 type ReviewStep = "form" | "scoring" | "submitting" | "success" | "error";
 
+const MIN_REVIEW_LENGTH = 25;
+
+const BLOCKING_FLAGS = [
+  "sentiment_mismatch",
+  "offensive_content",
+  "hate_speech",
+  "adult_content",
+  "doxxing",
+  "possible_spam",
+  "too_short",
+];
+
 export default function ReviewForm() {
   const place = useAppStore((s) => s.selectedPlace)!;
   const setShowReviewForm = useAppStore((s) => s.setShowReviewForm);
@@ -81,7 +93,7 @@ export default function ReviewForm() {
   };
 
   const handleSubmit = async () => {
-    if (rating === 0 || text.trim().length < 25) return;
+    if (rating === 0 || text.trim().length < MIN_REVIEW_LENGTH) return;
 
     try {
       setStep("scoring");
@@ -99,6 +111,7 @@ export default function ReviewForm() {
         }),
       });
       if (!scoreRes.ok) {
+        console.error("Score API failed:", scoreRes.status);
         setErrorMsg("Unable to verify review quality. Please try again.");
         setStep("error");
         return;
@@ -106,15 +119,6 @@ export default function ReviewForm() {
       const qualityResult: QualityResult = await scoreRes.json();
       setQuality(qualityResult);
 
-      const BLOCKING_FLAGS = [
-        "sentiment_mismatch",
-        "offensive_content",
-        "hate_speech",
-        "adult_content",
-        "doxxing",
-        "possible_spam",
-        "too_short",
-      ];
       const blocked = qualityResult.flags.some((f) =>
         BLOCKING_FLAGS.includes(f),
       );
@@ -387,7 +391,7 @@ export default function ReviewForm() {
         <Button
           className="w-full font-display text-[15px]"
           onClick={handleSubmit}
-          disabled={rating === 0 || text.trim().length < 25}
+          disabled={rating === 0 || text.trim().length < MIN_REVIEW_LENGTH}
         >
           Submit Review
         </Button>

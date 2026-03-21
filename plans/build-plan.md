@@ -341,6 +341,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **Open Items (high priority, needs further design):**
 - [ ] ERC-8004 — evaluate: integrate for reviewer identity or defer? Decision needed before submission.
+- [ ] Update CONVERSATION_LOG.md with Day 11 session (this session) before publishing submission.
 
 ### Review Quality Enforcement + Content Moderation
 
