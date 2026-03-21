@@ -175,75 +175,75 @@ export default function PlacePanel() {
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-3 px-6 py-3 shrink-0 flex-wrap">
-          <Button
-            className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl"
+        <div className="grid grid-cols-4 gap-2 px-6 py-3 shrink-0">
+          <button
+            type="button"
+            className="flex flex-col items-center gap-1.5 py-2.5 rounded-xl bg-cyan text-void font-semibold text-xs cursor-pointer transition-all hover:shadow-[0_0_16px_rgba(0,229,255,0.3)] disabled:opacity-50"
             onClick={handleDirections}
             disabled={routeLoading}
           >
-            <Navigation className="size-5" />
+            <Navigation className="size-6" />
             <span>{routeLoading ? "..." : "Directions"}</span>
-          </Button>
-          {phone && (
-            <Button
-              variant="outline"
-              asChild
-              className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl hover:border-cyan/50 hover:text-cyan"
+          </button>
+          {phone ? (
+            <a
+              href={`tel:${phone}`}
+              className="flex flex-col items-center gap-1.5 py-2.5 rounded-xl bg-surface-raised text-bone/70 text-xs font-medium hover:text-cyan transition-all"
             >
-              <a href={`tel:${phone}`}>
-                <Phone className="size-5" />
-                <span>Call</span>
-              </a>
-            </Button>
+              <Phone className="size-6" />
+              <span>Call</span>
+            </a>
+          ) : (
+            <div />
           )}
-          {website && (
-            <Button
-              variant="outline"
-              asChild
-              className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl hover:border-cyan/50 hover:text-cyan"
+          {website ? (
+            <a
+              href={website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-col items-center gap-1.5 py-2.5 rounded-xl bg-surface-raised text-bone/70 text-xs font-medium hover:text-cyan transition-all"
             >
-              <a href={website} target="_blank" rel="noopener noreferrer">
-                <Globe className="size-5" />
-                <span>Website</span>
-              </a>
-            </Button>
+              <Globe className="size-6" />
+              <span>Website</span>
+            </a>
+          ) : (
+            <div />
           )}
-          <Button
-            variant="outline"
-            className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl hover:border-cyan/50 hover:text-cyan"
+          <button
+            type="button"
+            className="flex flex-col items-center gap-1.5 py-2.5 rounded-xl bg-surface-raised text-bone/70 text-xs font-medium cursor-pointer hover:text-cyan transition-all"
             onClick={() => setShowReviewForm(true)}
           >
-            <PenLine className="size-5" />
+            <PenLine className="size-6" />
             <span>Review</span>
-          </Button>
-        </div>
-
-        {/* Quick stats */}
-        <div className="flex gap-0 px-6 py-3 border-b border-edge shrink-0">
-          {enriched?.rating && (
-            <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-              <span className="text-[11px] text-muted">Rating</span>
-              <span className="text-sm font-semibold text-bone">
-                <span className="text-amber">★</span>{" "}
-                {enriched.rating.toFixed(1)}
-                {enriched.reviewCount
-                  ? ` (${enriched.reviewCount.toLocaleString()})`
-                  : ""}
-              </span>
-            </div>
-          )}
-          {displayPlace.address && (
-            <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-              <span className="text-[11px] text-muted">Address</span>
-              <span className="text-[11px] font-normal text-bone text-center max-w-full leading-snug line-clamp-2">
-                {displayPlace.address}
-              </span>
-            </div>
-          )}
+          </button>
         </div>
 
         {/* Scrollable content */}
         <div className="overflow-y-auto flex-1 pb-4">
+          {/* Quick stats */}
+          <div className="flex gap-0 px-6 py-3 border-b border-edge">
+            {enriched?.rating && (
+              <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+                <span className="text-[11px] text-muted">Rating</span>
+                <span className="text-sm font-semibold text-bone">
+                  <span className="text-amber">★</span>{" "}
+                  {enriched.rating.toFixed(1)}
+                  {enriched.reviewCount
+                    ? ` (${enriched.reviewCount.toLocaleString()})`
+                    : ""}
+                </span>
+              </div>
+            )}
+            {displayPlace.address && (
+              <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+                <span className="text-[11px] text-muted">Address</span>
+                <span className="text-[11px] font-normal text-bone text-center max-w-full leading-snug line-clamp-2">
+                  {displayPlace.address}
+                </span>
+              </div>
+            )}
+          </div>
           {isLoading ? (
             <Skeleton className="mx-6 mt-3 h-[200px] rounded-lg bg-surface-raised" />
           ) : enriched?.photoUris && enriched.photoUris.length > 0 ? (
