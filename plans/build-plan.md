@@ -337,7 +337,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Audit server logs — removed search query logging from index.ts, Venice content logging from venice.ts
 - [x] Clarify MapTiler + Coinbase in README transparency section (why these aren't real concerns)
 - [x] Add "Immutability Tradeoffs" section to README (moderation approach, sybil defense roadmap)
-- [x] Delete `here.unit.test.ts`, fix test count (actual: 120 server + 65 client = 185 total)
+- [x] Delete `here.unit.test.ts`, fix test count (actual: 155 server + 65 client = 220 total)
 
 **Open Items (high priority, needs further design):**
 - [ ] ERC-8004 — evaluate: integrate for reviewer identity or defer? Decision needed before submission.

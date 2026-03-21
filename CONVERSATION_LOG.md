@@ -272,7 +272,7 @@ After the switch, searching "coffee" returned no Starbucks. Claude initially bla
 |---|---|
 | Total commits | 43 |
 | Lines of code (approx.) | ~5,000 (client) + ~2,500 (server) |
-| Tests passing | 120 server + 65 client = 185 total |
+| Tests passing | 155 server + 65 client = 220 total |
 | API endpoints | 12 |
 | Venice AI integration points | 6 |
 | External APIs | 4 (Venice, Google Places, TomTom, EAS/Base) |
