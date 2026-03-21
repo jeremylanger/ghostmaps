@@ -19,7 +19,7 @@ describe("Place enrichment integration", () => {
           phone: "+12135551234",
           website: "https://vervecoffee.com",
           brand: "",
-          openingHours: "Mon-Fri 07:00-18:00; Sat-Sun 08:00-17:00",
+          openingHours: ["Mon-Fri 07:00-18:00", "Sat-Sun 08:00-17:00"],
           isOpen: true,
           foodTypes: ["Coffee", "Pastries"],
         });
@@ -61,7 +61,7 @@ describe("Place enrichment integration", () => {
           phone: "",
           website: "",
           brand: "",
-          openingHours: "Daily 18:00-04:00",
+          openingHours: ["Daily 18:00-04:00"],
           isOpen: false,
           foodTypes: ["Mexican", "Tacos"],
         });

@@ -127,7 +127,6 @@ describe("Venice AI integration", () => {
 
         expect(result.topPick).toBeTruthy();
         expect(["a", "b", "c"]).toContain(result.topPick);
-        expect(result.summary).toBeTruthy();
       },
       TIMEOUT,
     );
@@ -148,7 +147,6 @@ describe("Venice AI integration", () => {
         const result = await rankResults("coffee", [mockPlaces[0]], []);
 
         expect(result.topPick).toBe("a");
-        expect(result.summary).toBeTruthy();
       },
       TIMEOUT,
     );
@@ -159,7 +157,6 @@ describe("Venice AI integration", () => {
         const result = await rankResults("coffee", [], []);
 
         expect(result.topPick).toBeNull();
-        expect(result.summary).toBe("No results found.");
       },
       TIMEOUT,
     );

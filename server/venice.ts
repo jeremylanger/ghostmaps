@@ -208,7 +208,6 @@ export async function rankResults(
       topPick: places[0].id,
       topPickReason: `${places[0].name} is your best option nearby.`,
       alternatives: [],
-      summary: `Found ${places[0].name}.`,
     };
   }
 
