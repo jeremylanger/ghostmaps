@@ -52,52 +52,32 @@ export default function ReviewForm() {
   const [text, setText] = useState("");
   const [whatOrdered, setWhatOrdered] = useState("");
   const [oneThingToKnow, setOneThingToKnow] = useState("");
-  const [photos, setPhotos] = useState<File[]>([]);
-  const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
-  const [photoNearFlags, setPhotoNearFlags] = useState<
-    (boolean | null)[]
-  >([]);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoNearPlace, setPhotoNearPlace] = useState<boolean | null>(null);
   const [quality, setQuality] = useState<QualityResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [txHash, setTxHash] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const remaining = 5 - photos.length;
-    const toAdd = files.slice(0, remaining);
-    if (toAdd.length === 0) return;
+    setPhoto(file);
+    setPhotoPreview(URL.createObjectURL(file));
 
-    setPhotos((prev) => [...prev, ...toAdd]);
-    setPhotoPreviews((prev) => [
-      ...prev,
-      ...toAdd.map((f) => URL.createObjectURL(f)),
-    ]);
-
-    // Check GPS on each new photo
-    const flags: (boolean | null)[] = [];
-    for (const file of toAdd) {
-      const gps = await extractPhotoGPS(file);
-      if (gps) {
-        flags.push(
-          isNearLocation(gps, {
-            latitude: place.latitude,
-            longitude: place.longitude,
-          }),
-        );
-      } else {
-        flags.push(null);
-      }
+    const gps = await extractPhotoGPS(file);
+    if (gps) {
+      setPhotoNearPlace(
+        isNearLocation(gps, {
+          latitude: place.latitude,
+          longitude: place.longitude,
+        }),
+      );
+    } else {
+      setPhotoNearPlace(null);
     }
-    setPhotoNearFlags((prev) => [...prev, ...flags]);
-  };
-
-  const removePhoto = (index: number) => {
-    setPhotos((prev) => prev.filter((_, i) => i !== index));
-    setPhotoPreviews((prev) => prev.filter((_, i) => i !== index));
-    setPhotoNearFlags((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -111,7 +91,7 @@ export default function ReviewForm() {
         body: JSON.stringify({
           rating,
           text,
-          hasPhoto: photos.length > 0,
+          hasPhoto: !!photo,
           structuredResponses: {
             whatOrdered: whatOrdered || undefined,
             oneThingToKnow: oneThingToKnow || undefined,
@@ -133,26 +113,19 @@ export default function ReviewForm() {
 
       let photoHashStr =
         "0x0000000000000000000000000000000000000000000000000000000000000000";
-      if (photos.length > 0) {
-        // Upload all photos, use first hash for on-chain attestation
-        for (const p of photos) {
-          const photoBuffer = await p.arrayBuffer();
-          const uploadRes = await fetch("/api/photos", {
-            method: "POST",
-            headers: { "Content-Type": p.type },
-            body: photoBuffer,
-          });
-          if (uploadRes.ok) {
-            const { hash } = await uploadRes.json();
-            if (photoHashStr.startsWith("0x000")) {
-              photoHashStr = hash;
-            }
-          } else {
-            console.error("Photo upload failed:", uploadRes.status);
-            if (photoHashStr.startsWith("0x000")) {
-              photoHashStr = await hashPhoto(p);
-            }
-          }
+      if (photo) {
+        const photoBuffer = await photo.arrayBuffer();
+        const uploadRes = await fetch("/api/photos", {
+          method: "POST",
+          headers: { "Content-Type": photo.type },
+          body: photoBuffer,
+        });
+        if (uploadRes.ok) {
+          const { hash } = await uploadRes.json();
+          photoHashStr = hash;
+        } else {
+          console.error("Photo upload failed:", uploadRes.status);
+          photoHashStr = await hashPhoto(photo);
         }
       }
 
@@ -353,52 +326,42 @@ export default function ReviewForm() {
 
         {/* Photo upload */}
         <div className="my-2">
-          {photos.length < 5 && (
-            <button
-              className="w-full flex items-center justify-center gap-2 bg-surface-raised border border-dashed border-edge-bright rounded-lg py-2.5 px-4 text-sm text-blue-gray cursor-pointer transition-colors hover:border-cyan/50 hover:text-cyan"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Camera className="size-4" />
-              {photos.length === 0
-                ? "Add Photos (proof of visit)"
-                : `Add More (${photos.length}/5)`}
-            </button>
-          )}
+          <button
+            className="w-full flex items-center justify-center gap-2 bg-surface-raised border border-dashed border-edge-bright rounded-lg py-2.5 px-4 text-sm text-blue-gray cursor-pointer transition-colors hover:border-cyan/50 hover:text-cyan"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Camera className="size-4" />
+            {photo ? "Change Photo" : "Add Photo (proof of visit)"}
+          </button>
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            multiple
             onChange={handlePhotoChange}
             hidden
           />
-          {photoPreviews.length > 0 && (
-            <div className="flex gap-2 mt-2 overflow-x-auto">
-              {photoPreviews.map((src, i) => (
-                <div key={src} className="relative shrink-0">
-                  <img
-                    src={src}
-                    alt={`Review photo ${i + 1}`}
-                    className="size-20 object-cover rounded-lg"
-                  />
-                  <button
-                    className="absolute -top-1.5 -right-1.5 size-5 bg-void/80 border border-edge rounded-full flex items-center justify-center text-muted hover:text-coral text-xs cursor-pointer"
-                    onClick={() => removePhoto(i)}
-                  >
-                    ×
-                  </button>
-                  {photoNearFlags[i] === true && (
-                    <span className="absolute bottom-1 left-1 text-[9px] font-semibold px-1 py-0.5 rounded bg-phosphor/90 text-void">
-                      GPS ✓
-                    </span>
-                  )}
-                  {photoNearFlags[i] === false && (
-                    <span className="absolute bottom-1 left-1 text-[9px] font-semibold px-1 py-0.5 rounded bg-amber/90 text-void">
-                      Elsewhere
-                    </span>
-                  )}
-                </div>
-              ))}
+          {photoPreview && (
+            <div className="relative mt-2">
+              <img
+                src={photoPreview}
+                alt="Review photo"
+                className="w-full max-h-[160px] object-cover rounded-lg"
+              />
+              {photoNearPlace === true && (
+                <span className="absolute bottom-2 left-2 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-phosphor/90 text-void">
+                  Location verified
+                </span>
+              )}
+              {photoNearPlace === false && (
+                <span className="absolute bottom-2 left-2 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber/90 text-void">
+                  Photo taken elsewhere
+                </span>
+              )}
+              {photoNearPlace === null && photo && (
+                <span className="absolute bottom-2 left-2 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-void/60 text-bone">
+                  No GPS in photo
+                </span>
+              )}
             </div>
           )}
         </div>

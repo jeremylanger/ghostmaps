@@ -29,7 +29,7 @@ export async function extractPhotoGPS(
 export function isNearLocation(
   photo: PhotoLocation,
   target: { latitude: number; longitude: number },
-  radiusMeters = 200,
+  radiusMeters = 805,
 ): boolean {
   return (
     haversine(
