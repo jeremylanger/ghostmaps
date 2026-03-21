@@ -316,6 +316,7 @@ app.get("/api/places/:id", async (req, res) => {
       delivery: enrichment?.delivery ?? null,
       wheelchairAccessible: enrichment?.wheelchairAccessible ?? null,
       photoUri: enrichment?.photoUri ?? null,
+      photoUris: enrichment?.photoUris ?? [],
       briefing,
     });
   } catch (err) {

@@ -1,6 +1,10 @@
 import { Globe, Navigation, PenLine, Phone, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useDragScroll } from "../hooks/useDragScroll";
 import { usePlaceDetails } from "../hooks/usePlaceDetails";
 import { consolidateInstructions } from "../lib/consolidate-instructions";
 import { useAppStore } from "../store";
@@ -44,11 +48,37 @@ function HoursList({ hours }: { hours: string[] | string }) {
   );
 }
 
+const SNAP_POINTS = [0.45, 1] as const;
+
 export default function PlacePanel() {
-  const place = useAppStore((s) => s.selectedPlace)!;
+  const place = useAppStore((s) => s.selectedPlace);
   const clearSelection = useAppStore((s) => s.clearSelection);
   const routeLoading = useAppStore((s) => s.routeLoading);
-  const { data: enriched, isLoading } = usePlaceDetails(place.id);
+  const { data: enriched, isLoading } = usePlaceDetails(place?.id ?? "");
+  const [activeSnap, setActiveSnap] = useState<number | string | null>(0.45);
+  const galleryRef = useDragScroll<HTMLDivElement>();
+
+  useEffect(() => {
+    if (place) setActiveSnap(0.45);
+  }, [place?.id]);
+
+  // Workaround for vaul bug #509: modal={false} doesn't properly
+  // reset pointer-events on body. Fixed in unmerged PR #576.
+  useEffect(() => {
+    if (place) {
+      requestAnimationFrame(() => {
+        document.body.style.pointerEvents = "auto";
+      });
+    }
+  }, [place?.id]);
+
+  if (!place) {
+    return (
+      <Drawer open={false} modal={false}>
+        <DrawerContent />
+      </Drawer>
+    );
+  }
 
   const displayPlace = enriched || place;
   const phone = enriched?.phone || place.phone;
@@ -86,190 +116,213 @@ export default function PlacePanel() {
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-10 bg-surface/95 backdrop-blur-md border-t border-edge rounded-t-2xl shadow-panel-up max-h-[50vh] flex flex-col animate-decloak">
-      {/* Drag handle */}
-      <div className="flex justify-center py-2 shrink-0">
-        <div className="w-9 h-1 bg-edge-bright rounded-full" />
-      </div>
-
-      {/* Header */}
-      <div className="flex justify-between items-start px-6 pb-2 shrink-0">
-        <div className="flex-1 min-w-0 pr-2">
-          <h2 className="text-xl font-bold font-display text-bone leading-tight">
-            {displayPlace.name}
-          </h2>
-          <div className="flex items-center gap-2 mt-1">
-            {displayPlace.category && (
-              <span className="text-sm text-blue-gray capitalize">
-                {displayPlace.category.replace(/_/g, " ")}
-              </span>
-            )}
-            {enriched?.priceLevel && (
-              <span className="text-sm font-semibold text-phosphor">
-                {enriched.priceLevel}
-              </span>
-            )}
-            {enriched?.isOpen !== null && enriched?.isOpen !== undefined && (
-              <span
-                className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
-                  enriched.isOpen
-                    ? "text-phosphor bg-phosphor-dim"
-                    : "text-coral bg-coral/10"
-                }`}
-              >
-                {enriched.isOpen ? "Open" : "Closed"}
-              </span>
-            )}
+    <Drawer
+      open={true}
+      onClose={() => {
+        clearSelection();
+        setActiveSnap(0.45);
+      }}
+      snapPoints={SNAP_POINTS}
+      activeSnapPoint={activeSnap}
+      setActiveSnapPoint={setActiveSnap}
+      fadeFromIndex={1}
+      modal={false}
+      noBodyStyles
+    >
+      <DrawerContent>
+        {/* Header */}
+        <div className="flex justify-between items-start px-6 pb-2 pt-1 shrink-0">
+          <div className="flex-1 min-w-0 pr-2">
+            <h2 className="text-xl font-bold font-display text-bone leading-tight">
+              {displayPlace.name}
+            </h2>
+            <div className="flex items-center gap-2 mt-1">
+              {displayPlace.category && (
+                <span className="text-sm text-blue-gray capitalize">
+                  {displayPlace.category.replace(/_/g, " ")}
+                </span>
+              )}
+              {enriched?.priceLevel && (
+                <span className="text-sm font-semibold text-phosphor">
+                  {enriched.priceLevel}
+                </span>
+              )}
+              {enriched?.isOpen !== null && enriched?.isOpen !== undefined && (
+                <span
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+                    enriched.isOpen
+                      ? "text-phosphor bg-phosphor-dim"
+                      : "text-coral bg-coral/10"
+                  }`}
+                >
+                  {enriched.isOpen ? "Open" : "Closed"}
+                </span>
+              )}
+            </div>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0 text-blue-gray hover:text-bone"
+            onClick={clearSelection}
+          >
+            <X className="size-5" />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="shrink-0 text-blue-gray hover:text-bone"
-          onClick={clearSelection}
-        >
-          <X className="size-5" />
-        </Button>
-      </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-3 px-6 py-3 shrink-0 flex-wrap">
-        <Button
-          className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl"
-          onClick={handleDirections}
-          disabled={routeLoading}
-        >
-          <Navigation className="size-5" />
-          <span>{routeLoading ? "..." : "Directions"}</span>
-        </Button>
-        {phone && (
+        {/* Action buttons */}
+        <div className="flex gap-3 px-6 py-3 shrink-0 flex-wrap">
+          <Button
+            className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl"
+            onClick={handleDirections}
+            disabled={routeLoading}
+          >
+            <Navigation className="size-5" />
+            <span>{routeLoading ? "..." : "Directions"}</span>
+          </Button>
+          {phone && (
+            <Button
+              variant="outline"
+              asChild
+              className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl hover:border-cyan/50 hover:text-cyan"
+            >
+              <a href={`tel:${phone}`}>
+                <Phone className="size-5" />
+                <span>Call</span>
+              </a>
+            </Button>
+          )}
+          {website && (
+            <Button
+              variant="outline"
+              asChild
+              className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl hover:border-cyan/50 hover:text-cyan"
+            >
+              <a href={website} target="_blank" rel="noopener noreferrer">
+                <Globe className="size-5" />
+                <span>Website</span>
+              </a>
+            </Button>
+          )}
           <Button
             variant="outline"
-            asChild
             className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl hover:border-cyan/50 hover:text-cyan"
+            onClick={() => useAppStore.getState().setShowReviewForm(true)}
           >
-            <a href={`tel:${phone}`}>
-              <Phone className="size-5" />
-              <span>Call</span>
-            </a>
+            <PenLine className="size-5" />
+            <span>Review</span>
           </Button>
-        )}
-        {website && (
-          <Button
-            variant="outline"
-            asChild
-            className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl hover:border-cyan/50 hover:text-cyan"
-          >
-            <a href={website} target="_blank" rel="noopener noreferrer">
-              <Globe className="size-5" />
-              <span>Website</span>
-            </a>
-          </Button>
-        )}
-        <Button
-          variant="outline"
-          className="flex-col h-auto gap-1.5 min-w-[72px] py-3 px-5 text-xs font-semibold rounded-xl hover:border-cyan/50 hover:text-cyan"
-          onClick={() => useAppStore.getState().setShowReviewForm(true)}
-        >
-          <PenLine className="size-5" />
-          <span>Review</span>
-        </Button>
-      </div>
+        </div>
 
-      {/* Quick stats */}
-      <div className="flex gap-0 px-6 py-3 border-b border-edge shrink-0">
-        {enriched?.rating && (
-          <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-            <span className="text-[11px] text-muted">Rating</span>
-            <span className="text-sm font-semibold text-bone">
-              <span className="text-amber">★</span> {enriched.rating.toFixed(1)}
-              {enriched.reviewCount
-                ? ` (${enriched.reviewCount.toLocaleString()})`
-                : ""}
-            </span>
-          </div>
-        )}
-        {displayPlace.address && (
-          <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
-            <span className="text-[11px] text-muted">Address</span>
-            <span className="text-[11px] font-normal text-bone text-center max-w-full leading-snug line-clamp-2">
-              {displayPlace.address}
-            </span>
-          </div>
-        )}
-      </div>
+        {/* Quick stats */}
+        <div className="flex gap-0 px-6 py-3 border-b border-edge shrink-0">
+          {enriched?.rating && (
+            <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+              <span className="text-[11px] text-muted">Rating</span>
+              <span className="text-sm font-semibold text-bone">
+                <span className="text-amber">★</span>{" "}
+                {enriched.rating.toFixed(1)}
+                {enriched.reviewCount
+                  ? ` (${enriched.reviewCount.toLocaleString()})`
+                  : ""}
+              </span>
+            </div>
+          )}
+          {displayPlace.address && (
+            <div className="flex-1 flex flex-col items-center gap-0.5 min-w-0">
+              <span className="text-[11px] text-muted">Address</span>
+              <span className="text-[11px] font-normal text-bone text-center max-w-full leading-snug line-clamp-2">
+                {displayPlace.address}
+              </span>
+            </div>
+          )}
+        </div>
 
-      {/* Scrollable content */}
-      <div className="overflow-y-auto flex-1 pb-4">
-        {enriched?.photoUri && (
-          <div className="mx-6 mt-3 h-[140px] overflow-hidden rounded-lg">
-            <img
-              src={enriched.photoUri}
-              alt={displayPlace.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-
-        {enriched?.foodTypes && enriched.foodTypes.length > 0 && (
-          <div className="flex gap-1.5 flex-wrap mt-3 px-6">
-            {enriched.foodTypes.map((type) => (
-              <Badge
-                key={type}
-                className="bg-lavender/10 text-lavender border-transparent"
+        {/* Scrollable content */}
+        <div className="overflow-y-auto flex-1 pb-4">
+          {isLoading ? (
+            <Skeleton className="mx-6 mt-3 h-[200px] rounded-lg bg-surface-raised" />
+          ) : enriched?.photoUris && enriched.photoUris.length > 0 ? (
+            <div className="mt-3 px-6">
+              <div
+                ref={galleryRef}
+                className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
               >
-                {type}
-              </Badge>
-            ))}
-          </div>
-        )}
+                {enriched.photoUris.map((uri, i) => (
+                  <div
+                    key={i}
+                    className={`shrink-0 h-[200px] overflow-hidden rounded-lg ${
+                      enriched.photoUris.length === 1 ? "w-full" : "w-[85%]"
+                    }`}
+                  >
+                    <img
+                      src={uri}
+                      alt={`${displayPlace.name} photo ${i + 1}`}
+                      className="w-full h-full object-cover pointer-events-none"
+                      loading={i === 0 ? "eager" : "lazy"}
+                      draggable={false}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : enriched?.photoUri ? (
+            <div className="mx-6 mt-3 h-[200px] overflow-hidden rounded-lg">
+              <img
+                src={enriched.photoUri}
+                alt={displayPlace.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : null}
 
-        {(enriched?.dineIn !== null ||
-          enriched?.takeout !== null ||
-          enriched?.delivery !== null) && (
-          <div className="flex gap-1.5 flex-wrap mt-2 px-6">
-            {enriched?.dineIn && (
-              <Badge variant="secondary" className="text-blue-gray">
-                Dine-in
-              </Badge>
-            )}
-            {enriched?.takeout && (
-              <Badge variant="secondary" className="text-blue-gray">
-                Takeout
-              </Badge>
-            )}
-            {enriched?.delivery && (
-              <Badge variant="secondary" className="text-blue-gray">
-                Delivery
-              </Badge>
-            )}
-            {enriched?.wheelchairAccessible && (
-              <Badge variant="secondary" className="text-blue-gray">
-                ♿ Accessible
-              </Badge>
-            )}
-          </div>
-        )}
+          {(enriched?.dineIn !== null ||
+            enriched?.takeout !== null ||
+            enriched?.delivery !== null) && (
+            <div className="flex gap-1.5 flex-wrap mt-2 px-6">
+              {enriched?.dineIn && (
+                <Badge variant="secondary" className="text-blue-gray">
+                  Dine-in
+                </Badge>
+              )}
+              {enriched?.takeout && (
+                <Badge variant="secondary" className="text-blue-gray">
+                  Takeout
+                </Badge>
+              )}
+              {enriched?.delivery && (
+                <Badge variant="secondary" className="text-blue-gray">
+                  Delivery
+                </Badge>
+              )}
+              {enriched?.wheelchairAccessible && (
+                <Badge variant="secondary" className="text-blue-gray">
+                  ♿ Accessible
+                </Badge>
+              )}
+            </div>
+          )}
 
-        {isLoading && (
-          <div className="flex items-center gap-2 text-sm text-muted mt-3 px-6">
-            <span className="size-3 rounded-full border-2 border-edge border-t-cyan animate-spin" />
-            Loading details...
-          </div>
-        )}
+          {isLoading && (
+            <div className="flex items-center gap-2 text-sm text-muted mt-3 px-6">
+              <span className="size-3 rounded-full border-2 border-edge border-t-cyan animate-spin" />
+              Loading details...
+            </div>
+          )}
 
-        {enriched?.briefing && (
-          <div className="text-sm text-bone leading-relaxed mx-6 mt-3 p-3 bg-surface-raised rounded-lg border-l-2 border-l-cyan">
-            {enriched.briefing}
-          </div>
-        )}
+          {enriched?.briefing && (
+            <div className="text-sm text-bone leading-relaxed mx-6 mt-3 p-3 bg-surface-raised rounded-lg border-l-2 border-l-cyan">
+              {enriched.briefing}
+            </div>
+          )}
 
-        {enriched?.openingHours && enriched.openingHours.length > 0 && (
-          <HoursList hours={enriched.openingHours} />
-        )}
+          {enriched?.openingHours && enriched.openingHours.length > 0 && (
+            <HoursList hours={enriched.openingHours} />
+          )}
 
-        <ReviewList placeId={place.id} />
-      </div>
-    </div>
+          <ReviewList placeId={place.id} />
+        </div>
+      </DrawerContent>
+    </Drawer>
   );
 }

@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MapPin, X } from "lucide-react";
 import { useState } from "react";
-import HamburgerMenu from "./components/HamburgerMenu";
 import LocateButton from "./components/LocateButton";
 import Map from "./components/Map";
 import NavigationPanel from "./components/NavigationPanel";
@@ -76,8 +75,7 @@ function AppContent() {
       <Map />
       <SearchBar />
       <LocationPrompt />
-      <HamburgerMenu />
-      {selectedPlace && !routeData && <PlacePanel />}
+      {!routeData && <PlacePanel />}
       {selectedPlace && showReviewForm && <ReviewForm />}
       {routeData && <NavigationPanel />}
       <RegisterSchema />

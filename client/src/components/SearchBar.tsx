@@ -4,6 +4,7 @@ import { useAISearch } from "../hooks/useAISearch";
 import { formatDistanceLive } from "../lib/geo-utils";
 import { useAppStore } from "../store";
 import type { Place } from "../types";
+import HamburgerMenu from "./HamburgerMenu";
 
 export default function SearchBar() {
   const [query, setQuery] = useState("");
@@ -87,25 +88,28 @@ export default function SearchBar() {
   };
 
   return (
-    <div className="absolute top-4 left-16 right-4 z-10 max-w-[480px]">
+    <div className="absolute top-4 left-4 right-4 z-10 max-w-[520px]">
       <form
-        className="group flex items-center gap-2.5 rounded-xl border border-edge bg-surface/90 px-4 h-12 shadow-panel backdrop-blur-md transition-all focus-within:border-cyan focus-within:shadow-glow"
+        className="group flex items-center rounded-xl border border-edge bg-surface/90 h-12 shadow-panel backdrop-blur-md transition-all focus-within:border-cyan focus-within:shadow-glow"
         onSubmit={handleSubmit}
       >
-        <Search className="size-5 shrink-0 text-blue-gray group-focus-within:text-cyan transition-colors" />
+        <HamburgerMenu />
+        <div className="w-px h-6 bg-edge shrink-0" />
+        <Search className="size-5 shrink-0 text-blue-gray group-focus-within:text-cyan transition-colors ml-3" />
         <input
           type="text"
           placeholder="Search places..."
           value={query}
           onChange={handleChange}
           autoComplete="off"
-          className="flex-1 bg-transparent border-none outline-none text-bone text-base font-body placeholder:text-blue-gray"
+          className="flex-1 h-full bg-transparent border-none outline-none text-bone text-base font-body placeholder:text-blue-gray ml-2.5"
+          onFocus={() => setShowResults(true)}
         />
         {query && (
           <button
             type="button"
             onClick={handleClear}
-            className="text-blue-gray hover:text-bone transition-colors p-1"
+            className="text-blue-gray hover:text-bone transition-colors p-1 mr-3"
           >
             <X className="size-4" />
           </button>

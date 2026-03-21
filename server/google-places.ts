@@ -21,6 +21,7 @@ export interface PlaceEnrichment {
   delivery: boolean | null;
   wheelchairAccessible: boolean | null;
   photoUri: string | null;
+  photoUris: string[];
 }
 
 interface GooglePlace {
@@ -111,10 +112,16 @@ export async function enrichPlace(
       PRICE_LEVEL_VERY_EXPENSIVE: "$$$$",
     };
 
-    // Build photo URI if available
+    // Build photo URIs if available
     let photoUri: string | null = null;
+    const photoUris: string[] = [];
     if (item.photos && item.photos.length > 0) {
-      photoUri = `https://places.googleapis.com/v1/${item.photos[0].name}/media?maxHeightPx=400&maxWidthPx=600&key=${apiKey}`;
+      for (const photo of item.photos.slice(0, 5)) {
+        photoUris.push(
+          `https://places.googleapis.com/v1/${photo.name}/media?maxHeightPx=400&maxWidthPx=600&key=${apiKey}`,
+        );
+      }
+      photoUri = photoUris[0];
     }
 
     return {
@@ -143,6 +150,7 @@ export async function enrichPlace(
       wheelchairAccessible:
         item.accessibilityOptions?.wheelchairAccessibleEntrance ?? null,
       photoUri,
+      photoUris,
     };
   } catch (err) {
     console.error("Google Places enrichment error:", err);
@@ -296,5 +304,6 @@ function emptyEnrichment(): PlaceEnrichment {
     delivery: null,
     wheelchairAccessible: null,
     photoUri: null,
+    photoUris: [],
   };
 }

@@ -24,6 +24,7 @@ export interface EnrichedPlace extends Place {
   delivery: boolean | null;
   wheelchairAccessible: boolean | null;
   photoUri: string | null;
+  photoUris: string[];
   briefing: string;
 }
 
