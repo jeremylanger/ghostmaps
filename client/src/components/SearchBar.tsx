@@ -130,12 +130,6 @@ export default function SearchBar() {
             </div>
           )}
 
-          {ranking?.summary && !loading && (
-            <div className="px-4 py-2.5 text-sm text-blue-gray italic bg-surface-raised border-b border-edge">
-              {ranking.summary}
-            </div>
-          )}
-
           {!error &&
             sortedResults.map((place) => {
               const isTopPick = ranking?.topPick === place.id;

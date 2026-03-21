@@ -75,7 +75,7 @@ export function useMapInit(
         { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 },
       );
 
-      map.addControl(new maplibregl.NavigationControl(), "top-right");
+      map.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
       map.on("styleimagemissing", (e) => {
         const alias = ICON_ALIASES[e.id];

@@ -258,12 +258,7 @@ app.get("/api/ai-search/stream", async (req, res) => {
       // Name search via Text Search
       const searchQuery = parsed.name_query || q;
       send("status", { message: `Searching for "${searchQuery}"...` });
-      results = await searchByName(
-        searchQuery,
-        googleApiKey,
-        userLat,
-        userLng,
-      );
+      results = await searchByName(searchQuery, googleApiKey, userLat, userLng);
     }
 
     // Add distance from user to each result
@@ -444,7 +439,8 @@ app.get("/api/reviews/:placeId", async (req, res) => {
         attesters.map(async (addr) => {
           try {
             identities[addr] = await fetchAccountAge(addr);
-          } catch {
+          } catch (err) {
+            console.error(`Identity fetch failed for ${addr}:`, err);
             identities[addr] = { firstSeen: 0, totalReviews: 0 };
           }
         }),
@@ -547,7 +543,8 @@ app.post("/api/compare", async (req, res) => {
             address: p.address,
             reviews: reviews.map((r) => ({ rating: r.rating, text: r.text })),
           };
-        } catch {
+        } catch (err) {
+          console.error(`Review fetch failed for compare (${p.name}):`, err);
           return { name: p.name, category: p.category, address: p.address };
         }
       }),
@@ -567,7 +564,8 @@ app.get("/api/server-ip", async (_req, res) => {
     const r = await fetch("https://api.ipify.org");
     const ip = await r.text();
     res.json({ ip });
-  } catch {
+  } catch (err) {
+    console.error("Server IP fetch error:", err);
     res.status(500).json({ error: "Could not determine IP" });
   }
 });

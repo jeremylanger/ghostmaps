@@ -186,8 +186,7 @@ const RANK_SYSTEM_PROMPT = `You are a local guide AI for Ghost Maps, a private m
 Return ONLY valid JSON (no markdown, no code blocks):
 {
   "top_pick": {"id": "the place id", "reason": "1-2 sentence recommendation"},
-  "alternatives": [{"id": "place id", "why_not": "max 5 words"}],
-  "summary": "1 sentence overview"
+  "alternatives": [{"id": "place id", "why_not": "max 5 words"}]
 }
 
 Be concise and opinionated. Prefer places with higher confidence scores, real addresses, and phone numbers.`;
@@ -200,14 +199,12 @@ export async function rankResults(
   topPick: string | null;
   topPickReason: string;
   alternatives: { id: string; whyNot: string }[];
-  summary: string;
 }> {
   if (places.length === 0) {
     return {
       topPick: null,
       topPickReason: "",
       alternatives: [],
-      summary: "No results found.",
     };
   }
 
@@ -258,7 +255,6 @@ export async function rankResults(
           whyNot: a.why_not,
         }),
       ),
-      summary: parsed.summary || `Found ${places.length} results.`,
     };
   } catch (err) {
     console.error("Venice rank error:", err);
@@ -266,7 +262,6 @@ export async function rankResults(
       topPick: places[0].id,
       topPickReason: "",
       alternatives: places.slice(1, 6).map((p) => ({ id: p.id, whyNot: "" })),
-      summary: `Found ${places.length} results.`,
     };
   }
 }

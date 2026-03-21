@@ -52,7 +52,7 @@ function DrawerContent({
     <DrawerPrimitive.Content
       data-slot="drawer-content"
       className={cn(
-        "group/drawer-content fixed z-10 flex h-auto flex-col bg-surface/95 backdrop-blur-md",
+        "group/drawer-content fixed z-20 flex h-auto flex-col bg-surface/95 backdrop-blur-md",
         "inset-x-0 bottom-0 mt-24 max-h-[90vh] rounded-t-2xl border-t border-edge shadow-panel-up mx-auto max-w-[640px]",
         className,
       )}

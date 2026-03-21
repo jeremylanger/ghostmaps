@@ -31,7 +31,7 @@ export default function LocateButton() {
   return (
     <button
       type="button"
-      className={`absolute bottom-6 right-4 z-10 size-11 rounded-lg border bg-surface/90 backdrop-blur-md flex items-center justify-center transition-all cursor-pointer ${
+      className={`absolute bottom-6 right-4 z-10 size-8 rounded-md border bg-surface/90 backdrop-blur-md flex items-center justify-center transition-all cursor-pointer ${
         active
           ? "border-cyan text-cyan shadow-glow"
           : "border-edge text-blue-gray hover:text-cyan hover:border-cyan/50 hover:shadow-glow"
@@ -39,7 +39,7 @@ export default function LocateButton() {
       onClick={handleClick}
       title="Show my location"
     >
-      <Crosshair className="size-5" />
+      <Crosshair className="size-4" />
     </button>
   );
 }

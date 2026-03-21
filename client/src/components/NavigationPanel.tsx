@@ -24,7 +24,7 @@ export default function NavigationPanel() {
 
   if (!navigating) {
     return (
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] z-10 bg-surface/95 backdrop-blur-md border-t border-edge rounded-t-2xl shadow-panel-up max-h-[70vh] flex flex-col animate-decloak">
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[640px] z-20 bg-surface/95 backdrop-blur-md border-t border-edge rounded-t-2xl shadow-panel-up max-h-[70vh] flex flex-col animate-decloak">
         <div className="flex items-center gap-3 px-5 py-4 border-b border-edge">
           <Button
             variant="ghost"

@@ -33,7 +33,6 @@ export interface Ranking {
   topPick: string | null;
   topPickReason: string;
   alternatives: { id: string; whyNot: string }[];
-  summary: string;
 }
 
 export interface OnChainReview {

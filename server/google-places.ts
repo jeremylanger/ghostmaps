@@ -57,7 +57,7 @@ interface GooglePlace {
   photos?: { name: string }[];
 }
 
-const FIELD_MASK = [
+const ENRICHMENT_FIELD_MASK = [
   "displayName",
   "currentOpeningHours",
   "regularOpeningHours",
@@ -74,7 +74,9 @@ const FIELD_MASK = [
   "primaryType",
   "types",
   "photos",
-].join(",");
+]
+  .map((f) => `places.${f}`)
+  .join(",");
 
 export async function enrichPlace(
   place: Place,
@@ -87,7 +89,7 @@ export async function enrichPlace(
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": apiKey,
-        "X-Goog-FieldMask": `places.${FIELD_MASK.split(",").join(",places.")}`,
+        "X-Goog-FieldMask": ENRICHMENT_FIELD_MASK,
       },
       body: JSON.stringify({
         textQuery: `${place.name} ${place.address}`,
