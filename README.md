@@ -167,7 +167,7 @@ ghostmaps/
 ### Prerequisites
 
 - Node.js 20+
-- API keys: Venice, MapTiler, Google Places, TomTom, Coinbase CDP, Overture Maps
+- API keys: Venice, MapTiler, Google Places, TomTom, Coinbase CDP
 
 ### Setup
 

@@ -17,7 +17,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 | Frontend | React + Vite + MapLibre GL JS (MapTiler Streets v2 tiles) |
 | Backend | Node.js + Express |
 | AI | Venice API (OpenAI-compatible, zero data retention) |
-| POI Search | Overture REST API → Google Places enrichment |
+| POI Data | Google Places API (Nearby Search + Text Search + enrichment, server-side) |
 | Navigation | TomTom Routing API (traffic ETA, speed limits, lane guidance) |
 | On-chain | EAS on Base (ethers.js + EAS SDK) |
 | Auth + Wallets | Coinbase CDP Embedded Wallets (email OTP, invisible wallet on Base) |
@@ -295,16 +295,25 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Fix address search: `geocodeAddress()` now accepts userLat/userLng and sends 50km locationBias to Google Places; Venice prompt updated with partial address examples ("123", "123 maple")
 - [x] Tests: 59 client tests passing (10 new: skip-ahead, GPS accuracy gating, far-from-route, snap-to-nearest, short steps)
 
-### Day 10 — March 21
-**Documentation + Polish**
+### Day 10 — March 20 (IN PROGRESS)
+**Documentation + Polish + Architecture Simplification**
 - [x] Comprehensive README (architecture, setup, tech stack, privacy model)
 - [x] API documentation (machine-readable for AI judges)
+- [x] Remove Overture Maps — all search now via Google Places (Nearby Search for categories, Text Search for names)
+- [x] Google Places Nearby Search with rating sort for category queries
+- [x] Remove redundant ranking summary (Venice prompt simplified)
+- [x] Fix silent catch blocks (CLAUDE.md compliance)
+- [x] Hoist ENRICHMENT_FIELD_MASK to module scope
+- [x] Fix z-index: place panel and nav preview render above map controls
+- [x] Reposition zoom/compass controls above locate button (bottom-right stack)
+- [x] Shrink locate button to match map control sizing
+- [x] Polish nav bottom bar: uniform font sizes, split value/unit styling
+- [x] Redesign place panel action buttons (Apple Maps style: 4-col grid, icon+label)
+- [x] Move rating/address into scrollable area (only header + buttons pinned)
+- [x] Mobile-responsive layout (hamburger menu, search bar spacing)
 - [ ] Architecture diagram
 - [ ] End-to-end flow testing: search → discover → reviews → navigate
-- [x] Mobile-responsive layout (hamburger menu, search bar spacing)
 - [ ] Loading states, error handling, edge cases
-- [ ] UI/UX polish — smooth transitions, clean typography
-- [ ] Customize Liberty map style (colors, theming, brand identity)
 - [ ] Performance optimization (debounce search, cache results)
 - [ ] Tests: unit, integration, E2E
 

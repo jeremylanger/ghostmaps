@@ -15,9 +15,10 @@ Open source. Built on Ethereum (Base). Privacy by design.
 ### 1. Map Layer
 - **MapLibre GL JS** for rendering (open source, vector tiles)
 - **MapTiler Streets v2** for map tiles (polished styling, dense POI labels, terrain shading, free 100K tiles/month)
-- **Overture Maps Foundation** for POI data (64M+ POIs, 2,100+ categories, permissive license)
-- POI data includes: name, location, category hierarchy, address, phone, website, brand, confidence score
-- POI data does NOT include: hours, reviews, photos, ratings (we fill this gap)
+- **Google Places API** for POI search + enrichment (server-side, no user identity sent)
+  - **Nearby Search** for category queries (e.g. "coffee") — type-filtered, sorted by rating
+  - **Text Search** for name/address queries (e.g. "Starbucks", "123 Main St")
+  - **Enrichment** for place details — hours, photos, ratings, services, accessibility
 
 ### 2. Private AI Search (Venice)
 - Natural language search: "late night tacos near me" or "quiet coffee shop with wifi"
@@ -80,15 +81,16 @@ Open source. Built on Ethereum (Base). Privacy by design.
 User (browser/mobile)
   |
   v
-MapLibre GL JS  <--- Overture PMTiles (serverless, no backend needed)
+MapLibre GL JS  <--- MapTiler Streets v2 (vector tiles)
   |
   v
 Venice API  <--- Natural language query interpretation
   |                 Review summarization & analysis
   |                 Zero data retention
   v
-Overture Maps Data  <--- 64M+ POIs, queryable by category
-  |                       DuckDB or community REST API
+Google Places API  <--- Nearby Search (categories) + Text Search (names)
+  |                      Enrichment (hours, photos, ratings)
+  |                      Server-side only — no user data sent
   v
 EAS on Base  <--- Review attestations
                    Sub-cent transaction costs
@@ -97,7 +99,7 @@ EAS on Base  <--- Review attestations
 
 ### Key Technical Decisions
 - **MapTiler Streets v2 for tiles** — polished, dense POI labels at zoom 12+, free tier (100K/month)
-- **Overture data access** — community REST API or pre-processed subset via DuckDB
+- **Google Places for all POI data** — Nearby Search for categories, Text Search for names/addresses, enrichment for details. All server-side.
 - **Venice as OpenAI-compatible endpoint** — standard SDK, simple integration
 - **Base L2** — sub-cent transactions, EAS already deployed, ERC-8004 registration already on Base
 
@@ -200,14 +202,14 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 - Registered on Base Sepolia, non-revocable, zero resolver
 - lat/lng stored as int256 (value * 1e6) to avoid floating point in Solidity
 
-### 7. Venice + Overture Search Integration — RESOLVED
+### 7. Venice + Google Places Search Integration — RESOLVED
 - Venice receives natural language query + user lat/lng (zero retention)
 - Venice extracts intent → structured query with `query_type`: "category", "name", or "address"
-- **Category queries** (e.g. "best tacos near me"): Overture REST API with radius + distance-weighted ranking
-- **Name queries** (e.g. "Verve Coffee"): Google Places Text Search API (no radius cap)
-- **Address queries** (e.g. "123 Main St, LA"): Google Places geocoding
+- **Category queries** (e.g. "best tacos near me"): Google Places Nearby Search with `includedTypes`, sorted by rating
+- **Name queries** (e.g. "Verve Coffee"): Google Places Text Search with location bias
+- **Address queries** (e.g. "123 Main St, LA"): Google Places geocoding with location bias
 - **Raw coordinates** (e.g. "34.0522, -118.2437"): parsed client-side, skip Venice
-- All results include distance from user's position
+- All requests go server-side — Google never sees user identity or location
 - Venice ranks category results, recommends top pick with "why not" for alternatives
 - Streamed via SSE
 - Smart search bar UX (not chat interface)
@@ -265,7 +267,8 @@ See detailed day-by-day build plan. Summary:
 - Day 9: Navigation overhaul (drive test feedback), search by name/address/coordinates ✅
 - Day 9.5: Navigation fixes round 2 (instruction consolidation, step advancement, live ETA, position smoothing, camera offset, rerouting sensitivity) ✅
 - Day 9.75: Navigation fixes round 3 (step progression rewrite with proximity+direction scan, trailing path projection, address search location bias) ✅
-- Days 10-11: Documentation + polish + deploy (deployed to ghostmaps.app via Railway)
+- Day 10: Remove Overture Maps (all search via Google Places), README + API docs, UI polish (action buttons, nav bar, map controls, z-index fixes)
+- Day 11: Deploy + demo + submit
 
 ---
 
