@@ -1,181 +1,107 @@
 import { describe, expect, it } from "vitest";
-import { formatPlace, queryToCategories } from "./search";
-import type { OvertureFeature } from "./types";
+import { addDistanceToResults, parseCoordinates } from "./search";
 
-describe("queryToCategories", () => {
-  // Direct matches
-  it('maps "pizza" to pizza_restaurant', () => {
-    expect(queryToCategories("pizza")).toEqual(["pizza_restaurant"]);
+describe("addDistanceToResults", () => {
+  it("adds distance and preserves original order", () => {
+    const places = [
+      {
+        id: "far",
+        name: "Far Place",
+        category: "",
+        address: "",
+        phone: "",
+        website: "",
+        brand: "",
+        confidence: 1,
+        longitude: -118.5,
+        latitude: 34.2,
+      },
+      {
+        id: "near",
+        name: "Near Place",
+        category: "",
+        address: "",
+        phone: "",
+        website: "",
+        brand: "",
+        confidence: 1,
+        longitude: -118.244,
+        latitude: 34.053,
+      },
+    ];
+
+    const result = addDistanceToResults(places, 34.0522, -118.2437);
+
+    expect(result[0].id).toBe("far");
+    expect(result[1].id).toBe("near");
+    expect(result[0].distanceMeters).toBeGreaterThan(0);
+    expect(result[1].distanceMeters).toBeGreaterThan(0);
+    expect(result[0].distanceMeters).toBeGreaterThan(result[1].distanceMeters);
   });
 
-  it('maps "coffee" to coffee_shop', () => {
-    expect(queryToCategories("coffee")).toEqual(["coffee_shop"]);
-  });
+  it("returns distance in meters", () => {
+    const places = [
+      {
+        id: "a",
+        name: "A",
+        category: "",
+        address: "",
+        phone: "",
+        website: "",
+        brand: "",
+        confidence: 1,
+        longitude: -118.2437,
+        latitude: 34.0522,
+      },
+    ];
 
-  it('maps "restaurants" (plural) to restaurant', () => {
-    expect(queryToCategories("restaurants")).toEqual(["restaurant"]);
-  });
-
-  // Case insensitive
-  it("handles uppercase input", () => {
-    expect(queryToCategories("PIZZA")).toEqual(["pizza_restaurant"]);
-  });
-
-  it("handles mixed case", () => {
-    expect(queryToCategories("Coffee")).toEqual(["coffee_shop"]);
-  });
-
-  // Whitespace
-  it("trims whitespace", () => {
-    expect(queryToCategories("  pizza  ")).toEqual(["pizza_restaurant"]);
-  });
-
-  // Multi-word direct matches
-  it('maps "coffee shop" to coffee_shop', () => {
-    expect(queryToCategories("coffee shop")).toEqual(["coffee_shop"]);
-  });
-
-  it('maps "gas station" to gas_station', () => {
-    expect(queryToCategories("gas station")).toEqual(["gas_station"]);
-  });
-
-  it('maps "ice cream" to ice_cream_shop', () => {
-    expect(queryToCategories("ice cream")).toEqual(["ice_cream_shop"]);
-  });
-
-  // Substring matching for natural language queries
-  it('extracts category from "best pizza near me"', () => {
-    const result = queryToCategories("best pizza near me");
-    expect(result).toContain("pizza_restaurant");
-  });
-
-  it('extracts category from "indian food downtown"', () => {
-    const result = queryToCategories("indian food downtown");
-    expect(result).toContain("indian_restaurant");
-    expect(result).toContain("restaurant");
-  });
-
-  // Limits to 3 categories max
-  it("returns at most 3 categories", () => {
-    const result = queryToCategories("pizza burger sushi bar");
-    expect(result.length).toBeLessThanOrEqual(3);
-  });
-
-  // Fallback for unknown terms
-  it("uses query as category for unknown terms", () => {
-    expect(queryToCategories("trampoline")).toEqual(["trampoline"]);
-  });
-
-  it("converts spaces to underscores for unknown multi-word queries", () => {
-    expect(queryToCategories("rock climbing")).toEqual(["rock_climbing"]);
-  });
-
-  // Synonyms
-  it('maps "tacos" to mexican_restaurant', () => {
-    expect(queryToCategories("tacos")).toEqual(["mexican_restaurant"]);
-  });
-
-  it('maps "bbq" to barbecue_restaurant', () => {
-    expect(queryToCategories("bbq")).toEqual(["barbecue_restaurant"]);
-  });
-
-  it('maps "movies" to movie_theater', () => {
-    expect(queryToCategories("movies")).toEqual(["movie_theater"]);
+    const result = addDistanceToResults(places, 34.0522, -118.2437);
+    expect(result[0].distanceMeters).toBe(0);
   });
 });
 
-describe("formatPlace", () => {
-  it("formats a full Overture API response", () => {
-    const input: OvertureFeature = {
-      id: "abc-123",
-      geometry: { coordinates: [-118.25, 34.05] },
-      properties: {
-        names: { primary: "Test Coffee" },
-        categories: { primary: "coffee_shop" },
-        addresses: [{ freeform: "123 Main St" }],
-        phones: ["(555) 123-4567"],
-        websites: ["https://testcoffee.com"],
-        brand: { names: { primary: "Test Brand" } },
-        confidence: 0.95,
-      },
-    };
-
-    const result = formatPlace(input);
-
-    expect(result).toEqual({
-      id: "abc-123",
-      name: "Test Coffee",
-      category: "coffee_shop",
-      address: "123 Main St",
-      phone: "(555) 123-4567",
-      website: "https://testcoffee.com",
-      brand: "Test Brand",
-      confidence: 0.95,
-      longitude: -118.25,
-      latitude: 34.05,
+describe("parseCoordinates", () => {
+  it("parses valid lat,lng pair", () => {
+    expect(parseCoordinates("34.0522, -118.2437")).toEqual({
+      lat: 34.0522,
+      lng: -118.2437,
     });
   });
 
-  it("handles missing optional fields", () => {
-    const input: OvertureFeature = {
-      id: "xyz-789",
-      geometry: { coordinates: [-74.006, 40.71] },
-      properties: {
-        names: { primary: "Bare Minimum Place" },
-      },
-    };
-
-    const result = formatPlace(input);
-
-    expect(result.id).toBe("xyz-789");
-    expect(result.name).toBe("Bare Minimum Place");
-    expect(result.category).toBe("");
-    expect(result.address).toBe("");
-    expect(result.phone).toBe("");
-    expect(result.website).toBe("");
-    expect(result.brand).toBe("");
-    expect(result.confidence).toBe(0);
-    expect(result.longitude).toBe(-74.006);
-    expect(result.latitude).toBe(40.71);
+  it("parses without spaces", () => {
+    expect(parseCoordinates("40.7128,-74.006")).toEqual({
+      lat: 40.7128,
+      lng: -74.006,
+    });
   });
 
-  it("handles structured address when freeform is missing", () => {
-    const input: OvertureFeature = {
-      id: "1",
-      geometry: { coordinates: [0, 0] },
-      properties: {
-        names: { primary: "Place" },
-        addresses: [
-          { street: "456 Oak Ave", locality: "Portland", region: "OR" },
-        ],
-      },
-    };
-
-    const result = formatPlace(input);
-    expect(result.address).toBe("456 Oak Ave, Portland, OR");
+  it("rejects invalid latitude (> 90)", () => {
+    expect(parseCoordinates("91.0, -118.0")).toBeNull();
   });
 
-  it("handles empty geometry gracefully", () => {
-    const input: OvertureFeature = {
-      properties: {
-        names: { primary: "No Geo Place" },
-      },
-    };
-
-    const result = formatPlace(input);
-    expect(result.longitude).toBe(0);
-    expect(result.latitude).toBe(0);
+  it("rejects invalid longitude (> 180)", () => {
+    expect(parseCoordinates("34.0, 181.0")).toBeNull();
   });
 
-  it("generates fallback id from coordinates", () => {
-    const input: OvertureFeature = {
-      geometry: { coordinates: [-118.5, 34.1] },
-      properties: {
-        names: { primary: "No ID Place" },
-      },
-    };
+  it("rejects non-coordinate strings", () => {
+    expect(parseCoordinates("best pizza near me")).toBeNull();
+  });
 
-    const result = formatPlace(input);
-    expect(result.id).toBe("-118.5-34.1");
+  it("rejects single number", () => {
+    expect(parseCoordinates("34.0522")).toBeNull();
+  });
+
+  it("parses negative coordinates", () => {
+    expect(parseCoordinates("-33.8688, 151.2093")).toEqual({
+      lat: -33.8688,
+      lng: 151.2093,
+    });
+  });
+
+  it("parses integer coordinates", () => {
+    expect(parseCoordinates("34, -118")).toEqual({
+      lat: 34,
+      lng: -118,
+    });
   });
 });

@@ -1,55 +1,256 @@
-# The Synthesis Hackathon
+# Ghost Maps
 
-A 10-day online hackathon judged by AI agents.
+**Private AI-powered maps with trustworthy on-chain reviews.**
 
-## Manifesto
+Google Maps tracks your location every 2 minutes and has paid $7.3B+ in privacy fines. Ghost Maps is the alternative — AI-powered search, on-chain reviews that can't be deleted or manipulated, and real navigation, without anyone knowing where you go.
 
-We are living through one of the biggest transfers of trust in human history, from humans to machines. AI agents are becoming the next users of the internet, operating autonomously at a pace that would have been unthinkable a year ago. They're writing code, moving money, and making decisions on behalf of people who may not even be watching.
+**Live at [ghostmaps.app](https://ghostmaps.app)**
 
-But agents don't fit into the internet we built for humans. Logins, passwords, bank accounts, legal contracts: all of these systems assume a person on the other end.
+---
 
-For over a decade, the Ethereum ecosystem has been working on exactly these problems: payments without banks, identity without shared secrets, reputation without platforms, and agreements that don't rely on courts or corporate gatekeepers. Most AI builders have no idea any of this exists.
+## What It Does
 
-The Synthesis is where agents register with their own identity, build projects, and are evaluated by AI judges with humans in the loop. Infrastructure teams put their tools in front of real agents. Agent builders discover that many of their hardest problems already have working foundations.
+1. **Search privately** — Type "best tacos near me" and Venice AI (zero data retention) interprets your query, finds places via Google Places (server-side, no user data sent), and ranks results with explanations
+2. **See real details** — Tap a place to see hours, photos, ratings, price level, and an AI-generated briefing
+3. **Read trustworthy reviews** — Reviews are on-chain attestations (EAS on Base) that no business can pay to remove and no platform can filter
+4. **Write verified reviews** — Sign up with email (invisible wallet created on Base), write a review with photo proof-of-visit, Venice AI scores quality, review goes on-chain — user never sees crypto
+5. **Navigate privately** — Turn-by-turn directions with traffic-aware ETA, speed limits, lane guidance, and live rerouting — without storing your route
 
-As agents start to act on our behalf, the infrastructure underneath determines whether we can actually trust how they operate. Ethereum gives us that trust. The Synthesis is where builders discover it.
+---
 
-## On-Chain Registration
+## Architecture
 
-[View on BaseScan](https://basescan.org/tx/0xe0d6dc92a3360d5188adf3963283a94b10098d879cd2504f3820277ecae76b69)
+```
+Browser (React + MapLibre GL JS)
+  │
+  ├── Venice AI ──── Natural language search parsing + ranking
+  │                  Review quality scoring + summarization
+  │                  Place intelligence briefings
+  │                  Zero data retention
+  │
+  ├── Google Places ── POI search, hours, ratings, photos
+  │                    (server-side, no user identity sent)
+  │
+  ├── TomTom ──────── Route calculation with live traffic
+  │                    (anonymous origin/destination only)
+  │
+  ├── EAS on Base ──── On-chain review attestations
+  │                     Immutable, composable, sub-cent cost
+  │
+  └── Coinbase CDP ─── Email OTP signup → invisible wallet
+                        Gas sponsored via Paymaster ($0 for users)
+```
 
-## Timeline
+### Privacy Model
 
-- **March 13**: Opening ceremony (4pm GMT), building starts
-- **March 22**: Building closes, evaluation begins
-- **March 23**: Judging opens
-- **March 25**: Winners announced
+| What Google Maps Collects | What Ghost Maps Does |
+|---|---|
+| Location every ~2 minutes | No location storage. Venice = zero retention |
+| Every search query saved | Venice = zero data retention |
+| Navigation routes + speed + stops | TomTom calculates route, we don't store it |
+| Every business view, click, call | No interaction tracking |
+| Reviews tied to real identity | Pseudonymous (wallet address only) |
+| Cross-app profiling (YouTube, Search, Ads) | No other services, no ad network |
+| 11,500+ geofence warrants/year | Nothing to hand over |
+| Tracked 98M users who opted out | No opt-out needed — data never exists |
 
-## Hackathon Tracks
+**Transparency:** TomTom sees anonymous origin/destination coordinates for route calculation. Google Places sees search queries and place coordinates — but all requests come from our server, so Google never sees who's searching, user identity, or user location. Google sees "a server searched for pizza" — not "Jeremy in Brooklyn searched for pizza."
 
-1. **Agents that Pay** — Transparent spending controls, onchain settlement, no intermediaries
-2. **Agents that Trust** — Reputation/identity systems, portable credentials, open service discovery
-3. **Agents that Cooperate** — Smart contract-enforced deals between agents, dispute resolution
-4. **Agents that Keep Secrets** — Privacy layers, shielded transfers, ZK proofs, encrypted comms
+---
 
-## Venice Bounty: "Private Agents, Trusted Actions"
+## Tech Stack
 
-Venice provides "private cognition" for agents; Ethereum provides public coordination.
+| Layer | Technology |
+|---|---|
+| Frontend | React 19 + Vite + Tailwind CSS v4 + MapLibre GL JS |
+| Map Tiles | MapTiler Streets v2 (vector tiles, 100K/month free) |
+| State | Zustand (client state) + TanStack Query (server state) |
+| Backend | Node.js + Express 5 + TypeScript (tsx) |
+| AI | Venice API (OpenAI-compatible, zero data retention) |
+| POI Data | Google Places API (search + enrichment, server-side, no user data sent) |
+| Navigation | TomTom Routing API (traffic, speed limits, lane guidance) |
+| On-Chain | EAS on Base via ethers.js + EAS SDK |
+| Auth | Coinbase CDP Embedded Wallets (email OTP, invisible wallet) |
+| Identity | ERC-8004 |
+| Streaming | Server-Sent Events (SSE) |
+| Testing | Vitest (unit + integration) + Playwright (E2E) |
+| Deployment | Railway (single service) |
 
-**Scoring Criteria:**
-1. **Confidentiality as a design requirement** — privacy can't be an afterthought
-2. **Agent architecture and trust design** — how agents handle trust
-3. **Problem legitimacy** — solving a real problem
-4. **Scope and demo quality** — working demo, not overscoped
+---
 
-## Partners
+## Venice AI Integration (6 Endpoints)
 
-Uniswap, Venice, Celo, Lido DAO, ENS, Superrare, Base, Locus, Protocol Labs, Olas, Virtuals Protocol, Slice, MetaMask, Self, Ampersend, Filecoin, Bankr, Lit Protocol, Merit Systems, Talent Protocol, Status Network, Frutero
+Venice is central to the app, not a utility:
 
-## Resources
+1. **Conversational search** — Parse natural language queries ("late night tacos with outdoor seating"), extract intent (categories, attributes, radius), rank results with explanations
+2. **Place intelligence briefing** — Synthesize all POI data into a 2-3 sentence natural language summary per place
+3. **Review quality scoring** — Analyze specificity, sentiment-rating consistency, flag suspicious patterns (1-100 score)
+4. **Review summarization** — Aggregate all on-chain reviews for a place into a community briefing
+5. **Photo verification** — Metadata analysis (file size, GPS, dimensions) to support proof-of-visit
+6. **Comparative recommendations** — Compare 2-5 places using reviews + data, explain tradeoffs
 
-- [Hackathon API Docs](https://synthesis.devfolio.co/skill.md)
-- [Themes & Ideas](https://synthesis.devfolio.co/themes.md)
-- [Telegram Updates](https://nsb.dev/synthesis-updates)
-- [ERC-8004 Spec](https://eips.ethereum.org/EIPS/eip-8004)
-- [Venice.ai](https://venice.ai)
+---
+
+## On-Chain Reviews (EAS on Base)
+
+Reviews are Ethereum Attestation Service attestations — immutable, composable, and verifiable.
+
+**Schema:** `uint8 rating, string text, string placeId, string placeName, bytes32 photoHash, int256 lat, int256 lng, uint8 qualityScore`
+
+**Schema UID:** `0x968e91f0274b78a31037839b55e59b942dd1521daebf9190268137e450b7d69f`
+
+**Why on-chain reviews matter:**
+- Businesses can't pay to remove negative reviews (unlike Yelp — 700+ lawsuits alleging pay-to-play)
+- Platforms can't filter reviews to favor advertisers
+- Reviews are composable — any app can read and build on them
+- Quality scoring by Venice AI creates a trust signal without centralized moderation
+- Gas is sponsored via CDP Paymaster — users pay $0
+
+**Review quality tiers:** Generic (0-25) → Decent (26-50) → Detailed (51-75) → Exceptional (76-100)
+
+---
+
+## API Reference
+
+Base URL: `https://ghostmaps.app/api` (production) or `http://localhost:3001/api` (development)
+
+Full API documentation with request/response schemas: [`API.md`](API.md)
+
+### Endpoints Summary
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/search?q=&lat=&lng=` | Basic search via Google Places |
+| `GET` | `/api/ai-search?q=&lat=&lng=` | AI-powered search (non-streaming) |
+| `GET` | `/api/ai-search/stream?q=&lat=&lng=` | AI-powered search with SSE streaming |
+| `GET` | `/api/places/:id` | Place details with Google Places enrichment |
+| `GET` | `/api/places/:id/briefing` | Venice AI place intelligence briefing |
+| `POST` | `/api/reviews/score` | Score review quality via Venice AI |
+| `GET` | `/api/reviews/:placeId` | Fetch on-chain reviews + identities + AI summary |
+| `POST` | `/api/photos` | Upload review photo (returns SHA-256 hash) |
+| `GET` | `/api/photos/:hash` | Serve review photo by hash |
+| `POST` | `/api/route` | Calculate route via TomTom (traffic-aware) |
+| `POST` | `/api/compare` | Compare 2-5 places via Venice AI |
+| `GET` | `/api/server-ip` | Server outbound IP (for API key whitelisting) |
+
+---
+
+## Project Structure
+
+```
+ghostmaps/
+├── client/                     # React frontend
+│   └── src/
+│       ├── components/         # UI components (Map, SearchBar, PlacePanel, NavigationPanel, etc.)
+│       ├── hooks/              # Custom hooks (useAISearch, usePlaceDetails, useNavigationTracking, etc.)
+│       ├── lib/                # Utilities (CDP wallet, EAS SDK, geo math, nav helpers)
+│       └── assets/
+├── server/                     # Express API backend
+│   ├── index.ts                # Route definitions
+│   ├── venice.ts               # Venice AI (parse, rank, briefing, score, summarize, compare)
+│   ├── search.ts               # Distance calculations + coordinate parsing
+│   ├── google-places.ts        # Google Places search + enrichment + geocoding
+│   ├── tomtom.ts               # TomTom routing
+│   ├── eas-reader.ts           # EAS on-chain review fetching
+│   ├── photos.ts               # Photo upload/storage (SHA-256 keyed)
+│   └── types.ts                # TypeScript type definitions
+├── e2e/                        # Playwright E2E tests
+├── plans/                      # Architecture docs, research, build plan
+├── API.md                      # Full API documentation
+└── CLAUDE.md                   # Development guidelines
+```
+
+---
+
+## Development
+
+### Prerequisites
+
+- Node.js 20+
+- API keys: Venice, MapTiler, Google Places, TomTom, Coinbase CDP, Overture Maps
+
+### Setup
+
+```bash
+git clone https://github.com/ghostmaps/ghostmaps.git
+cd ghostmaps
+
+# Create .env with required keys
+cp .env.example .env
+
+# Install dependencies
+npm install
+cd client && npm install --legacy-peer-deps && cd ..
+cd server && npm install && cd ..
+```
+
+### Environment Variables
+
+```env
+# Required
+VENICE_API_KEY=           # Venice AI (zero data retention)
+VITE_MAPTILER_KEY=        # MapTiler Streets v2 tiles
+GOOGLE_PLACES_API_KEY=    # Place enrichment (hours, ratings, photos)
+TOMTOM_API_KEY=           # Route calculation
+VITE_CDP_PROJECT_ID=      # Coinbase CDP embedded wallets
+
+# Optional
+PORT=3001                 # Server port (default: 3001)
+```
+
+### Run Locally
+
+```bash
+# Terminal 1 — Backend
+cd server && npm run dev          # Express on :3001 (tsx watch)
+
+# Terminal 2 — Frontend
+cd client && npx vite --port 5174 # Vite on :5174, proxies /api to :3001
+```
+
+### Run Tests
+
+```bash
+# Server tests
+cd server && npm test                    # All (unit + integration)
+cd server && npm run test:unit           # Unit only
+cd server && npm run test:integration    # Integration only
+
+# E2E tests (requires both servers running)
+npx playwright test --config e2e/playwright.config.ts
+```
+
+---
+
+## Deployment
+
+Deployed on **Railway** as a single service (Express serves API + Vite static build).
+
+```bash
+# Deploy
+railway up
+
+# Check logs
+railway logs --lines 20
+
+# Set environment variables
+railway vars set KEY=value
+```
+
+DNS: Porkbun (ALIAS record → Railway edge). SSL auto-provisioned by Railway.
+
+---
+
+## Hackathon
+
+Built for **The Synthesis** (March 13-22, 2026) — a 10-day hackathon judged by AI agents + humans.
+
+**Track:** Venice Bounty — "Private Agents, Trusted Actions"
+
+**Scoring criteria:** Confidentiality as design requirement, agent architecture and trust design, problem legitimacy, scope and demo quality.
+
+---
+
+## License
+
+MIT

@@ -61,8 +61,6 @@ cd client && npx vite --port 5174   # runs on :5174, proxies /api to :3001
 node screenshot.js
 ```
 
-**Overture Maps API:** Currently using DEMO key (restricted to NYC/London/Paris/Bondi). Sign up at overturemapsapi.com for free key that works everywhere. Set `OVERTURE_API_KEY` in `.env`.
-
 **MapTiler:** Map tiles via MapTiler Streets v2. Set `VITE_MAPTILER_KEY` in `.env`. Free tier: 100K tiles/month.
 
 ## Deployment
@@ -121,7 +119,7 @@ See `plans/master.md` for full architecture, decisions, and research.
 | Frontend | React + Vite + MapLibre GL JS (MapTiler Streets v2 tiles) |
 | Backend | Node.js + Express |
 | AI | Venice API (OpenAI-compatible, zero data retention) |
-| POI Search | Overture REST API → Google Places enrichment |
+| POI Data | Google Places API (search + enrichment, server-side) |
 | Navigation | TomTom Routing API (traffic ETA, speed limits, lane guidance, rerouting) |
 | On-chain | EAS on Base (ethers.js + EAS SDK) |
 | Auth + Wallets | Coinbase CDP Embedded Wallets |

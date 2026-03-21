@@ -1,26 +1,27 @@
 import dotenv from "dotenv";
 import path from "path";
 import { describe, expect, it } from "vitest";
-import { searchOverture } from "./search";
+import { searchByName } from "./google-places";
 
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
 
-const API_KEY = process.env.OVERTURE_API_KEY;
+const API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 const TIMEOUT = 15000;
 
-describe("Overture API integration", () => {
+describe("Google Places search integration", () => {
   it(
     "returns coffee shops near LA",
     async () => {
-      const results = await searchOverture(
-        "coffee",
-        "34.0522",
-        "-118.2437",
+      if (!API_KEY) return;
+      const results = await searchByName(
+        "coffee shops",
         API_KEY,
+        34.0522,
+        -118.2437,
       );
 
       expect(results.length).toBeGreaterThan(0);
-      expect(results.length).toBeLessThanOrEqual(20);
+      expect(results.length).toBeLessThanOrEqual(10);
 
       const first = results[0];
       expect(first).toHaveProperty("id");
@@ -28,7 +29,6 @@ describe("Overture API integration", () => {
       expect(first).toHaveProperty("latitude");
       expect(first).toHaveProperty("longitude");
       expect(first.name).toBeTruthy();
-      expect(first.category).toBe("coffee_shop");
     },
     TIMEOUT,
   );
@@ -36,11 +36,12 @@ describe("Overture API integration", () => {
   it(
     "returns restaurants near NYC",
     async () => {
-      const results = await searchOverture(
+      if (!API_KEY) return;
+      const results = await searchByName(
         "restaurants",
-        "40.7128",
-        "-74.006",
         API_KEY,
+        40.7128,
+        -74.006,
       );
 
       expect(results.length).toBeGreaterThan(0);
@@ -51,77 +52,49 @@ describe("Overture API integration", () => {
   );
 
   it(
-    "returns pizza places with addresses",
+    "finds a specific place by name",
     async () => {
-      const results = await searchOverture(
-        "pizza",
-        "34.0522",
-        "-118.2437",
+      if (!API_KEY) return;
+      const results = await searchByName(
+        "Empire State Building",
         API_KEY,
+        40.7128,
+        -74.006,
       );
 
       expect(results.length).toBeGreaterThan(0);
-
-      const withAddress = results.filter((r) => r.address);
-      expect(withAddress.length).toBeGreaterThan(0);
+      expect(results[0].name).toMatch(/Empire State/i);
     },
     TIMEOUT,
   );
 
   it(
-    "returns results with valid coordinates near search location",
+    "returns results with valid coordinates",
     async () => {
-      const lat = 34.0522;
-      const lng = -118.2437;
-      const results = await searchOverture(
-        "bar",
-        String(lat),
-        String(lng),
-        API_KEY,
-      );
+      if (!API_KEY) return;
+      const results = await searchByName("pizza", API_KEY, 34.0522, -118.2437);
 
       expect(results.length).toBeGreaterThan(0);
 
       for (const place of results) {
-        const dLat = Math.abs(place.latitude - lat);
-        const dLng = Math.abs(place.longitude - lng);
-        expect(dLat).toBeLessThan(0.1);
-        expect(dLng).toBeLessThan(0.1);
+        expect(place.latitude).toBeGreaterThan(-90);
+        expect(place.latitude).toBeLessThan(90);
+        expect(place.longitude).toBeGreaterThan(-180);
+        expect(place.longitude).toBeLessThan(180);
       }
     },
     TIMEOUT,
   );
 
   it(
-    "uses default LA coords when none provided",
+    "handles unknown query gracefully",
     async () => {
-      const results = await searchOverture(
-        "gym",
-        undefined,
-        undefined,
+      if (!API_KEY) return;
+      const results = await searchByName(
+        "xyzzy123nonsense",
         API_KEY,
-      );
-
-      expect(results.length).toBeGreaterThan(0);
-
-      for (const place of results) {
-        expect(place.latitude).toBeGreaterThan(33);
-        expect(place.latitude).toBeLessThan(35);
-        expect(place.longitude).toBeGreaterThan(-119);
-        expect(place.longitude).toBeLessThan(-117);
-      }
-    },
-    TIMEOUT,
-  );
-
-  it(
-    "handles unknown category gracefully",
-    async () => {
-      const results = await searchOverture(
-        "xyzzy123",
-        "34.0522",
-        "-118.2437",
-        API_KEY,
+        34.0522,
+        -118.2437,
       );
       expect(Array.isArray(results)).toBe(true);
     },

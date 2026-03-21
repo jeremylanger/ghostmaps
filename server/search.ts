@@ -1,188 +1,4 @@
-import type { OvertureFeature, Place } from "./types";
-
-const CATEGORY_MAP: Record<string, string> = {
-  // Food & Drink
-  restaurant: "restaurant",
-  restaurants: "restaurant",
-  food: "restaurant",
-  eat: "restaurant",
-  dining: "restaurant",
-  pizza: "pizza_restaurant",
-  burger: "burger_restaurant",
-  burgers: "burger_restaurant",
-  sushi: "sushi_restaurant",
-  chinese: "chinese_restaurant",
-  mexican: "mexican_restaurant",
-  italian: "italian_restaurant",
-  indian: "indian_restaurant",
-  thai: "thai_restaurant",
-  japanese: "japanese_restaurant",
-  korean: "korean_restaurant",
-  vietnamese: "vietnamese_restaurant",
-  tacos: "mexican_restaurant",
-  ramen: "ramen_restaurant",
-  seafood: "seafood_restaurant",
-  bbq: "barbecue_restaurant",
-  barbecue: "barbecue_restaurant",
-  steakhouse: "steakhouse",
-  steak: "steakhouse",
-  breakfast: "breakfast_restaurant",
-  brunch: "breakfast_restaurant",
-  cafe: "cafe",
-  coffee: "coffee_shop",
-  "coffee shop": "coffee_shop",
-  bakery: "bakery",
-  bar: "bar",
-  bars: "bar",
-  pub: "pub",
-  brewery: "brewery",
-  "ice cream": "ice_cream_shop",
-  dessert: "dessert_shop",
-  juice: "juice_bar",
-  tea: "tea_house",
-  // Shopping
-  grocery: "grocery_store",
-  groceries: "grocery_store",
-  supermarket: "supermarket",
-  pharmacy: "pharmacy",
-  bookstore: "bookstore",
-  clothing: "clothing_store",
-  shoes: "shoe_store",
-  electronics: "electronics_store",
-  mall: "shopping_mall",
-  // Services
-  gas: "gas_station",
-  "gas station": "gas_station",
-  bank: "bank",
-  atm: "atm",
-  hospital: "hospital",
-  doctor: "doctor",
-  dentist: "dentist",
-  gym: "gym",
-  salon: "hair_salon",
-  "hair salon": "hair_salon",
-  laundry: "laundromat",
-  parking: "parking",
-  hotel: "hotel",
-  hotels: "hotel",
-  motel: "motel",
-  // Entertainment
-  park: "park",
-  parks: "park",
-  museum: "museum",
-  theater: "movie_theater",
-  cinema: "movie_theater",
-  movies: "movie_theater",
-  library: "library",
-  nightclub: "nightclub",
-  club: "nightclub",
-  spa: "spa",
-};
-
-export function queryToCategories(query: string): string[] {
-  const lower = query.toLowerCase().trim();
-
-  // Direct match
-  if (CATEGORY_MAP[lower]) return [CATEGORY_MAP[lower]];
-
-  // Check if query contains any mapped terms
-  const matches: string[] = [];
-  for (const [term, category] of Object.entries(CATEGORY_MAP)) {
-    if (lower.includes(term) && !matches.includes(category)) {
-      matches.push(category);
-    }
-  }
-
-  // Return matches, or fallback to using the query as a category directly
-  return matches.length > 0
-    ? matches.slice(0, 3)
-    : [lower.replace(/\s+/g, "_")];
-}
-
-export function formatPlace(item: OvertureFeature): Place {
-  const props = item.properties || item;
-  const coords = item.geometry?.coordinates || [
-    props.longitude || 0,
-    props.latitude || 0,
-  ];
-
-  // Extract address
-  let address = "";
-  const addrs = props.addresses || [];
-  if (addrs.length > 0) {
-    const addr = addrs[0];
-    address =
-      addr.freeform ||
-      [addr.street, addr.locality, addr.region].filter(Boolean).join(", ");
-  }
-
-  // Extract phone
-  let phone = "";
-  const phones = props.phones || [];
-  if (phones.length > 0) {
-    phone = phones[0];
-  }
-
-  // Extract website
-  let website = "";
-  const websites = props.websites || [];
-  if (websites.length > 0) {
-    website = websites[0];
-  }
-
-  return {
-    id: item.id || props.id || `${coords[0]}-${coords[1]}`,
-    name: props.names?.primary || props.name || "Unknown",
-    category: props.categories?.primary || props.category || "",
-    address,
-    phone,
-    website,
-    brand: props.brand?.names?.primary || props.brand?.name || "",
-    confidence: props.confidence || 0,
-    longitude: coords[0],
-    latitude: coords[1],
-  };
-}
-
-export async function searchOverture(
-  query: string,
-  lat?: string,
-  lng?: string,
-  apiKey?: string,
-  overrideCategories?: string[],
-  radius?: number,
-): Promise<Place[]> {
-  const categories = overrideCategories || queryToCategories(query);
-
-  const params = new URLSearchParams();
-  params.set("lat", lat || "34.0522");
-  params.set("lng", lng || "-118.2437");
-  params.set("radius", String(Math.max(radius || 5000, 3000)));
-  params.set("categories", categories.join(","));
-  params.set("min_confidence", "0.5");
-  params.set("limit", "20");
-  params.set("format", "json");
-
-  const url = `https://api.overturemapsapi.com/places?${params}`;
-
-  const response = await fetch(url, {
-    headers: {
-      "x-api-key": apiKey || "DEMO-API-KEY",
-    },
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`Overture API error: ${response.status} ${text}`);
-  }
-
-  const data = await response.json();
-  const places: OvertureFeature[] = Array.isArray(data)
-    ? data
-    : data.features || [];
-
-  return places.map(formatPlace).slice(0, 20);
-}
+import type { Place } from "./types";
 
 /** Haversine distance in meters. */
 function haversine(
@@ -201,20 +17,18 @@ function haversine(
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/** Add distanceMeters to each place based on user location. */
+/** Add distanceMeters to each place based on user location. Preserves original order. */
 export function addDistanceToResults(
   places: Place[],
   userLat: number,
   userLng: number,
 ): (Place & { distanceMeters: number })[] {
-  return places
-    .map((p) => ({
-      ...p,
-      distanceMeters: Math.round(
-        haversine(userLat, userLng, p.latitude, p.longitude),
-      ),
-    }))
-    .sort((a, b) => a.distanceMeters - b.distanceMeters);
+  return places.map((p) => ({
+    ...p,
+    distanceMeters: Math.round(
+      haversine(userLat, userLng, p.latitude, p.longitude),
+    ),
+  }));
 }
 
 /** Parse raw coordinates from a string like "34.0522, -118.2437". */
@@ -228,5 +42,3 @@ export function parseCoordinates(
   if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
   return { lat, lng };
 }
-
-export { CATEGORY_MAP };

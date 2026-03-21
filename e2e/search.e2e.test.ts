@@ -25,7 +25,7 @@ test.describe("Ghost Maps E2E", () => {
     await expect(searchInput).toHaveValue("pizza");
   });
 
-  test("searching shows results from Overture API", async ({ page }) => {
+  test("searching shows results from Google Places", async ({ page }) => {
     const searchInput = page.getByPlaceholder("Search places...");
     await searchInput.fill("coffee");
 

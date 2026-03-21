@@ -157,6 +157,84 @@ export async function enrichPlace(
   }
 }
 
+interface GoogleSearchPlace {
+  id: string;
+  displayName?: { text: string };
+  formattedAddress?: string;
+  location?: { latitude: number; longitude: number };
+  primaryType?: string;
+  rating?: number;
+  userRatingCount?: number;
+}
+
+function mapGooglePlace(item: GoogleSearchPlace): Place {
+  return {
+    id: `gp-${item.id}`,
+    name: item.displayName?.text || "Unknown",
+    category: item.primaryType?.replace(/_/g, " ") || "",
+    address: item.formattedAddress || "",
+    phone: "",
+    website: "",
+    brand: "",
+    confidence: 0.9,
+    longitude: item.location?.longitude || 0,
+    latitude: item.location?.latitude || 0,
+    rating: item.rating,
+    reviewCount: item.userRatingCount,
+  };
+}
+
+/** Nearby Search — find places by type within a radius. Best for category queries. */
+export async function searchNearby(
+  types: string[],
+  apiKey: string,
+  userLat: number,
+  userLng: number,
+  radius = 5000,
+): Promise<Place[]> {
+  try {
+    const response = await fetch(`${PLACES_BASE}:searchNearby`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": SEARCH_FIELD_MASK,
+      },
+      body: JSON.stringify({
+        includedTypes: types,
+        maxResultCount: 20,
+        rankPreference: "POPULARITY",
+        locationRestriction: {
+          circle: {
+            center: { latitude: userLat, longitude: userLng },
+            radius: Math.min(radius, 50000),
+          },
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      console.error(
+        `Google Places nearby search failed: ${response.status} ${errText}`,
+      );
+      return [];
+    }
+
+    const data = await response.json();
+    const items = data.places || [];
+
+    return items.map(mapGooglePlace).sort((a, b) => {
+      const ratingDiff = (b.rating || 0) - (a.rating || 0);
+      if (ratingDiff !== 0) return ratingDiff;
+      return (b.reviewCount || 0) - (a.reviewCount || 0);
+    });
+  } catch (err) {
+    console.error("Google Places nearby search error:", err);
+    return [];
+  }
+}
+
 const SEARCH_FIELD_MASK = [
   "places.id",
   "places.displayName",
@@ -205,30 +283,7 @@ export async function searchByName(
     const data = await response.json();
     const items = data.places || [];
 
-    return items.map(
-      (item: {
-        id: string;
-        displayName?: { text: string };
-        formattedAddress?: string;
-        location?: { latitude: number; longitude: number };
-        primaryType?: string;
-        rating?: number;
-        userRatingCount?: number;
-      }) => ({
-        id: `gp-${item.id}`,
-        name: item.displayName?.text || "Unknown",
-        category: item.primaryType?.replace(/_/g, " ") || "",
-        address: item.formattedAddress || "",
-        phone: "",
-        website: "",
-        brand: "",
-        confidence: 0.9,
-        longitude: item.location?.longitude || 0,
-        latitude: item.location?.latitude || 0,
-        rating: item.rating,
-        reviewCount: item.userRatingCount,
-      }),
-    );
+    return items.map(mapGooglePlace);
   } catch (err) {
     console.error("Google Places name search error:", err);
     return [];

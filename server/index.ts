@@ -7,13 +7,14 @@ import {
   fetchReviewsForPlace,
   type OnChainReview,
 } from "./eas-reader";
-import { enrichPlace, geocodeAddress, searchByName } from "./google-places";
-import { getPhotoPath, storePhoto } from "./photos";
 import {
-  addDistanceToResults,
-  parseCoordinates,
-  searchOverture,
-} from "./search";
+  enrichPlace,
+  geocodeAddress,
+  searchByName,
+  searchNearby,
+} from "./google-places";
+import { getPhotoPath, storePhoto } from "./photos";
+import { addDistanceToResults, parseCoordinates } from "./search";
 import { calculateRoute } from "./tomtom";
 import type { Place } from "./types";
 import {
@@ -74,7 +75,7 @@ function cachePlaces(places: Place[]) {
   trimMapCache(placeCache, MAX_PLACE_CACHE);
 }
 
-// Basic search (category mapping, no AI)
+// Basic search (Google Places text search, no AI)
 app.get("/api/search", async (req, res) => {
   try {
     const { q, lat, lng } = req.query as {
@@ -88,12 +89,18 @@ app.get("/api/search", async (req, res) => {
       return;
     }
 
-    const results = await searchOverture(
-      q,
-      lat,
-      lng,
-      process.env.OVERTURE_API_KEY,
-    );
+    const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
+    if (!googleApiKey) {
+      res.status(500).json({ error: "Google Places API key not configured" });
+      return;
+    }
+
+    const userLat = lat ? Number.parseFloat(lat) : undefined;
+    const userLng = lng ? Number.parseFloat(lng) : undefined;
+    let results = await searchByName(q, googleApiKey, userLat, userLng);
+    if (userLat != null && userLng != null && results.length > 0) {
+      results = addDistanceToResults(results, userLat, userLng);
+    }
     cachePlaces(results);
     res.json({ results });
   } catch (err) {
@@ -116,19 +123,40 @@ app.get("/api/ai-search", async (req, res) => {
       return;
     }
 
+    const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
+    if (!googleApiKey) {
+      res.status(500).json({ error: "Google Places API key not configured" });
+      return;
+    }
+
     console.log(`AI search: "${q}"`);
 
     const parsed = await parseQuery(q);
     console.log("Parsed:", parsed);
 
-    const results = await searchOverture(
-      parsed.categories[0],
-      lat,
-      lng,
-      process.env.OVERTURE_API_KEY,
-      parsed.categories,
-      parsed.radius || undefined,
-    );
+    const userLat = lat ? Number.parseFloat(lat) : undefined;
+    const userLng = lng ? Number.parseFloat(lng) : undefined;
+    let results: Place[];
+    if (
+      parsed.query_type === "category" &&
+      parsed.categories.length > 0 &&
+      userLat != null &&
+      userLng != null
+    ) {
+      results = await searchNearby(
+        parsed.categories,
+        googleApiKey,
+        userLat,
+        userLng,
+        parsed.radius || 5000,
+      );
+    } else {
+      const searchQuery = parsed.name_query || parsed.address_query || q;
+      results = await searchByName(searchQuery, googleApiKey, userLat, userLng);
+    }
+    if (userLat != null && userLng != null && results.length > 0) {
+      results = addDistanceToResults(results, userLat, userLng);
+    }
     cachePlaces(results);
 
     const ranking = await rankResults(q, results, parsed.attributes);
@@ -195,20 +223,13 @@ app.get("/api/ai-search/stream", async (req, res) => {
     const userLng = lng ? Number.parseFloat(lng) : undefined;
     const googleApiKey = process.env.GOOGLE_PLACES_API_KEY;
 
-    if (parsed.query_type === "name" && parsed.name_query && googleApiKey) {
-      // Name search via Google Places
-      send("status", { message: `Searching for "${parsed.name_query}"...` });
-      results = await searchByName(
-        parsed.name_query,
-        googleApiKey,
-        userLat,
-        userLng,
-      );
-    } else if (
-      parsed.query_type === "address" &&
-      parsed.address_query &&
-      googleApiKey
-    ) {
+    if (!googleApiKey) {
+      send("error", { message: "Google Places API key not configured" });
+      res.end();
+      return;
+    }
+
+    if (parsed.query_type === "address" && parsed.address_query) {
       // Address geocoding via Google Places
       send("status", { message: "Finding address..." });
       const place = await geocodeAddress(
@@ -218,16 +239,30 @@ app.get("/api/ai-search/stream", async (req, res) => {
         userLng,
       );
       if (place) results = [place];
-    } else {
-      // Category search via Overture (existing flow)
-      send("status", { message: "Finding places..." });
-      results = await searchOverture(
-        parsed.categories[0],
-        lat,
-        lng,
-        process.env.OVERTURE_API_KEY,
+    } else if (
+      parsed.query_type === "category" &&
+      parsed.categories.length > 0 &&
+      userLat != null &&
+      userLng != null
+    ) {
+      // Category search via Nearby Search (best results for type queries)
+      send("status", { message: "Finding places nearby..." });
+      results = await searchNearby(
         parsed.categories,
-        parsed.radius || undefined,
+        googleApiKey,
+        userLat,
+        userLng,
+        parsed.radius || 5000,
+      );
+    } else {
+      // Name search via Text Search
+      const searchQuery = parsed.name_query || q;
+      send("status", { message: `Searching for "${searchQuery}"...` });
+      results = await searchByName(
+        searchQuery,
+        googleApiKey,
+        userLat,
+        userLng,
       );
     }
 

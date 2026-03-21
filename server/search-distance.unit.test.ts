@@ -36,7 +36,7 @@ describe("addDistanceToResults", () => {
     expect(result[1].distanceMeters).toBeLessThan(25000);
   });
 
-  it("sorts results by distance (closest first)", () => {
+  it("preserves original order (does not re-sort)", () => {
     const places = [
       {
         id: "far",
@@ -65,8 +65,8 @@ describe("addDistanceToResults", () => {
     ];
 
     const result = addDistanceToResults(places, 34.0522, -118.2437);
-    expect(result[0].id).toBe("near");
-    expect(result[1].id).toBe("far");
+    expect(result[0].id).toBe("far");
+    expect(result[1].id).toBe("near");
   });
 });
 

@@ -297,8 +297,8 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 ### Day 10 — March 21
 **Documentation + Polish**
-- [ ] Comprehensive README (architecture, setup, tech stack, privacy model)
-- [ ] API documentation (machine-readable for AI judges)
+- [x] Comprehensive README (architecture, setup, tech stack, privacy model)
+- [x] API documentation (machine-readable for AI judges)
 - [ ] Architecture diagram
 - [ ] End-to-end flow testing: search → discover → reviews → navigate
 - [x] Mobile-responsive layout (hamburger menu, search bar spacing)
