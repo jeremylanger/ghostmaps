@@ -8,6 +8,25 @@ import { useAppStore } from "../store";
 import type { RouteSummary } from "../types";
 import { Button } from "./ui/button";
 
+function ValueWithUnit({
+  text,
+  className,
+}: { text: string; className: string }) {
+  const lastSpace = text.lastIndexOf(" ");
+  if (lastSpace === -1)
+    return (
+      <span className={`text-xl font-bold font-mono ${className}`}>{text}</span>
+    );
+  const value = text.slice(0, lastSpace);
+  const unit = text.slice(lastSpace + 1);
+  return (
+    <span className={`font-mono ${className}`}>
+      <span className="text-xl font-bold">{value}</span>
+      <span className="text-sm font-semibold ml-0.5">{unit}</span>
+    </span>
+  );
+}
+
 interface Props {
   summary: RouteSummary;
 }
@@ -61,16 +80,16 @@ export default function NavBottomBar({ summary }: Props) {
 
   return (
     <div className="flex items-center justify-between px-5 py-4 bg-surface/95 backdrop-blur-md shadow-panel-up border-t border-edge">
-      <div className="flex items-baseline gap-4">
-        <span className="text-[28px] font-extrabold text-cyan font-mono">
-          {eta}
-        </span>
-        <span className="text-[22px] font-bold text-bone font-mono">
-          {formatDuration(remainingTime)}
-        </span>
-        <span className="text-lg font-semibold text-blue-gray font-mono">
-          {formatDistance(remainingDistance)}
-        </span>
+      <div className="flex items-baseline justify-between flex-1 mr-4">
+        <ValueWithUnit text={eta} className="text-cyan" />
+        <ValueWithUnit
+          text={formatDuration(remainingTime)}
+          className="text-bone"
+        />
+        <ValueWithUnit
+          text={formatDistance(remainingDistance)}
+          className="text-blue-gray"
+        />
       </div>
       <Button variant="destructive" onClick={clearRoute}>
         End
