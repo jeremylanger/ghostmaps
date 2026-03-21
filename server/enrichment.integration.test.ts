@@ -93,11 +93,17 @@ describe("Place enrichment integration", () => {
 
         expect(detail.id).toBe(firstPlace.id);
         expect(detail.name).toBe(firstPlace.name);
-        expect(detail).toHaveProperty("briefing");
         expect(detail).toHaveProperty("openingHours");
         expect(detail).toHaveProperty("isOpen");
         expect(detail).toHaveProperty("foodTypes");
-        expect(detail.briefing.length).toBeGreaterThan(0);
+
+        // Briefing is a separate endpoint
+        const briefingRes = await fetch(
+          `http://localhost:3001/api/places/${encodeURIComponent(firstPlace.id)}/briefing`,
+        );
+        const briefingData = await briefingRes.json();
+        expect(briefingData).toHaveProperty("briefing");
+        expect(briefingData.briefing.length).toBeGreaterThan(0);
       },
       TIMEOUT,
     );
