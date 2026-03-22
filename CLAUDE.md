@@ -80,7 +80,7 @@ railway logs --lines 20
 railway vars set KEY=value
 ```
 
-Railway project: `ghostmaps` (linked via `railway link`). Single service — Express serves API + Vite static build. DNS via Porkbun (ALIAS → Railway edge).
+Railway project: `ghostmaps` (linked via `railway link`). Single service — Express serves API + Vite static build. DNS via Porkbun (ALIAS → Railway edge). **Pushing to `main` auto-triggers a deploy** — no need to run `railway up` manually.
 
 **Server IP endpoint:** `GET /api/server-ip` returns Railway's outbound IP (via ipify). Use this to whitelist the server in API key restrictions (e.g. Google Places).
 

@@ -130,8 +130,12 @@ Examples:
 "34.0522, -118.2437" → {"query_type":"address","categories":[],"name_query":null,"address_query":"34.0522, -118.2437","time_filter":null,"attributes":[],"location_hint":null,"radius":null}
 "123" → {"query_type":"address","categories":[],"name_query":null,"address_query":"123","time_filter":null,"attributes":[],"location_hint":null,"radius":null}
 "123 maple" → {"query_type":"address","categories":[],"name_query":null,"address_query":"123 maple","time_filter":null,"attributes":[],"location_hint":null,"radius":null}
+"Avery" → {"query_type":"name","categories":[],"name_query":"Avery","address_query":null,"time_filter":null,"attributes":[],"location_hint":null,"radius":null}
+"Whole Foods" → {"query_type":"name","categories":[],"name_query":"Whole Foods","address_query":null,"time_filter":null,"attributes":[],"location_hint":null,"radius":null}
 
-IMPORTANT: If the query starts with a number and looks like it could be a street address (even partial, like "123" or "123 maple"), classify it as "address" — not "category" or "name".`;
+IMPORTANT:
+- If the query starts with a number and looks like it could be a street address (even partial, like "123" or "123 maple"), classify it as "address" — not "category" or "name".
+- If the query is a word or phrase that could be a business/place name (like "Avery", "Starbucks", "The Sink"), classify it as "name" — NOT "address". Only use "address" when the query contains street numbers, street names with numbers, or coordinates.`;
 
 export async function parseQuery(query: string): Promise<ParsedQuery> {
   try {
