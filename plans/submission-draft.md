@@ -18,7 +18,7 @@ The full stack: React + MapLibre GL JS frontend with MapTiler tiles, Express bac
 
 Built from scratch in 10 days. 62 commits. 13 API endpoints. 296 tests (166 server + 130 client). Live at ghostmaps.app.
 
-**Try it:** Search for "Avery's Modern Teahouse", "Slice House", or "Verboten Brewing" to see on-chain reviews with AI quality scoring, GPS verification, and community summaries.
+**Try it:** Search for "Avery's Modern Teahouse", "Slice House", or "Verboten Brewing" to see on-chain reviews with AI quality scoring, GPS verification, and community summaries. Try location-aware searches like "coffee in Denver" or "pizza in Los Angeles" — Venice AI extracts the location and searches there.
 
 ### Problem Statement
 Google Maps tracks your location every 2 minutes, saves every search query, logs every business interaction, and has paid $7.3B+ in privacy fines. Private alternatives exist (Organic Maps, OsmAnd) but have terrible search quality (~70% accuracy via Nominatim) and no reviews. Yelp faces 700+ lawsuits alleging pay-to-play review manipulation. Amazon estimates 16-20% of its 250M+ reviews are fake. Google removed 240M fake reviews in 2024 alone. There is no maps app that combines private AI-powered search, trustworthy on-chain reviews, and real navigation.
