@@ -296,11 +296,13 @@ Return ONLY valid JSON (no markdown, no code blocks):
   "reason": "1 sentence explanation"
 }
 
-Scoring guide:
+Scoring guide (score based on how USEFUL the review is to someone deciding whether to visit):
 - 0-20 (generic): "Great place!" / "5 stars" / no useful info
-- 21-50 (decent): mentions what they ordered or a specific detail
-- 51-80 (detailed): specific items, prices, experiences, comparisons
-- 81-100 (exceptional): detailed with photos, insider tips, specific staff mentions, unique observations
+- 21-50 (decent): mentions what they ordered or one specific detail
+- 51-80 (detailed): specific items ordered, concrete experiences, prices, wait times, comparisons — information a future visitor can act on
+- 81-100 (exceptional): highly actionable detail PLUS photo proof. Without a photo, cap the score at 75. Rambling, filler, or speculation (even if long) should not boost the score — only concrete, useful facts count.
+
+Important: Length alone does not equal quality. A long review full of tangents, jokes, or hypothetical scenarios is NOT detailed — it's verbose. Score based on actionable information density, not word count.
 
 CONTENT MODERATION — you MUST flag violations. Check EVERY review for these. When in doubt, flag it.
 
