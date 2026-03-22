@@ -13,6 +13,36 @@ export function parseReviewText(text: string): {
   return { body, ordered, tip };
 }
 
+/** Build the review data object for on-chain submission. */
+export function buildReviewData(input: {
+  rating: number;
+  text: string;
+  whatOrdered: string;
+  oneThingToKnow: string;
+  placeId: string;
+  placeName: string;
+  photoHash: string;
+  photoGPS: { lat: number; lng: number } | null;
+  qualityScore: number;
+}) {
+  return {
+    rating: input.rating,
+    text: [
+      input.text,
+      input.whatOrdered && `Ordered: ${input.whatOrdered}`,
+      input.oneThingToKnow && `Tip: ${input.oneThingToKnow}`,
+    ]
+      .filter(Boolean)
+      .join(" | "),
+    placeId: input.placeId,
+    placeName: input.placeName,
+    photoHash: input.photoHash,
+    lat: input.photoGPS ? Math.round(input.photoGPS.lat * 1e6) : 0,
+    lng: input.photoGPS ? Math.round(input.photoGPS.lng * 1e6) : 0,
+    qualityScore: input.qualityScore,
+  };
+}
+
 /** Returns true when a review has non-zero GPS coordinates. */
 export function isGpsVerified(lat: number, lng: number): boolean {
   return lat !== 0 && lng !== 0;

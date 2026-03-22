@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isNearLocation } from "../exif";
 import {
   accountAgeLabel,
+  buildReviewData,
   isGpsVerified,
   parseReviewText,
   timeAgo,
@@ -244,5 +245,59 @@ describe("GPS Verified badge logic", () => {
 
   it("does not show badge when only lat is zero", () => {
     expect(isGpsVerified(0, -104.996)).toBe(false);
+  });
+});
+
+/* ---------- buildReviewData ---------- */
+
+describe("buildReviewData", () => {
+  const base = {
+    rating: 5,
+    text: "Great place",
+    whatOrdered: "",
+    oneThingToKnow: "",
+    placeId: "gp-123",
+    placeName: "Test Place",
+    photoHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    photoGPS: null as { lat: number; lng: number } | null,
+    qualityScore: 85,
+  };
+
+  it("uses photo GPS coordinates when available", () => {
+    const data = buildReviewData({
+      ...base,
+      photoGPS: { lat: 40.41274, lng: -104.996219 },
+    });
+    expect(data.lat).toBe(Math.round(40.41274 * 1e6));
+    expect(data.lng).toBe(Math.round(-104.996219 * 1e6));
+  });
+
+  it("stores 0 lat/lng when no photo GPS", () => {
+    const data = buildReviewData({ ...base, photoGPS: null });
+    expect(data.lat).toBe(0);
+    expect(data.lng).toBe(0);
+  });
+
+  it("does NOT use place coordinates for lat/lng", () => {
+    // This was the bug — place coords were used instead of photo GPS
+    const data = buildReviewData({ ...base, photoGPS: null });
+    expect(data.lat).not.toBe(Math.round(40.3978 * 1e6));
+    expect(data.lng).not.toBe(Math.round(-105.075 * 1e6));
+    expect(data.lat).toBe(0);
+    expect(data.lng).toBe(0);
+  });
+
+  it("concatenates structured responses with pipe separator", () => {
+    const data = buildReviewData({
+      ...base,
+      whatOrdered: "tacos",
+      oneThingToKnow: "ask for salsa",
+    });
+    expect(data.text).toBe("Great place | Ordered: tacos | Tip: ask for salsa");
+  });
+
+  it("omits empty structured responses", () => {
+    const data = buildReviewData({ ...base, whatOrdered: "", oneThingToKnow: "" });
+    expect(data.text).toBe("Great place");
   });
 });

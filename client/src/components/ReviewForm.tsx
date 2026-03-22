@@ -28,6 +28,7 @@ import {
   REVIEW_SCHEMA_UID,
 } from "../lib/eas";
 import { extractPhotoGPS, isNearLocation } from "../lib/exif";
+import { buildReviewData } from "../lib/review-utils";
 import { QUALITY_STYLES } from "../lib/theme";
 import { useAppStore } from "../store";
 import AuthButton from "./AuthButton";
@@ -84,6 +85,7 @@ export default function ReviewForm() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoNearPlace, setPhotoNearPlace] = useState<boolean | null>(null);
+  const [photoGPS, setPhotoGPS] = useState<{ lat: number; lng: number } | null>(null);
   const [quality, setQuality] = useState<QualityResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [txHash, setTxHash] = useState("");
@@ -98,6 +100,7 @@ export default function ReviewForm() {
 
     const gps = await extractPhotoGPS(file);
     if (gps) {
+      setPhotoGPS({ lat: gps.latitude, lng: gps.longitude });
       setPhotoNearPlace(
         isNearLocation(gps, {
           latitude: place.latitude,
@@ -105,6 +108,7 @@ export default function ReviewForm() {
         }),
       );
     } else {
+      setPhotoGPS(null);
       setPhotoNearPlace(null);
     }
   };
@@ -177,22 +181,17 @@ export default function ReviewForm() {
         }
       }
 
-      const reviewData: ReviewData = {
+      const reviewData: ReviewData = buildReviewData({
         rating,
-        text: [
-          text,
-          whatOrdered && `Ordered: ${whatOrdered}`,
-          oneThingToKnow && `Tip: ${oneThingToKnow}`,
-        ]
-          .filter(Boolean)
-          .join(" | "),
+        text,
+        whatOrdered,
+        oneThingToKnow,
         placeId: place.id,
         placeName: place.name,
         photoHash: photoHashStr,
-        lat: Math.round(place.latitude * 1e6),
-        lng: Math.round(place.longitude * 1e6),
+        photoGPS,
         qualityScore: qualityResult.score,
-      };
+      });
 
       const encodedData = encodeReviewData(reviewData);
       const calldata = buildAttestCalldata(REVIEW_SCHEMA_UID, encodedData);
@@ -304,7 +303,7 @@ export default function ReviewForm() {
               it. It may take a minute to appear in the reviews list.
             </p>
             <a
-              href={`${EASSCAN_URL}/schema/view/${REVIEW_SCHEMA_UID}`}
+              href={`${EASSCAN_URL}/address/${evmAddress}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block mt-3 text-sm text-cyan no-underline hover:underline"
