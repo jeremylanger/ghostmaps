@@ -79,7 +79,6 @@ Browser (React + MapLibre GL JS)
 | Navigation | TomTom Routing API (traffic, speed limits, lane guidance) |
 | On-Chain | EAS on Base via ethers.js + EAS SDK |
 | Auth | Coinbase CDP Embedded Wallets (email OTP, invisible wallet) |
-| Identity | ERC-8004 |
 | Streaming | Server-Sent Events (SSE) |
 | Testing | Vitest (unit + integration) + Playwright (E2E) |
 | Deployment | Railway (single service) |

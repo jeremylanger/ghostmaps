@@ -53,10 +53,8 @@ Venice AI could scrape business websites, social media, and public listings, the
 *One human, one identity. Prevents multi-wallet farming.*
 
 ### Hackathon MVP
-- ERC-8004 identity (already registered for Synthesis — need to explore how easy it is to spin up new ones for users)
-- Account age + activity displayed on reviews as trust signal
+- Account age + review count displayed on reviews as trust signal (via EAS GraphQL)
 - Basic wallet-level rate limiting (max N reviews per day)
-- **Open question:** Is ERC-8004 the right choice or are there simpler/better identity options? Need to research tradeoffs.
 
 ### V2
 - Gitcoin Passport-style humanity scoring (collect stamps from social accounts, biometric, on-chain history)
@@ -181,7 +179,7 @@ Venice AI could scrape business websites, social media, and public listings, the
 ## Hackathon MVP Summary
 
 What we build:
-1. **Identity:** ERC-8004 (or better alternative TBD) + account age display
+1. **Identity:** Account age + review count via EAS GraphQL
 2. **Proof of visit:** Photo with EXIF GPS required + Venice AI verification
 3. **Quality scoring:** Venice AI specificity/consistency scoring + structured prompts
 

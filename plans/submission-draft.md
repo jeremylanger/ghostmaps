@@ -14,7 +14,7 @@ Ghost Maps is a private, AI-powered maps app with on-chain reviews and real navi
 
 The app has 6 deep Venice AI integration points: (1) natural language search parsing and ranking, (2) place intelligence briefings, (3) review quality scoring, (4) review summarization, (5) photo verification for proof-of-visit, and (6) comparative place recommendations. Users sign up with email via Coinbase CDP embedded wallets — an invisible non-custodial wallet is created on Base with gas sponsored via CDP Paymaster. Users never see crypto.
 
-The full stack: React + MapLibre GL JS frontend with MapTiler tiles, Express backend, Venice API for all AI, Google Places for POI enrichment (server-side only, no user data sent), TomTom Routing API for navigation, EAS on Base for on-chain reviews, CDP for auth + wallets, and ERC-8004 for reviewer identity.
+The full stack: React + MapLibre GL JS frontend with MapTiler tiles, Express backend, Venice API for all AI, Google Places for POI enrichment (server-side only, no user data sent), TomTom Routing API for navigation, EAS on Base for on-chain reviews, and CDP for auth + wallets.
 
 Built from scratch in 10 days across 17 human-agent collaboration sessions. 43 commits. 12 API endpoints. Live at ghostmaps.app.
 
@@ -27,11 +27,10 @@ https://github.com/jeremylanger/ghostmaps
 ### Deployed URL
 https://ghostmaps.app
 
-### Tracks (4)
+### Tracks (3)
 1. **Venice — Private Agents, Trusted Actions** ($11,500) — `ea3b366947c54689bd82ae80bf9f3310`
 2. **Synthesis Open Track** ($28,134) — `fdb76d08812b43f6a5f454744b66f590`
-3. **Agents With Receipts — ERC-8004** ($4,000) — `3bf41be958da497bbb69f1a150c76af9`
-4. **Agent Services on Base** ($5,000) — `6f0e3d7dcadf4ef080d3f424963caff5`
+3. **Agent Services on Base** ($5,000) — `6f0e3d7dcadf4ef080d3f424963caff5`
 
 ### Conversation Log
 Contents of `CONVERSATION_LOG.md` (submitted in full)
@@ -53,7 +52,6 @@ Contents of `CONVERSATION_LOG.md` (submitted in full)
 - https://developers.google.com/maps/documentation/places/web-service
 - https://portal.cdp.coinbase.com/products/embedded-wallets
 - https://maplibre.org/maplibre-gl-js/docs/
-- https://eips.ethereum.org/EIPS/eip-8004
 - https://docs.maptiler.com/cloud/api/maps/
 
 ### Helpful Skills
@@ -61,7 +59,7 @@ Contents of `CONVERSATION_LOG.md` (submitted in full)
 - **frontend-design** — Shaped the entire "Phantom Protocol" brand system (Tron Legacy-inspired dark UI with cyan/phosphor accents). Guided component design for the place panel, navigation HUD, search bar, and privacy comparison page. Without it, the app would look like a generic Material UI dashboard.
 - **simplify** — Ran after every major build day. Caught real bugs in every session: stale refs in navigation tracking, silent catch blocks swallowing errors, unbounded server-side caches, computation-per-render in route display, and an EAS encoding error that would have failed on-chain. Prevented at least 3 production bugs from shipping.
 - **spec** — Used before every feature implementation to define happy paths, edge cases, and failure modes upfront. The navigation spec sessions (4 rounds of drive test feedback) were the most productive collaboration pattern in the project — each spec explicitly defined what "done" looked like before a line of code was written.
-- **eth-standards** — Guided the EAS schema design (field types, encoding strategy for lat/lng as int256 * 1e6) and ERC-8004 identity integration. Ensured the on-chain review attestations were properly structured for composability — any app can read and build on them.
+- **eth-standards** — Guided the EAS schema design (field types, encoding strategy for lat/lng as int256 * 1e6). Ensured the on-chain review attestations were properly structured for composability — any app can read and build on them.
 - **eth-security** — Informed the review submission flow: validating attestation encoding, ensuring CDP Paymaster gas sponsorship couldn't be abused, and keeping private keys out of client code. Caught that `sendUserOperation` returns a user operation hash (not a tx hash) which would have broken the confirmation UI.
 
 ### Video URL

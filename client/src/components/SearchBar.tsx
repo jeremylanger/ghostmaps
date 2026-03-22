@@ -9,6 +9,7 @@ import HamburgerMenu from "./HamburgerMenu";
 export default function SearchBar() {
   const [query, setQuery] = useState("");
   const [showResults, setShowResults] = useState(true);
+  const [hasSearched, setHasSearched] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { search, abort } = useAISearch();
@@ -30,11 +31,13 @@ export default function SearchBar() {
       if (!value.trim()) {
         abort();
         clearSearch();
+        setHasSearched(false);
         return;
       }
 
       setShowResults(true);
       debounceRef.current = setTimeout(() => {
+        setHasSearched(true);
         search(value);
       }, 600);
     },
@@ -47,6 +50,7 @@ export default function SearchBar() {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       if (query.trim()) {
         setShowResults(true);
+        setHasSearched(true);
         search(query);
       }
     },
@@ -55,6 +59,7 @@ export default function SearchBar() {
 
   const handleClear = useCallback(() => {
     setQuery("");
+    setHasSearched(false);
     abort();
     clearSearch();
   }, [abort, clearSearch]);
@@ -87,6 +92,11 @@ export default function SearchBar() {
     return alt?.whyNot || null;
   };
 
+  const searchComplete = hasSearched && !loading && !statusMessage;
+  const hasResults = results.length > 0;
+  const showDropdown =
+    query && showResults && hasSearched && (loading || error || hasResults || searchComplete);
+
   return (
     <div className="absolute top-4 left-4 right-4 z-10 max-w-[520px]">
       <form
@@ -116,88 +126,93 @@ export default function SearchBar() {
         )}
       </form>
 
-      {(loading || error || (results.length > 0 && showResults)) && query && (
-        <div className="mt-2 rounded-xl border border-edge bg-surface/95 shadow-panel backdrop-blur-md max-h-[60vh] overflow-y-auto animate-decloak">
-          {statusMessage && (
-            <div className="flex items-center gap-2 px-4 py-3 text-sm text-blue-gray border-b border-edge">
-              <span className="size-3 rounded-full border-2 border-edge border-t-cyan animate-spin" />
-              {statusMessage}
-            </div>
-          )}
-          {error && (
-            <div className="px-4 py-4 text-center text-sm text-coral">
-              {error}
-            </div>
-          )}
+      {showDropdown && (
+          <div className="mt-2 rounded-xl border border-edge bg-surface/95 shadow-panel backdrop-blur-md max-h-[60vh] overflow-y-auto animate-decloak">
+            {statusMessage && (
+              <div className="flex items-center gap-2 px-4 py-3 text-sm text-blue-gray border-b border-edge">
+                <span className="size-3 rounded-full border-2 border-edge border-t-cyan animate-spin" />
+                {statusMessage}
+              </div>
+            )}
+            {error && (
+              <div className="px-4 py-4 text-center text-sm text-coral">
+                {error}
+              </div>
+            )}
+            {searchComplete && !error && !hasResults && (
+              <div className="px-4 py-4 text-center text-sm text-blue-gray">
+                No places found. Try a different search.
+              </div>
+            )}
 
-          {!error &&
-            sortedResults.map((place) => {
-              const isTopPick = ranking?.topPick === place.id;
-              const whyNot = getWhyNot(place.id);
+            {!error &&
+              sortedResults.map((place) => {
+                const isTopPick = ranking?.topPick === place.id;
+                const whyNot = getWhyNot(place.id);
 
-              return (
-                <div
-                  key={place.id}
-                  className={`px-4 py-3 cursor-pointer border-b border-edge/50 transition-colors last:border-b-0 ${
-                    isTopPick
-                      ? "bg-cyan-muted border-l-2 border-l-cyan hover:bg-cyan-muted/80"
-                      : "hover:bg-surface-raised"
-                  }`}
-                  onClick={() => handleSelectResult(place)}
-                >
-                  <div className="flex justify-between items-start gap-2">
-                    <div>
-                      <div className="font-semibold text-[15px] text-bone">
-                        {isTopPick && (
-                          <span className="inline-block bg-cyan text-void text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1.5 align-middle">
-                            Top Pick
-                          </span>
+                return (
+                  <div
+                    key={place.id}
+                    className={`px-4 py-3 cursor-pointer border-b border-edge/50 transition-colors last:border-b-0 ${
+                      isTopPick
+                        ? "bg-cyan-muted border-l-2 border-l-cyan hover:bg-cyan-muted/80"
+                        : "hover:bg-surface-raised"
+                    }`}
+                    onClick={() => handleSelectResult(place)}
+                  >
+                    <div className="flex justify-between items-start gap-2">
+                      <div>
+                        <div className="font-semibold text-[15px] text-bone">
+                          {isTopPick && (
+                            <span className="inline-block bg-cyan text-void text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded mr-1.5 align-middle">
+                              Top Pick
+                            </span>
+                          )}
+                          {place.name}
+                        </div>
+                        {place.category && (
+                          <div className="text-sm text-blue-gray capitalize mt-0.5">
+                            {place.category.replace(/_/g, " ")}
+                          </div>
                         )}
-                        {place.name}
                       </div>
-                      {place.category && (
-                        <div className="text-sm text-blue-gray capitalize mt-0.5">
-                          {place.category.replace(/_/g, " ")}
+                      {whyNot && (
+                        <div className="text-[11px] text-muted shrink-0 mt-0.5">
+                          {whyNot}
                         </div>
                       )}
                     </div>
-                    {whyNot && (
-                      <div className="text-[11px] text-muted shrink-0 mt-0.5">
-                        {whyNot}
+                    {isTopPick && ranking?.topPickReason && (
+                      <div className="text-sm text-cyan-dim mt-1 leading-snug">
+                        {ranking.topPickReason}
                       </div>
                     )}
-                  </div>
-                  {isTopPick && ranking?.topPickReason && (
-                    <div className="text-sm text-cyan-dim mt-1 leading-snug">
-                      {ranking.topPickReason}
+                    <div className="flex items-baseline gap-2 mt-0.5">
+                      {place.rating && (
+                        <span className="text-sm text-muted shrink-0">
+                          <span className="text-amber">★</span>{" "}
+                          {place.rating.toFixed(1)}
+                          {place.reviewCount
+                            ? ` (${place.reviewCount.toLocaleString()})`
+                            : ""}
+                        </span>
+                      )}
+                      {place.address && (
+                        <span className="text-sm text-muted flex-1 min-w-0 truncate">
+                          {place.address}
+                        </span>
+                      )}
+                      {place.distanceMeters != null && (
+                        <span className="text-xs font-semibold text-cyan font-mono shrink-0">
+                          {formatDistanceLive(place.distanceMeters)}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  <div className="flex items-baseline gap-2 mt-0.5">
-                    {place.rating && (
-                      <span className="text-sm text-muted shrink-0">
-                        <span className="text-amber">★</span>{" "}
-                        {place.rating.toFixed(1)}
-                        {place.reviewCount
-                          ? ` (${place.reviewCount.toLocaleString()})`
-                          : ""}
-                      </span>
-                    )}
-                    {place.address && (
-                      <span className="text-sm text-muted flex-1 min-w-0 truncate">
-                        {place.address}
-                      </span>
-                    )}
-                    {place.distanceMeters != null && (
-                      <span className="text-xs font-semibold text-cyan font-mono shrink-0">
-                        {formatDistanceLive(place.distanceMeters)}
-                      </span>
-                    )}
                   </div>
-                </div>
-              );
-            })}
-        </div>
-      )}
+                );
+              })}
+          </div>
+        )}
     </div>
   );
 }

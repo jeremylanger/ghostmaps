@@ -125,7 +125,6 @@ See `plans/master.md` for full architecture, decisions, and research.
 | Navigation | TomTom Routing API (traffic ETA, speed limits, lane guidance, rerouting) |
 | On-chain | EAS on Base (ethers.js + EAS SDK) |
 | Auth + Wallets | Coinbase CDP Embedded Wallets |
-| Identity | ERC-8004 |
 | Streaming | SSE (Server-Sent Events) |
 
 ## Hackathon

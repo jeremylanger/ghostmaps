@@ -312,8 +312,8 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Move rating/address into scrollable area (only header + buttons pinned)
 - [x] Mobile-responsive layout (hamburger menu, search bar spacing)
 - [x] Architecture diagram (`client/public/architecture.svg` — Phantom Protocol branded, shows data flow + privacy boundary)
-- [ ] End-to-end flow testing: search → discover → reviews → navigate
-- [ ] Loading states, error handling, edge cases
+- [x] End-to-end flow testing: search → discover → reviews → navigate
+- [x] Loading states, error handling, edge cases (added "No places found" empty state for zero search results)
 - [ ] Performance optimization (debounce search, cache results)
 - [ ] Tests: unit, integration, E2E
 
@@ -340,7 +340,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Delete `here.unit.test.ts`, fix test count (actual: 155 server + 65 client = 220 total)
 
 **Open Items (high priority, needs further design):**
-- [ ] ERC-8004 — evaluate: integrate for reviewer identity or defer? Decision needed before submission.
+- [x] ~~ERC-8004~~ — dropped (designed for AI agent identity, not user identity; claiming it without genuine use was misleading)
 - [ ] Update CONVERSATION_LOG.md with Day 11 session (this session) before publishing submission.
 
 ### Review Quality Enforcement + Content Moderation
@@ -379,10 +379,10 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 **Deploy + Demo + Submit**
 - [x] Deploy to Railway (Express server + Vite static build, single service) — live at https://ghostmaps.app
 - [x] Custom domain (ghostmaps.app) with SSL via Railway + Porkbun DNS
-- [ ] Add production server IP to Google Places API key restrictions
-- [ ] Restrict CDP Project domain allowlist to production domain only
-- [ ] Add production domain to CDP Paymaster allowlist
-- [ ] Switch EAS from Base Sepolia to Base mainnet (requires CDP billing or Gasless Campaign credits)
+- [x] Add production server IP to Google Places API key restrictions
+- [x] Restrict CDP Project domain allowlist to production domain only
+- ~~Add production domain to CDP Paymaster allowlist~~ — not needed (staying on Sepolia, testnet paymaster has no domain restrictions)
+- ~~Switch EAS from Base Sepolia to Base mainnet~~ — deferred (Sepolia is sufficient for hackathon demo, zero risk)
 - [ ] Seed demo reviews (write a few real reviews so judges see the full experience)
 - [ ] Demo script — rehearse the narrative
 - [ ] Record demo video if required

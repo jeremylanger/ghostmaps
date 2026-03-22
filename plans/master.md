@@ -179,7 +179,7 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 - Email OTP signup → invisible non-custodial wallet on Base in <500ms
 - User never sees seed phrase, MetaMask, or crypto jargon
 - Gas sponsored via CDP Paymaster — users pay $0
-- ERC-8004 for on-chain identity/trust signal on reviews
+- Reviewer identity via EAS GraphQL (account age, review count)
 - Can migrate to Supabase + CDP (custom JWT mode) later if needed
 
 ### 2. Token Incentives — RESOLVED

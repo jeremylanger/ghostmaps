@@ -109,7 +109,7 @@
   <text x="765" y="305" text-anchor="middle" fill="#00e5ff" font-size="13" font-weight="600">EAS on Base</text>
   <text x="765" y="322" text-anchor="middle" fill="#6b7a8d" font-size="9">IMMUTABLE · COMPOSABLE</text>
   <text x="765" y="342" text-anchor="middle" fill="#e8e6e1" font-size="9.5">On-chain review attestations</text>
-  <text x="765" y="356" text-anchor="middle" fill="#e8e6e1" font-size="9.5">ERC-8004 identity</text>
+  <text x="765" y="356" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Pseudonymous identity</text>
   <text x="765" y="370" text-anchor="middle" fill="#e8e6e1" font-size="9.5">CDP embedded wallets</text>
   <text x="765" y="384" text-anchor="middle" fill="#e8e6e1" font-size="9.5">Gas sponsored ($0 for users)</text>
 
@@ -164,8 +164,8 @@
   <text x="245" y="596" text-anchor="middle" fill="#6b7a8d" font-size="8">Client-side signing</text>
 
   <rect x="330" y="568" width="130" height="36" rx="4" fill="#0d1420" stroke="#1a2535" stroke-width="0.5"/>
-  <text x="395" y="584" text-anchor="middle" fill="#6b7a8d" font-size="9" font-weight="600">ERC-8004</text>
-  <text x="395" y="596" text-anchor="middle" fill="#6b7a8d" font-size="8">Agent identity on Base</text>
+  <text x="395" y="584" text-anchor="middle" fill="#6b7a8d" font-size="9" font-weight="600">EAS Identity</text>
+  <text x="395" y="596" text-anchor="middle" fill="#6b7a8d" font-size="8">Reviewer reputation on Base</text>
 
   <!-- Tech stats -->
   <text x="620" y="582" fill="#1a2535" font-size="9">|</text>
