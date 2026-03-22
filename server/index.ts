@@ -150,23 +150,34 @@ app.get("/api/ai-search", async (req, res) => {
 
     const userLat = lat ? Number.parseFloat(lat) : undefined;
     const userLng = lng ? Number.parseFloat(lng) : undefined;
+
+    let searchLat = userLat;
+    let searchLng = userLng;
+    if (parsed.location_hint) {
+      const hintPlace = await geocodeAddress(parsed.location_hint, googleApiKey, userLat, userLng);
+      if (hintPlace) {
+        searchLat = hintPlace.latitude;
+        searchLng = hintPlace.longitude;
+      }
+    }
+
     let results: Place[];
     if (
       parsed.query_type === "category" &&
       parsed.categories.length > 0 &&
-      userLat != null &&
-      userLng != null
+      searchLat != null &&
+      searchLng != null
     ) {
       results = await searchNearby(
         parsed.categories,
         googleApiKey,
-        userLat,
-        userLng,
+        searchLat,
+        searchLng,
         parsed.radius || undefined,
       );
     } else {
       const searchQuery = parsed.name_query || parsed.address_query || q;
-      results = await searchByName(searchQuery, googleApiKey, userLat, userLng);
+      results = await searchByName(searchQuery, googleApiKey, searchLat, searchLng);
     }
     if (userLat != null && userLng != null && results.length > 0) {
       results = addDistanceToResults(results, userLat, userLng);
@@ -243,6 +254,23 @@ app.get("/api/ai-search/stream", async (req, res) => {
       return;
     }
 
+    // If there's a location hint (e.g. "tea los angeles"), geocode it for the search center
+    let searchLat = userLat;
+    let searchLng = userLng;
+    if (parsed.location_hint) {
+      send("status", { message: `Looking up ${parsed.location_hint}...` });
+      const hintPlace = await geocodeAddress(
+        parsed.location_hint,
+        googleApiKey,
+        userLat,
+        userLng,
+      );
+      if (hintPlace) {
+        searchLat = hintPlace.latitude;
+        searchLng = hintPlace.longitude;
+      }
+    }
+
     if (parsed.query_type === "address" && parsed.address_query) {
       // Address geocoding via Google Places
       send("status", { message: "Finding address..." });
@@ -256,23 +284,27 @@ app.get("/api/ai-search/stream", async (req, res) => {
     } else if (
       parsed.query_type === "category" &&
       parsed.categories.length > 0 &&
-      userLat != null &&
-      userLng != null
+      searchLat != null &&
+      searchLng != null
     ) {
       // Category search via Nearby Search (best results for type queries)
-      send("status", { message: "Finding places nearby..." });
+      send("status", {
+        message: parsed.location_hint
+          ? `Finding places in ${parsed.location_hint}...`
+          : "Finding places nearby...",
+      });
       results = await searchNearby(
         parsed.categories,
         googleApiKey,
-        userLat,
-        userLng,
+        searchLat,
+        searchLng,
         parsed.radius || undefined,
       );
     } else {
       // Name search via Text Search
       const searchQuery = parsed.name_query || q;
       send("status", { message: `Searching for "${searchQuery}"...` });
-      results = await searchByName(searchQuery, googleApiKey, userLat, userLng);
+      results = await searchByName(searchQuery, googleApiKey, searchLat, searchLng);
     }
 
     // Add distance from user to each result
