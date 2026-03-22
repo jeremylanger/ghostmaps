@@ -1,6 +1,6 @@
 import { useReviews } from "../hooks/useReviews";
 import { EASSCAN_URL } from "../lib/eas";
-import { QUALITY_STYLES, qualityLabel, truncateAddress } from "../lib/theme";
+import { QUALITY_STYLES, qualityLabel } from "../lib/theme";
 import type { OnChainReview, ReviewIdentity } from "../types";
 
 function timeAgo(timestamp: number): string {
@@ -21,6 +21,33 @@ function accountAgeLabel(firstSeen: number): string {
   return `${Math.floor(days / 30)}mo old`;
 }
 
+function ReviewText({ text }: { text: string }) {
+  const parts = text.split(" | ");
+  const body = parts[0];
+  const ordered = parts.find((p) => p.startsWith("Ordered: "))?.slice(9);
+  const tip = parts.find((p) => p.startsWith("Tip: "))?.slice(5);
+
+  return (
+    <div className="mb-1">
+      <p className="text-sm text-bone leading-snug">{body}</p>
+      {(ordered || tip) && (
+        <div className="flex flex-wrap gap-1.5 mt-1.5">
+          {ordered && (
+            <span className="text-sm text-blue-gray">
+              Ordered: <span className="text-bone">{ordered}</span>
+            </span>
+          )}
+          {tip && (
+            <span className="text-sm text-blue-gray">
+              Tip: <span className="text-bone">{tip}</span>
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ReviewCard({
   review,
   identity,
@@ -33,12 +60,9 @@ function ReviewCard({
   return (
     <div className="bg-surface-raised rounded-lg p-3 border border-edge/50">
       <div className="flex justify-between items-start mb-1">
-        <div className="flex flex-col gap-px">
-          <span className="text-xs font-mono text-blue-gray">
-            {truncateAddress(review.attester)}
-          </span>
+        <div className="flex items-center gap-1.5">
           {identity && (
-            <span className="text-[11px] text-muted">
+            <span className="text-xs text-blue-gray">
               {accountAgeLabel(identity.firstSeen)}
               {identity.totalReviews > 1 &&
                 ` · ${identity.totalReviews} reviews`}
@@ -58,15 +82,20 @@ function ReviewCard({
         <span
           className={`text-[10px] font-semibold px-1.5 py-px rounded ${QUALITY_STYLES[label]}`}
         >
-          {label}
+          {label} review depth
         </span>
+        {review.lat !== 0 && review.lng !== 0 && (
+          <span className="text-[10px] font-semibold px-1.5 py-px rounded bg-emerald-900/40 text-emerald-400">
+            GPS Verified
+          </span>
+        )}
       </div>
 
-      <p className="text-sm text-bone leading-snug mb-1">{review.text}</p>
+      <ReviewText text={review.text} />
 
       {review.photoHash && (
         <img
-          className="w-full max-h-[120px] object-cover rounded-md mb-1"
+          className="w-full max-h-[200px] object-cover rounded-md mb-1"
           src={`/api/photos/${review.photoHash}`}
           alt="Review photo"
           loading="lazy"

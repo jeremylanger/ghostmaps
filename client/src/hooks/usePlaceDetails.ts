@@ -34,6 +34,7 @@ export function usePlaceBriefing(placeId: string | null) {
     queryKey: ["briefing", placeId],
     queryFn: () => fetchBriefing(placeId!),
     enabled: !!placeId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: Number.POSITIVE_INFINITY,
+    refetchOnWindowFocus: false,
   });
 }

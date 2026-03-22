@@ -12,18 +12,18 @@ export const THEME = {
 
 /** Quality score → display label */
 export function qualityLabel(score: number): string {
-  if (score >= 81) return "exceptional";
-  if (score >= 51) return "detailed";
-  if (score >= 21) return "decent";
-  return "generic";
+  if (score >= 81) return "Exceptional";
+  if (score >= 51) return "Detailed";
+  if (score >= 21) return "Decent";
+  return "Generic";
 }
 
 /** Quality label → Tailwind class string */
 export const QUALITY_STYLES: Record<string, string> = {
-  generic: "bg-coral/15 text-coral",
-  decent: "bg-amber/15 text-amber",
-  detailed: "bg-phosphor/15 text-phosphor",
-  exceptional: "bg-cyan-muted text-cyan",
+  Generic: "bg-coral/15 text-coral",
+  Decent: "bg-amber/15 text-amber",
+  Detailed: "bg-phosphor/15 text-phosphor",
+  Exceptional: "bg-cyan-muted text-cyan",
 };
 
 /** Truncate an EVM address for display: 0x1234...abcd */

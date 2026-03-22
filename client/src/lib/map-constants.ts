@@ -1,4 +1,4 @@
-export const INITIAL_CENTER: [number, number] = [-118.2437, 34.0522];
+export const INITIAL_CENTER: [number, number] = [-105.075, 40.3978];
 export const INITIAL_ZOOM = 13;
 export const SOURCE_ID = "poi-results";
 export const CIRCLE_LAYER = "poi-circles";
