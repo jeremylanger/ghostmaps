@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import type { EvmAddress } from "@coinbase/cdp-core";
 import {
   useEvmAddress,
@@ -27,6 +28,7 @@ import {
 } from "../lib/eas";
 import { extractPhotoGPS, isNearLocation } from "../lib/exif";
 import { QUALITY_STYLES } from "../lib/theme";
+import { useReviews } from "../hooks/useReviews";
 import { useAppStore } from "../store";
 import AuthButton from "./AuthButton";
 
@@ -61,9 +63,17 @@ const BLOCKING_FLAGS = [
 export default function ReviewForm() {
   const place = useAppStore((s) => s.selectedPlace)!;
   const setShowReviewForm = useAppStore((s) => s.setShowReviewForm);
+  const queryClient = useQueryClient();
   const { isSignedIn } = useIsSignedIn();
   const { evmAddress } = useEvmAddress();
   const { sendUserOperation } = useSendUserOperation();
+  const { data: reviewsData } = useReviews(place.id);
+
+  const alreadyReviewed =
+    evmAddress &&
+    reviewsData?.reviews.some(
+      (r) => r.attester.toLowerCase() === evmAddress.toLowerCase(),
+    );
 
   const [step, setStep] = useState<ReviewStep>("form");
   const [rating, setRating] = useState(0);
@@ -200,6 +210,7 @@ export default function ReviewForm() {
       });
 
       setTxHash(result.userOperationHash);
+      queryClient.invalidateQueries({ queryKey: ["reviews", place.id] });
       setStep("success");
     } catch (err) {
       console.error("Review submission error:", err);
@@ -209,6 +220,31 @@ export default function ReviewForm() {
       setStep("error");
     }
   };
+
+  if (alreadyReviewed && step === "form") {
+    return (
+      <Dialog open={true} onOpenChange={() => setShowReviewForm(false)}>
+        <DialogContent className="bg-surface border-edge shadow-panel max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle className="font-display text-bone">
+              Already Reviewed
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-blue-gray leading-relaxed">
+            You've already reviewed {place.name}. Each wallet can only submit
+            one review per place.
+          </p>
+          <Button
+            variant="ghost"
+            className="w-full text-muted hover:text-bone"
+            onClick={() => setShowReviewForm(false)}
+          >
+            Close
+          </Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   if (!isSignedIn) {
     return (
@@ -261,19 +297,17 @@ export default function ReviewForm() {
               </div>
             )}
             <p className="text-sm text-muted mt-2">
-              Permanently stored on Base. No one can delete, modify, or censor
-              it.
+              Permanently stored on Base — no one can delete, modify, or
+              censor it. It may take a minute to appear in the reviews list.
             </p>
-            {txHash && (
-              <a
-                href={`${EASSCAN_URL}/schema/view/${REVIEW_SCHEMA_UID}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block mt-3 text-sm text-cyan no-underline hover:underline"
-              >
-                View on EAS Explorer
-              </a>
-            )}
+            <a
+              href={`${EASSCAN_URL}/schema/view/${REVIEW_SCHEMA_UID}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-3 text-sm text-cyan no-underline hover:underline"
+            >
+              View on-chain proof →
+            </a>
           </div>
         </DialogContent>
       </Dialog>
@@ -423,6 +457,16 @@ export default function ReviewForm() {
         </div>
 
         {/* Submit */}
+        {rating === 0 && text.trim().length > 0 && (
+          <p className="text-xs text-coral text-center">
+            Please select a rating.
+          </p>
+        )}
+        {text.trim().length > 0 && text.trim().length < MIN_REVIEW_LENGTH && (
+          <p className="text-xs text-coral text-center">
+            Review must be at least {MIN_REVIEW_LENGTH} characters ({MIN_REVIEW_LENGTH - text.trim().length} more needed).
+          </p>
+        )}
         <Button
           className="w-full font-display text-[15px]"
           onClick={handleSubmit}

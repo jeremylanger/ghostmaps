@@ -17,7 +17,7 @@ function ReviewText({ text }: { text: string }) {
     <div className="mb-1">
       <p className="text-sm text-bone leading-snug">{body}</p>
       {(ordered || tip) && (
-        <div className="flex flex-wrap gap-1.5 mt-1.5">
+        <div className="flex flex-col gap-1 mt-1.5">
           {ordered && (
             <span className="text-sm text-blue-gray">
               Ordered: <span className="text-bone">{ordered}</span>
@@ -153,6 +153,9 @@ export default function ReviewList({ placeId, placeLat, placeLng }: { placeId: s
     );
   }
 
+  const sortedReviews = [...reviews].sort(
+    (a, b) => b.qualityScore - a.qualityScore,
+  );
   const avgRating =
     reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
 
@@ -185,7 +188,7 @@ export default function ReviewList({ placeId, placeLat, placeLng }: { placeId: s
       )}
 
       <div className="flex flex-col gap-2">
-        {reviews.map((review) => (
+        {sortedReviews.map((review) => (
           <ReviewCard
             key={review.uid}
             review={review}
