@@ -17,10 +17,12 @@ The map defaults to Loveland, CO. Search for these places to see on-chain review
 Also try location-aware searches like "coffee in Denver" or "pizza in Los Angeles".
 
 <p align="center">
-  <img src="client/public/screenshots/2-search.png" width="200" />
-  <img src="client/public/screenshots/4-on-chain-reviews.png" width="200" />
-  <img src="client/public/screenshots/5-navigation.png" width="200" />
-  <img src="client/public/screenshots/8-guardian-results.png" width="200" />
+  <img src="client/public/screenshots/2-search.png" width="220" />
+  <img src="client/public/screenshots/4-on-chain-reviews.png" width="220" />
+  <img src="client/public/screenshots/5-navigation.png" width="220" />
+</p>
+<p align="center">
+  <img src="client/public/screenshots/8-guardian-results.png" width="680" />
 </p>
 
 ---
