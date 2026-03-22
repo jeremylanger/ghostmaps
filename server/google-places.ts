@@ -192,7 +192,7 @@ export async function searchNearby(
   apiKey: string,
   userLat: number,
   userLng: number,
-  radius = 5000,
+  radius = 16000,
 ): Promise<Place[]> {
   try {
     const response = await fetch(`${PLACES_BASE}:searchNearby`, {
