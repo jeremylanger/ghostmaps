@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAppStore } from "../store";
 import AuthButton from "./AuthButton";
+import GhostBalance from "./GhostBalance";
 
 export default function HamburgerMenu() {
   const setShowPrivacy = useAppStore((s) => s.setShowPrivacy);
@@ -36,8 +37,9 @@ export default function HamburgerMenu() {
           </span>
         </div>
 
-        <div className="px-3 py-2">
+        <div className="px-3 py-2 flex flex-col gap-2">
           <AuthButton />
+          <GhostBalance />
         </div>
 
         <DropdownMenuSeparator className="bg-edge" />

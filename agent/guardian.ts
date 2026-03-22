@@ -9,6 +9,7 @@
 
 import "dotenv/config";
 import { JsonRpcProvider, Wallet } from "ethers";
+import { processRewards } from "./contracts/RewardDistributor.js";
 import { GUARDIAN_MODEL, GUARDIAN_SYSTEM_PROMPT } from "./guidelines.js";
 import { BASE_SEPOLIA_RPC, type OnChainReview } from "./schema.js";
 import {
@@ -159,7 +160,14 @@ async function executeTool(
 
 interface LogEntry {
   timestamp: string;
-  type: "cycle_start" | "reasoning" | "tool_call" | "tool_result" | "verdict" | "error" | "cycle_end";
+  type:
+    | "cycle_start"
+    | "reasoning"
+    | "tool_call"
+    | "tool_result"
+    | "verdict"
+    | "error"
+    | "cycle_end";
   detail: Record<string, unknown>;
 }
 
@@ -178,19 +186,27 @@ function log(type: LogEntry["type"], detail: Record<string, unknown>) {
       console.log(`\n[REASONING] ${detail.text}`);
       break;
     case "tool_call":
-      console.log(`  [TOOL] ${detail.name}(${JSON.stringify(detail.args).slice(0, 120)})`);
+      console.log(
+        `  [TOOL] ${detail.name}(${JSON.stringify(detail.args).slice(0, 120)})`,
+      );
       break;
     case "tool_result":
-      console.log(`  [RESULT] ${detail.name}: ${String(detail.summary).slice(0, 150)}`);
+      console.log(
+        `  [RESULT] ${detail.name}: ${String(detail.summary).slice(0, 150)}`,
+      );
       break;
     case "verdict":
-      console.log(`  [VERDICT] ${detail.verdict} (${detail.confidence}%) → review ${String(detail.reviewUID).slice(0, 12)}... | ${detail.reason}`);
+      console.log(
+        `  [VERDICT] ${detail.verdict} (${detail.confidence}%) → review ${String(detail.reviewUID).slice(0, 12)}... | ${detail.reason}`,
+      );
       break;
     case "error":
       console.error(`  [ERROR] ${detail.message}`);
       break;
     case "cycle_end":
-      console.log(`\n=== Cycle complete: ${detail.verdicts} verdicts published, ${detail.iterations} iterations ===\n`);
+      console.log(
+        `\n=== Cycle complete: ${detail.verdicts} verdicts published, ${detail.iterations} iterations ===\n`,
+      );
       break;
   }
 }
@@ -217,7 +233,10 @@ Investigate all new reviews. For each review or group of reviews, decide whether
 
 Your wallet address is ${wallet.address} — skip any attestations from this address (those are your own prior verdicts).`;
 
-  log("cycle_start", { since: new Date(sinceTimestamp * 1000).toISOString(), wallet: wallet.address });
+  log("cycle_start", {
+    since: new Date(sinceTimestamp * 1000).toISOString(),
+    wallet: wallet.address,
+  });
 
   const messages: VeniceMessage[] = [
     { role: "system", content: GUARDIAN_SYSTEM_PROMPT },
@@ -238,12 +257,18 @@ Your wallet address is ${wallet.address} — skip any attestations from this add
 
     // Log reasoning
     if (assistantMessage.content?.trim()) {
-      log("reasoning", { text: assistantMessage.content, iteration: iterationCount });
+      log("reasoning", {
+        text: assistantMessage.content,
+        iteration: iterationCount,
+      });
     }
 
     // If no tool calls, the agent is done
     if (toolCalls.length === 0) {
-      log("reasoning", { text: "(no more tool calls — cycle complete)", iteration: iterationCount });
+      log("reasoning", {
+        text: "(no more tool calls — cycle complete)",
+        iteration: iterationCount,
+      });
       break;
     }
 
@@ -261,7 +286,10 @@ Your wallet address is ${wallet.address} — skip any attestations from this add
       try {
         fnArgs = JSON.parse(toolCall.function.arguments);
       } catch (err) {
-        log("error", { message: `Failed to parse tool args for ${fnName}`, error: String(err) });
+        log("error", {
+          message: `Failed to parse tool args for ${fnName}`,
+          error: String(err),
+        });
         messages.push({
           role: "tool",
           tool_call_id: toolCall.id,
@@ -270,8 +298,11 @@ Your wallet address is ${wallet.address} — skip any attestations from this add
         continue;
       }
 
-      log("tool_call", { name: fnName, args: fnArgs, iteration: iterationCount },
-      );
+      log("tool_call", {
+        name: fnName,
+        args: fnArgs,
+        iteration: iterationCount,
+      });
 
       try {
         const result = await executeTool(fnName, fnArgs, wallet);
@@ -292,7 +323,11 @@ Your wallet address is ${wallet.address} — skip any attestations from this add
         } catch {
           resultSummary = result.slice(0, 100);
         }
-        log("tool_result", { name: fnName, summary: resultSummary, iteration: iterationCount });
+        log("tool_result", {
+          name: fnName,
+          summary: resultSummary,
+          iteration: iterationCount,
+        });
 
         // Track publish results and log verdicts
         if (
@@ -304,12 +339,22 @@ Your wallet address is ${wallet.address} — skip any attestations from this add
             if (Array.isArray(parsed)) {
               for (const p of parsed) {
                 if (p.txHash) {
-                  log("verdict", { reviewUID: p.reviewUID, verdict: p.verdict, confidence: p.confidence, reason: fnArgs.reasoningSummary });
+                  log("verdict", {
+                    reviewUID: p.reviewUID,
+                    verdict: p.verdict,
+                    confidence: p.confidence,
+                    reason: fnArgs.reasoningSummary,
+                  });
                 }
               }
               results.push(...parsed);
             } else if (parsed.txHash) {
-              log("verdict", { reviewUID: parsed.reviewUID, verdict: parsed.verdict, confidence: parsed.confidence, reason: fnArgs.reasoningSummary });
+              log("verdict", {
+                reviewUID: parsed.reviewUID,
+                verdict: parsed.verdict,
+                confidence: parsed.confidence,
+                reason: fnArgs.reasoningSummary,
+              });
               results.push(parsed);
             }
           } catch {
@@ -323,7 +368,10 @@ Your wallet address is ${wallet.address} — skip any attestations from this add
           content: result,
         });
       } catch (err) {
-        log("error", { message: `Tool error (${fnName})`, error: err instanceof Error ? err.message : String(err) });
+        log("error", {
+          message: `Tool error (${fnName})`,
+          error: err instanceof Error ? err.message : String(err),
+        });
         messages.push({
           role: "tool",
           tool_call_id: toolCall.id,
@@ -378,10 +426,59 @@ async function main() {
   // Run once if --once flag is passed (for testing / demo)
   const runOnce = process.argv.includes("--once");
 
+  const tokenAddress = process.env.GHOST_TOKEN_ADDRESS;
+  if (tokenAddress) {
+    console.log(`GHOST token: ${tokenAddress}`);
+  } else {
+    console.log("GHOST_TOKEN_ADDRESS not set — reward distribution disabled");
+  }
+
   while (true) {
     try {
       const result = await runGuardianCycle(veniceKey, wallet, lastTimestamp);
       lastTimestamp = result.lastTimestamp;
+
+      // Distribute rewards for legitimate verdicts
+      if (tokenAddress && result.results.length > 0) {
+        const legitimateReviews = result.results
+          .filter((r) => r.verdict === "legitimate")
+          .map((r) => ({
+            uid: r.reviewUID,
+            attester: "", // Will be looked up from EAS
+            qualityScore: r.confidence, // Use confidence as proxy for quality
+          }));
+
+        if (legitimateReviews.length > 0) {
+          // Fetch attester addresses from EAS for reward distribution
+          const reviewsWithAttesters = [];
+          for (const rev of legitimateReviews) {
+            const reviews = await queryNewReviews(0);
+            const match = reviews.find((r) => r.uid === rev.uid);
+            if (match) {
+              reviewsWithAttesters.push({
+                uid: rev.uid,
+                attester: match.attester,
+                qualityScore: match.qualityScore,
+              });
+            }
+          }
+
+          if (reviewsWithAttesters.length > 0) {
+            console.log(
+              `\n--- Distributing GHOST rewards for ${reviewsWithAttesters.length} verified reviews ---`,
+            );
+            const rewards = await processRewards(
+              wallet,
+              tokenAddress,
+              wallet.address,
+              reviewsWithAttesters,
+            );
+            console.log(
+              `Rewards: ${rewards.distributed} distributed (${rewards.totalGhost.toFixed(2)} GHOST total), ${rewards.skipped} skipped`,
+            );
+          }
+        }
+      }
     } catch (err) {
       console.error("Guardian cycle error:", err);
     }

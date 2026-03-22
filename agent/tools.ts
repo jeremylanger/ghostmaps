@@ -368,8 +368,7 @@ export const TOOL_DEFINITIONS = [
         properties: {
           reviewUID: {
             type: "string",
-            description:
-              "The EAS attestation UID of the review being verified",
+            description: "The EAS attestation UID of the review being verified",
           },
           verdict: {
             type: "string",

@@ -1,50 +1,43 @@
 /**
  * RewardDistributor — Distributes GHOST tokens for verified reviews.
  *
- * Reads Guardian ReviewVerification attestations from EAS.
- * If verdict is "legitimate" and confidence >= threshold, releases tokens.
- *
- * This is a server-side distributor (not a smart contract) because:
- * 1. Reading EAS attestation data on-chain requires complex ABI decoding
- * 2. The Guardian wallet holds the GHOST supply and transfers directly
- * 3. Simpler, faster, and cheaper than a separate contract on testnet
+ * Quadratic reward curve: GHOST = (quality²) / 100
+ *   quality 100 → 100 GHOST
+ *   quality 75  → 56.25 GHOST
+ *   quality 50  → 25 GHOST
+ *   quality 25  → 6.25 GHOST
+ *   quality 10  → 1 GHOST
  *
  * The flow is fully on-chain verifiable:
- * - Review attestation (EAS) → Guardian verification attestation (EAS) → token transfer (ERC-20)
+ * - Review attestation (EAS) → Guardian verification (EAS) → token transfer (ERC-20)
  * - Anyone can trace the chain: review UID → refUID in verification → transfer event
  */
 
 import { ethers } from "ethers";
 import { EAS_GRAPHQL, VERIFICATION_SCHEMA_UID } from "../schema.js";
-import { GHOST_TOKEN_ABI, getGhostTokenContract } from "./GhostToken.js";
+import { getGhostTokenContract } from "./GhostToken.js";
 
-const CONFIDENCE_THRESHOLD = 60; // Minimum confidence for reward
-const REWARD_AMOUNT = ethers.parseEther("10"); // 10 GHOST per verified review
+const CONFIDENCE_THRESHOLD = 60;
 
-interface VerificationRecord {
-  reviewUID: string;
-  verdict: string;
-  confidence: number;
-  reviewerAddress: string;
+/** Quadratic reward: GHOST = (quality²) / 100 */
+export function calculateReward(qualityScore: number): bigint {
+  const clamped = Math.max(0, Math.min(100, qualityScore));
+  const ghost = (clamped * clamped) / 100;
+  const rounded = Math.round(ghost * 100) / 100;
+  return ethers.parseEther(rounded.toString());
 }
 
 /** Track which reviews have been rewarded (in-memory for hackathon) */
 const rewardedReviews = new Set<string>();
 
-/**
- * Check if a review has a legitimate verification and hasn't been rewarded yet.
- * Returns the reviewer address if eligible, null otherwise.
- */
 export async function checkRewardEligibility(
   reviewUID: string,
-  reviewerAddress: string,
   guardianAddress: string,
 ): Promise<{ eligible: boolean; reason: string }> {
   if (rewardedReviews.has(reviewUID)) {
     return { eligible: false, reason: "Already rewarded" };
   }
 
-  // Query EAS for verification attestation
   const res = await fetch(EAS_GRAPHQL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -81,7 +74,6 @@ export async function checkRewardEligibility(
     return { eligible: false, reason: "No verification attestation found" };
   }
 
-  // Parse the verification data
   try {
     const fields = JSON.parse(attestation.decodedDataJson);
     const verdict = fields.find((f: { name: string }) => f.name === "verdict")
@@ -112,15 +104,13 @@ export async function checkRewardEligibility(
   }
 }
 
-/**
- * Distribute GHOST tokens to a reviewer for a verified review.
- */
 export async function distributeReward(
   wallet: ethers.Wallet,
   tokenAddress: string,
   reviewUID: string,
   reviewerAddress: string,
-): Promise<{ txHash: string; amount: string } | null> {
+  qualityScore: number,
+): Promise<{ txHash: string; amount: string; ghost: number } | null> {
   if (rewardedReviews.has(reviewUID)) {
     console.log(
       `Reward already distributed for review ${reviewUID.slice(0, 10)}...`,
@@ -128,47 +118,44 @@ export async function distributeReward(
     return null;
   }
 
+  const rewardAmount = calculateReward(qualityScore);
   const token = getGhostTokenContract(tokenAddress, wallet);
 
-  // Check balance
   const balance = await token.balanceOf(wallet.address);
-  if (balance < REWARD_AMOUNT) {
+  if (balance < rewardAmount) {
     console.error(
-      `Insufficient GHOST balance: ${ethers.formatEther(balance)} < ${ethers.formatEther(REWARD_AMOUNT)}`,
+      `Insufficient GHOST balance: ${ethers.formatEther(balance)} < ${ethers.formatEther(rewardAmount)}`,
     );
     return null;
   }
 
-  // Transfer tokens
-  const tx = await token.transfer(reviewerAddress, REWARD_AMOUNT);
+  const tx = await token.transfer(reviewerAddress, rewardAmount);
   await tx.wait();
 
   rewardedReviews.add(reviewUID);
 
-  const amountStr = ethers.formatEther(REWARD_AMOUNT);
+  const ghost = (qualityScore * qualityScore) / 100;
+  const amountStr = ethers.formatEther(rewardAmount);
   console.log(
-    `Rewarded ${amountStr} GHOST to ${reviewerAddress.slice(0, 10)}... for review ${reviewUID.slice(0, 10)}... TX: ${tx.hash}`,
+    `Rewarded ${amountStr} GHOST (quality ${qualityScore}) to ${reviewerAddress.slice(0, 10)}... TX: ${tx.hash}`,
   );
 
-  return { txHash: tx.hash, amount: amountStr };
+  return { txHash: tx.hash, amount: amountStr, ghost };
 }
 
-/**
- * Process all verified reviews and distribute pending rewards.
- */
 export async function processRewards(
   wallet: ethers.Wallet,
   tokenAddress: string,
   guardianAddress: string,
-  reviews: { uid: string; attester: string }[],
-): Promise<{ distributed: number; skipped: number }> {
+  reviews: { uid: string; attester: string; qualityScore: number }[],
+): Promise<{ distributed: number; skipped: number; totalGhost: number }> {
   let distributed = 0;
   let skipped = 0;
+  let totalGhost = 0;
 
   for (const review of reviews) {
-    const { eligible, reason } = await checkRewardEligibility(
+    const { eligible } = await checkRewardEligibility(
       review.uid,
-      review.attester,
       guardianAddress,
     );
 
@@ -178,9 +165,11 @@ export async function processRewards(
         tokenAddress,
         review.uid,
         review.attester,
+        review.qualityScore,
       );
       if (result) {
         distributed++;
+        totalGhost += result.ghost;
       } else {
         skipped++;
       }
@@ -189,7 +178,7 @@ export async function processRewards(
     }
   }
 
-  return { distributed, skipped };
+  return { distributed, skipped, totalGhost };
 }
 
-export { CONFIDENCE_THRESHOLD, REWARD_AMOUNT };
+export { CONFIDENCE_THRESHOLD };

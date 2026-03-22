@@ -1,15 +1,44 @@
 import { ethers } from "ethers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CONFIDENCE_THRESHOLD, REWARD_AMOUNT } from "./RewardDistributor.js";
+import { CONFIDENCE_THRESHOLD, calculateReward } from "./RewardDistributor.js";
 
-describe("RewardDistributor Constants", () => {
-  it("reward amount is 10 GHOST", () => {
-    expect(REWARD_AMOUNT).toBe(ethers.parseEther("10"));
+describe("calculateReward (quadratic curve)", () => {
+  it("quality 100 → 100 GHOST", () => {
+    expect(calculateReward(100)).toBe(ethers.parseEther("100"));
   });
 
-  it("confidence threshold is reasonable (40-80 range)", () => {
-    expect(CONFIDENCE_THRESHOLD).toBeGreaterThanOrEqual(40);
-    expect(CONFIDENCE_THRESHOLD).toBeLessThanOrEqual(80);
+  it("quality 75 → 56.25 GHOST", () => {
+    expect(calculateReward(75)).toBe(ethers.parseEther("56.25"));
+  });
+
+  it("quality 50 → 25 GHOST", () => {
+    expect(calculateReward(50)).toBe(ethers.parseEther("25"));
+  });
+
+  it("quality 25 → 6.25 GHOST", () => {
+    expect(calculateReward(25)).toBe(ethers.parseEther("6.25"));
+  });
+
+  it("quality 10 → 1 GHOST", () => {
+    expect(calculateReward(10)).toBe(ethers.parseEther("1"));
+  });
+
+  it("quality 0 → 0 GHOST", () => {
+    expect(calculateReward(0)).toBe(ethers.parseEther("0"));
+  });
+
+  it("clamps above 100", () => {
+    expect(calculateReward(150)).toBe(ethers.parseEther("100"));
+  });
+
+  it("clamps below 0", () => {
+    expect(calculateReward(-10)).toBe(ethers.parseEther("0"));
+  });
+});
+
+describe("RewardDistributor Constants", () => {
+  it("confidence threshold is 60", () => {
+    expect(CONFIDENCE_THRESHOLD).toBe(60);
   });
 });
 
@@ -25,11 +54,7 @@ describe("checkRewardEligibility", () => {
     } as Response);
 
     const { checkRewardEligibility } = await import("./RewardDistributor.js");
-    const result = await checkRewardEligibility(
-      "0xreview123",
-      "0xreviewer",
-      "0xguardian",
-    );
+    const result = await checkRewardEligibility("0xreview123", "0xguardian");
     expect(result.eligible).toBe(false);
     expect(result.reason).toContain("No verification");
   });
@@ -45,10 +70,7 @@ describe("checkRewardEligibility", () => {
               decodedDataJson: JSON.stringify([
                 { name: "verdict", value: { value: "sybil" } },
                 { name: "confidence", value: { value: "85" } },
-                {
-                  name: "reasoningSummary",
-                  value: { value: "Sybil pattern detected" },
-                },
+                { name: "reasoningSummary", value: { value: "Sybil" } },
               ]),
             },
           ],
@@ -57,11 +79,7 @@ describe("checkRewardEligibility", () => {
     } as Response);
 
     const { checkRewardEligibility } = await import("./RewardDistributor.js");
-    const result = await checkRewardEligibility(
-      "0xreview456",
-      "0xreviewer",
-      "0xguardian",
-    );
+    const result = await checkRewardEligibility("0xreview456", "0xguardian");
     expect(result.eligible).toBe(false);
     expect(result.reason).toContain("sybil");
   });
@@ -77,10 +95,7 @@ describe("checkRewardEligibility", () => {
               decodedDataJson: JSON.stringify([
                 { name: "verdict", value: { value: "legitimate" } },
                 { name: "confidence", value: { value: "30" } },
-                {
-                  name: "reasoningSummary",
-                  value: { value: "Low confidence" },
-                },
+                { name: "reasoningSummary", value: { value: "Low" } },
               ]),
             },
           ],
@@ -89,11 +104,7 @@ describe("checkRewardEligibility", () => {
     } as Response);
 
     const { checkRewardEligibility } = await import("./RewardDistributor.js");
-    const result = await checkRewardEligibility(
-      "0xreview789",
-      "0xreviewer",
-      "0xguardian",
-    );
+    const result = await checkRewardEligibility("0xreview789", "0xguardian");
     expect(result.eligible).toBe(false);
     expect(result.reason).toContain("below threshold");
   });
@@ -109,10 +120,7 @@ describe("checkRewardEligibility", () => {
               decodedDataJson: JSON.stringify([
                 { name: "verdict", value: { value: "legitimate" } },
                 { name: "confidence", value: { value: "85" } },
-                {
-                  name: "reasoningSummary",
-                  value: { value: "Genuine review" },
-                },
+                { name: "reasoningSummary", value: { value: "Genuine" } },
               ]),
             },
           ],
@@ -121,13 +129,8 @@ describe("checkRewardEligibility", () => {
     } as Response);
 
     const { checkRewardEligibility } = await import("./RewardDistributor.js");
-    const result = await checkRewardEligibility(
-      "0xreviewEligible",
-      "0xreviewer",
-      "0xguardian",
-    );
+    const result = await checkRewardEligibility("0xreviewOK", "0xguardian");
     expect(result.eligible).toBe(true);
-    expect(result.reason).toContain("Verified legitimate");
   });
 
   it("returns ineligible when EAS GraphQL fails", async () => {
@@ -137,11 +140,7 @@ describe("checkRewardEligibility", () => {
     } as Response);
 
     const { checkRewardEligibility } = await import("./RewardDistributor.js");
-    const result = await checkRewardEligibility(
-      "0xreviewFail",
-      "0xreviewer",
-      "0xguardian",
-    );
+    const result = await checkRewardEligibility("0xreviewFail", "0xguardian");
     expect(result.eligible).toBe(false);
     expect(result.reason).toContain("Failed to query");
   });

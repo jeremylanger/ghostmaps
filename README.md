@@ -179,13 +179,25 @@ The Guardian is registered on the [ERC-8004 Identity Registry](https://www.8004.
 
 **GHOST token:** [`0x98d2ccd1d02F396A4a6FDE996381297c655BB198`](https://sepolia.basescan.org/address/0x98d2ccd1d02F396A4a6FDE996381297c655BB198) (ERC-20 on Base Sepolia)
 
-Verified reviews earn GHOST tokens. The reward flow is fully on-chain and trustless:
+Verified reviews earn GHOST tokens on a **quadratic reward curve** — higher quality reviews earn exponentially more:
 
-1. Reviewer submits review → on-chain attestation
+| Quality Score | GHOST Reward |
+|---|---|
+| 100 (Exceptional) | 100 GHOST |
+| 75 (Detailed) | 56.25 GHOST |
+| 50 (Decent) | 25 GHOST |
+| 25 (Generic) | 6.25 GHOST |
+| 10 (Minimal) | 1 GHOST |
+
+Formula: `GHOST = (quality²) / 100`
+
+The reward flow is fully on-chain and trustless:
+
+1. Reviewer submits review → on-chain attestation with quality score
 2. Guardian verifies review → on-chain verification attestation
-3. If verdict is `legitimate` with confidence ≥ 60% → GHOST tokens released to reviewer
+3. If verdict is `legitimate` with confidence ≥ 60% → GHOST tokens released to reviewer based on quality
 
-**Why this matters:** Every previous token-incentivized review system failed because paying for reviews creates an incentive to fake them, and no one solved the filtering problem. The Guardian agent solves this — token rewards become viable because fraud is caught before rewards are distributed.
+**Why this matters:** Every previous token-incentivized review system failed because paying for reviews creates an incentive to fake them, and no one solved the filtering problem. The Guardian agent solves this — token rewards become viable because fraud is caught before rewards are distributed. The quadratic curve further incentivizes quality: a detailed review (quality 75) earns 9x more than a generic one (quality 25).
 
 ### Architecture
 

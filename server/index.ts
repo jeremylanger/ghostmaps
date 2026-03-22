@@ -644,6 +644,50 @@ app.post("/api/compare", async (req, res) => {
   }
 });
 
+// GHOST token balance (ERC-20 on Base Sepolia)
+const GHOST_TOKEN = "0x98d2ccd1d02F396A4a6FDE996381297c655BB198";
+const BASE_SEPOLIA_RPC = "https://sepolia.base.org";
+const BALANCE_ABI = ["function balanceOf(address) view returns (uint256)"];
+const balanceCache = new Map<
+  string,
+  { balance: string; raw: string; timestamp: number }
+>();
+const BALANCE_CACHE_TTL = 30_000; // 30 seconds
+
+app.get("/api/ghost-balance/:address", async (req, res) => {
+  try {
+    const { address } = req.params;
+
+    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      res.status(400).json({ error: "Invalid Ethereum address" });
+      return;
+    }
+
+    const cached = balanceCache.get(address.toLowerCase());
+    if (cached && Date.now() - cached.timestamp < BALANCE_CACHE_TTL) {
+      res.json({ balance: cached.balance, raw: cached.raw });
+      return;
+    }
+
+    const { JsonRpcProvider, Contract, formatUnits } = await import("ethers");
+    const provider = new JsonRpcProvider(BASE_SEPOLIA_RPC);
+    const contract = new Contract(GHOST_TOKEN, BALANCE_ABI, provider);
+    const raw: bigint = await contract.balanceOf(address);
+    const balance = formatUnits(raw, 18);
+
+    balanceCache.set(address.toLowerCase(), {
+      balance,
+      raw: raw.toString(),
+      timestamp: Date.now(),
+    });
+
+    res.json({ balance, raw: raw.toString() });
+  } catch (err) {
+    console.error("GHOST balance error:", err);
+    res.status(500).json({ error: "Failed to fetch GHOST balance" });
+  }
+});
+
 // Server outbound IP (for API key whitelisting)
 app.get("/api/server-ip", async (_req, res) => {
   try {
