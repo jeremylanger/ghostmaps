@@ -1,31 +1,16 @@
 import { useReviews } from "../hooks/useReviews";
 import { EASSCAN_URL } from "../lib/eas";
+import {
+  accountAgeLabel,
+  isGpsVerified,
+  parseReviewText,
+  timeAgo,
+} from "../lib/review-utils";
 import { QUALITY_STYLES, qualityLabel } from "../lib/theme";
 import type { OnChainReview, ReviewIdentity } from "../types";
 
-function timeAgo(timestamp: number): string {
-  const seconds = Math.floor(Date.now() / 1000 - timestamp);
-  if (seconds < 60) return "just now";
-  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-  if (seconds < 2592000) return `${Math.floor(seconds / 86400)}d ago`;
-  return `${Math.floor(seconds / 2592000)}mo ago`;
-}
-
-function accountAgeLabel(firstSeen: number): string {
-  if (!firstSeen) return "New";
-  const days = Math.floor((Date.now() / 1000 - firstSeen) / 86400);
-  if (days < 1) return "New today";
-  if (days < 7) return `${days}d old`;
-  if (days < 30) return `${Math.floor(days / 7)}w old`;
-  return `${Math.floor(days / 30)}mo old`;
-}
-
 function ReviewText({ text }: { text: string }) {
-  const parts = text.split(" | ");
-  const body = parts[0];
-  const ordered = parts.find((p) => p.startsWith("Ordered: "))?.slice(9);
-  const tip = parts.find((p) => p.startsWith("Tip: "))?.slice(5);
+  const { body, ordered, tip } = parseReviewText(text);
 
   return (
     <div className="mb-1">
@@ -84,7 +69,7 @@ function ReviewCard({
         >
           {label} review depth
         </span>
-        {review.lat !== 0 && review.lng !== 0 && (
+        {isGpsVerified(review.lat, review.lng) && (
           <span className="text-[10px] font-semibold px-1.5 py-px rounded bg-emerald-900/40 text-emerald-400">
             GPS Verified
           </span>
