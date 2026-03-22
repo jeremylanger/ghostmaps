@@ -2,7 +2,7 @@
 
 **Private AI-powered maps with trustworthy on-chain reviews.**
 
-Google Maps tracks your location every 2 minutes and has paid $7.3B+ in privacy fines. Ghost Maps is the alternative — AI-powered search, on-chain reviews that can't be deleted or manipulated, and real navigation, without anyone knowing where you go.
+Google Maps tracks your location constantly and has paid $7.1B+ in privacy fines. Ghost Maps is the alternative — AI-powered search, on-chain reviews that can't be deleted or manipulated, and real navigation, without anyone knowing where you go.
 
 **Live at [ghostmaps.app](https://ghostmaps.app)**
 
@@ -15,6 +15,13 @@ The map defaults to Loveland, CO. Search for these places to see on-chain review
 - **"Verboten Brewing"** — search "brewing in Loveland"
 
 Also try location-aware searches like "coffee in Denver" or "pizza in Los Angeles".
+
+<p align="center">
+  <img src="client/public/screenshots/2-search.png" width="200" />
+  <img src="client/public/screenshots/4-on-chain-reviews.png" width="200" />
+  <img src="client/public/screenshots/5-navigation.png" width="200" />
+  <img src="client/public/screenshots/8-guardian-results.png" width="200" />
+</p>
 
 ---
 
@@ -120,7 +127,7 @@ Reviews are Ethereum Attestation Service attestations — immutable, composable,
 **Schema UID:** `0x968e91f0274b78a31037839b55e59b942dd1521daebf9190268137e450b7d69f`
 
 **Why on-chain reviews matter:**
-- Businesses can't pay to remove negative reviews (unlike Yelp — 700+ lawsuits alleging pay-to-play)
+- Businesses can't pay to remove negative reviews (unlike Yelp — [2,000+ FTC complaints alleging extortion](https://www.cbsnews.com/news/yelp-continues-to-battle-extortion-claims-by-businesses/))
 - Platforms can't filter reviews to favor advertisers
 - Reviews are composable — any app can read and build on them
 - Quality scoring by Venice AI creates a trust signal without centralized moderation
