@@ -8,11 +8,13 @@ Google Maps tracks your location every 2 minutes and has paid $7.3B+ in privacy 
 
 ### Try It
 
-Search for these places to see on-chain reviews with AI quality scoring, GPS verification, and community summaries:
+The map defaults to Loveland, CO. Search for these places to see on-chain reviews with AI quality scoring, GPS verification, and community summaries:
 
-- **"Avery's Modern Teahouse"** — tea house in Loveland, CO
-- **"Slice House"** — pizza in Loveland, CO
-- **"Verboten Brewing"** — brewery in Loveland, CO
+- **"Avery's Modern Teahouse"** — search "tea in Loveland"
+- **"Slice House"** — search "pizza in Loveland"
+- **"Verboten Brewing"** — search "brewing in Loveland"
+
+Also try location-aware searches like "coffee in Denver" or "pizza in Los Angeles".
 
 ---
 

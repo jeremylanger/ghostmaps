@@ -214,6 +214,18 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 - Streamed via SSE
 - Smart search bar UX (not chat interface)
 
+### 11. ERC-8004 — RESOLVED
+- **Decided:** Dropped. ERC-8004 is designed for AI agent identity, not user identity. Claiming it without genuine use was misleading.
+
+### 12. EAS Network — RESOLVED
+- **Decided:** Stay on Base Sepolia for hackathon. No mainnet switch needed — Sepolia is sufficient for demo, zero risk.
+
+### 13. CDP Paymaster Allowlist — RESOLVED
+- **Decided:** Not needed on Sepolia. Testnet paymaster has no domain restrictions.
+
+### 14. Photo Storage — RESOLVED
+- **Decided:** Persistent volume on Railway ($0.15/mo). Photos survive deploys. Migrate to IPFS/S3 post-hackathon.
+
 ### 10. Google Places Enrichment — RESOLVED
 **What we send:** Business name + address + coordinates. That's it.
 **What we DON'T send:** User identity, user location, search queries, browsing behavior, session data — nothing that identifies or tracks our users.
@@ -268,7 +280,7 @@ See detailed day-by-day build plan. Summary:
 - Day 9.5: Navigation fixes round 2 (instruction consolidation, step advancement, live ETA, position smoothing, camera offset, rerouting sensitivity) ✅
 - Day 9.75: Navigation fixes round 3 (step progression rewrite with proximity+direction scan, trailing path projection, address search location bias) ✅
 - Day 10: Remove Overture Maps (all search via Google Places), README + API docs, UI polish (action buttons, nav bar, map controls, z-index fixes) ✅
-- Day 11: Deploy + demo + submit (IN PROGRESS)
+- Day 11: Bug fixes (EAS BigNumber parsing, Venice search classification, review GPS coords, search radius, quality scoring), UX polish (welcome dialog, review validation/success/duplicate guard, location-aware search, empty search state, review display improvements), 71 new tests (301 total) (IN PROGRESS)
 
 ---
 

@@ -154,7 +154,12 @@ app.get("/api/ai-search", async (req, res) => {
     let searchLat = userLat;
     let searchLng = userLng;
     if (parsed.location_hint) {
-      const hintPlace = await geocodeAddress(parsed.location_hint, googleApiKey, userLat, userLng);
+      const hintPlace = await geocodeAddress(
+        parsed.location_hint,
+        googleApiKey,
+        userLat,
+        userLng,
+      );
       if (hintPlace) {
         searchLat = hintPlace.latitude;
         searchLng = hintPlace.longitude;
@@ -177,7 +182,12 @@ app.get("/api/ai-search", async (req, res) => {
       );
     } else {
       const searchQuery = parsed.name_query || parsed.address_query || q;
-      results = await searchByName(searchQuery, googleApiKey, searchLat, searchLng);
+      results = await searchByName(
+        searchQuery,
+        googleApiKey,
+        searchLat,
+        searchLng,
+      );
     }
     if (userLat != null && userLng != null && results.length > 0) {
       results = addDistanceToResults(results, userLat, userLng);
@@ -304,7 +314,12 @@ app.get("/api/ai-search/stream", async (req, res) => {
       // Name search via Text Search
       const searchQuery = parsed.name_query || q;
       send("status", { message: `Searching for "${searchQuery}"...` });
-      results = await searchByName(searchQuery, googleApiKey, searchLat, searchLng);
+      results = await searchByName(
+        searchQuery,
+        googleApiKey,
+        searchLat,
+        searchLng,
+      );
     }
 
     // Add distance from user to each result

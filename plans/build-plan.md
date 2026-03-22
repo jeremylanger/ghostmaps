@@ -337,11 +337,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Audit server logs — removed search query logging from index.ts, Venice content logging from venice.ts
 - [x] Clarify MapTiler + Coinbase in README transparency section (why these aren't real concerns)
 - [x] Add "Immutability Tradeoffs" section to README (moderation approach, sybil defense roadmap)
-- [x] Delete `here.unit.test.ts`, fix test count (actual: 166 server + 130 client = 296 total)
-
-**Open Items (high priority, needs further design):**
-- [x] ~~ERC-8004~~ — dropped (designed for AI agent identity, not user identity; claiming it without genuine use was misleading)
-- [ ] Update CONVERSATION_LOG.md with Day 11 session (this session) before publishing submission.
+- [x] Delete `here.unit.test.ts`, fix test count (actual: 166 server + 135 client = 301 total)
 
 ### Review Quality Enforcement + Content Moderation
 
@@ -375,20 +371,49 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** App is polished. Documentation is thorough enough for AI agents to understand the full system.
 
-### Day 11 — March 22
-**Deploy + Demo + Submit**
+### Day 11 — March 21-22 (IN PROGRESS)
+**Bug Fixes + Polish + Deploy + Submit**
 - [x] Deploy to Railway (Express server + Vite static build, single service) — live at https://ghostmaps.app
 - [x] Custom domain (ghostmaps.app) with SSL via Railway + Porkbun DNS
 - [x] Add production server IP to Google Places API key restrictions
 - [x] Restrict CDP Project domain allowlist to production domain only
 - ~~Add production domain to CDP Paymaster allowlist~~ — not needed (staying on Sepolia, testnet paymaster has no domain restrictions)
 - ~~Switch EAS from Base Sepolia to Base mainnet~~ — deferred (Sepolia is sufficient for hackathon demo, zero risk)
+- [x] ~~ERC-8004~~ — dropped (designed for AI agent identity, not user identity)
+- [x] Persistent volume on Railway for photo storage ($0.15/mo)
+- [x] Welcome dialog with logo, privacy note, location permission (replaces tiny location bar)
+- [x] Venice photo verification wired up (was dead code, now calls verifyPhoto during review scoring)
+- [x] GPS Verified badge: checks proximity (0.5mi) to place, not just non-zero lat/lng
+- [x] Review GPS stores photo EXIF coords, not place coords (was a bug)
+- [x] Location-aware search: "coffee in Denver" geocodes the hint and searches there
+- [x] Empty search state: "No places found" message when zero results
+- [x] Review duplicate guard: same wallet can't review same place twice
+- [x] Review validation messages (25 char minimum countdown, missing rating)
+- [x] Review success screen with on-chain proof link
+- [x] Review cache invalidation after submission
+- [x] Ordered/Tip parsed from review text and displayed as separate lines
+- [x] Reviews sorted by quality score (highest first)
+- [x] Review depth badge: "Exceptional review depth" instead of just "Exceptional"
+- [x] Photo max height increased to 200px in reviews
+- [x] Wallet address removed from review cards
+- [x] Briefing doesn't refetch on tab focus
+- [x] NaN distance hidden in search results
+- [x] Default map center changed to Loveland, CO
+- [x] Fix EAS BigNumber parsing: lat/lng were returning NaN (decoded values are {type:"BigNumber",hex:"0x..."} objects)
+- [x] Fix Venice misclassifying place names as addresses (e.g. "avery" → address instead of name)
+- [x] Fix search radius: parsed.radius || 5000 overrode the 16km default, limiting category searches to 5km
+- [x] Fix location_hint from Venice: was parsed but never used
+- [x] Fix review success screen hidden by alreadyReviewed check
+- [x] Fix review quality scoring: verbosity rewarded too much, no photo required for 81+
+- [x] Tests: 71 new tests (was 220, now 301: 166 server + 135 client)
+- [x] New test files: store.test.ts, eas.test.ts, exif.test.ts, review-display.test.ts
+- [x] Extracted review-utils.ts and buildReviewData for testability
+- [x] Vitest configs scoped to prevent cross-project discovery
 - [ ] Seed demo reviews (write a few real reviews so judges see the full experience)
 - [ ] Demo script — rehearse the narrative
 - [ ] Record demo video if required
 - [ ] Write project description / submission
-- [ ] Final bug fixes
-- [ ] Tests: unit, integration, E2E (full regression)
+- [ ] Update CONVERSATION_LOG.md with Day 11 session before publishing submission
 - [ ] Submit
 
 ---

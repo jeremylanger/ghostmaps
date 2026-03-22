@@ -258,7 +258,8 @@ describe("buildReviewData", () => {
     oneThingToKnow: "",
     placeId: "gp-123",
     placeName: "Test Place",
-    photoHash: "0x0000000000000000000000000000000000000000000000000000000000000000",
+    photoHash:
+      "0x0000000000000000000000000000000000000000000000000000000000000000",
     photoGPS: null as { lat: number; lng: number } | null,
     qualityScore: 85,
   };
@@ -297,7 +298,11 @@ describe("buildReviewData", () => {
   });
 
   it("omits empty structured responses", () => {
-    const data = buildReviewData({ ...base, whatOrdered: "", oneThingToKnow: "" });
+    const data = buildReviewData({
+      ...base,
+      whatOrdered: "",
+      oneThingToKnow: "",
+    });
     expect(data.text).toBe("Great place");
   });
 });

@@ -85,7 +85,9 @@ export default function ReviewForm() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoNearPlace, setPhotoNearPlace] = useState<boolean | null>(null);
-  const [photoGPS, setPhotoGPS] = useState<{ lat: number; lng: number } | null>(null);
+  const [photoGPS, setPhotoGPS] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
   const [quality, setQuality] = useState<QualityResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [txHash, setTxHash] = useState("");
