@@ -5,5 +5,4 @@ dist/
 screenshot.js
 test-results/
 uploads/
-conversation-logs/
 agent/guardian-log.json
