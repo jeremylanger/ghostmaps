@@ -6,6 +6,14 @@ Google Maps tracks your location every 2 minutes and has paid $7.3B+ in privacy 
 
 **Live at [ghostmaps.app](https://ghostmaps.app)**
 
+### Try It
+
+Search for these places to see on-chain reviews with AI quality scoring, GPS verification, and community summaries:
+
+- **"Avery's Modern Teahouse"** — tea house in Loveland, CO
+- **"Slice House"** — pizza in Loveland, CO
+- **"Verboten Brewing"** — brewery in Loveland, CO
+
 ---
 
 ## What It Does
