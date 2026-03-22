@@ -24,6 +24,7 @@ import {
   rankResults,
   scoreReviewQuality,
   summarizeReviews,
+  verifyPhoto,
 } from "./venice";
 
 dotenv.config({ path: path.join(__dirname, "..", ".env") });
@@ -376,23 +377,34 @@ app.get("/api/places/:id/briefing", async (req, res) => {
   }
 });
 
-// Review quality scoring
+// Review quality scoring + photo verification
 app.post("/api/reviews/score", async (req, res) => {
   try {
-    const { rating, text, hasPhoto, structuredResponses } = req.body;
+    const { rating, text, hasPhoto, structuredResponses, photoMetadata } =
+      req.body;
 
     if (!rating || !text) {
       res.status(400).json({ error: "Rating and text are required" });
       return;
     }
 
-    const result = await scoreReviewQuality({
+    const scorePromise = scoreReviewQuality({
       rating,
       text,
       hasPhoto,
       structuredResponses,
     });
-    res.json(result);
+
+    const photoPromise = photoMetadata
+      ? verifyPhoto(photoMetadata)
+      : Promise.resolve(null);
+
+    const [result, photoResult] = await Promise.all([
+      scorePromise,
+      photoPromise,
+    ]);
+
+    res.json({ ...result, photoVerification: photoResult });
   } catch (err) {
     console.error("Review scoring error:", err);
     res.status(500).json({ error: "Failed to score review" });

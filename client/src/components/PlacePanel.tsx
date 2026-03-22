@@ -318,7 +318,7 @@ export default function PlacePanel() {
             <HoursList hours={enriched.openingHours} />
           )}
 
-          <ReviewList placeId={place.id} />
+          <ReviewList placeId={place.id} placeLat={place.latitude} placeLng={place.longitude} />
         </div>
       </DrawerContent>
     </Drawer>

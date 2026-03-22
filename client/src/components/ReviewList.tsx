@@ -1,5 +1,6 @@
 import { useReviews } from "../hooks/useReviews";
 import { EASSCAN_URL } from "../lib/eas";
+import { isNearLocation } from "../lib/exif";
 import {
   accountAgeLabel,
   isGpsVerified,
@@ -36,11 +37,21 @@ function ReviewText({ text }: { text: string }) {
 function ReviewCard({
   review,
   identity,
+  placeLat,
+  placeLng,
 }: {
   review: OnChainReview;
   identity?: ReviewIdentity;
+  placeLat: number;
+  placeLng: number;
 }) {
   const label = qualityLabel(review.qualityScore);
+  const nearPlace =
+    isGpsVerified(review.lat, review.lng) &&
+    isNearLocation(
+      { latitude: review.lat, longitude: review.lng },
+      { latitude: placeLat, longitude: placeLng },
+    );
 
   return (
     <div className="bg-surface-raised rounded-lg p-3 border border-edge/50">
@@ -69,7 +80,7 @@ function ReviewCard({
         >
           {label} review depth
         </span>
-        {isGpsVerified(review.lat, review.lng) && (
+        {nearPlace && (
           <span className="text-[10px] font-semibold px-1.5 py-px rounded bg-emerald-900/40 text-emerald-400">
             GPS Verified
           </span>
@@ -99,7 +110,7 @@ function ReviewCard({
   );
 }
 
-export default function ReviewList({ placeId }: { placeId: string }) {
+export default function ReviewList({ placeId, placeLat, placeLng }: { placeId: string; placeLat: number; placeLng: number }) {
   const { data, isLoading, error } = useReviews(placeId);
 
   if (isLoading) {
@@ -179,6 +190,8 @@ export default function ReviewList({ placeId }: { placeId: string }) {
             key={review.uid}
             review={review}
             identity={identities[review.attester]}
+            placeLat={placeLat}
+            placeLng={placeLng}
           />
         ))}
       </div>

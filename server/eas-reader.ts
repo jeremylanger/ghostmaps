@@ -21,11 +21,23 @@ interface DecodedField {
   value: { value: string };
 }
 
-function parseDecodedData(decodedDataJson: string): Record<string, string> {
+function parseDecodedData(
+  decodedDataJson: string,
+): Record<string, string> {
   const fields: DecodedField[] = JSON.parse(decodedDataJson);
   const result: Record<string, string> = {};
   for (const f of fields) {
-    result[f.name] = f.value.value;
+    const val = f.value.value;
+    // BigNumber values from EAS come as { type: "BigNumber", hex: "0x..." }
+    if (val && typeof val === "object" && "hex" in val) {
+      const hex = (val as { hex: string }).hex;
+      // Handle negative hex (e.g., "-0x06421d7b")
+      const negative = hex.startsWith("-");
+      const num = Number.parseInt(negative ? hex.slice(1) : hex, 16);
+      result[f.name] = String(negative ? -num : num);
+    } else {
+      result[f.name] = val as string;
+    }
   }
   return result;
 }

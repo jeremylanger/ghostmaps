@@ -30,11 +30,18 @@ import { QUALITY_STYLES } from "../lib/theme";
 import { useAppStore } from "../store";
 import AuthButton from "./AuthButton";
 
+interface PhotoVerification {
+  legitimate: boolean;
+  confidence: number;
+  reason: string;
+}
+
 interface QualityResult {
   score: number;
   label: string;
   flags: string[];
   reason: string;
+  photoVerification?: PhotoVerification | null;
 }
 
 type ReviewStep = "form" | "scoring" | "submitting" | "success" | "error";
@@ -97,6 +104,15 @@ export default function ReviewForm() {
 
     try {
       setStep("scoring");
+      const photoMeta = photo
+        ? {
+            fileSize: photo.size,
+            hasExifGPS: photoNearPlace !== null,
+            nearPlace: photoNearPlace === true,
+            mimeType: photo.type,
+          }
+        : undefined;
+
       const scoreRes = await fetch("/api/reviews/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,6 +124,7 @@ export default function ReviewForm() {
             whatOrdered: whatOrdered || undefined,
             oneThingToKnow: oneThingToKnow || undefined,
           },
+          photoMetadata: photoMeta,
         }),
       });
       if (!scoreRes.ok) {
@@ -228,10 +245,19 @@ export default function ReviewForm() {
               Your review for <strong>{place.name}</strong> is now on-chain.
             </p>
             {quality && (
-              <div
-                className={`inline-block text-sm font-semibold px-3 py-1 rounded-md mt-2 ${QUALITY_STYLES[quality.label]}`}
-              >
-                Quality: {quality.label} ({quality.score}/100)
+              <div className="flex flex-col items-center gap-1.5 mt-2">
+                <div
+                  className={`inline-block text-sm font-semibold px-3 py-1 rounded-md ${QUALITY_STYLES[quality.label]}`}
+                >
+                  Quality: {quality.label} ({quality.score}/100)
+                </div>
+                {quality.photoVerification && (
+                  <div
+                    className={`inline-block text-sm font-semibold px-3 py-1 rounded-md ${quality.photoVerification.legitimate ? "bg-emerald-900/40 text-emerald-400" : "bg-coral/15 text-coral"}`}
+                  >
+                    Photo: {quality.photoVerification.legitimate ? "Verified" : "Suspicious"}
+                  </div>
+                )}
               </div>
             )}
             <p className="text-sm text-muted mt-2">
@@ -284,10 +310,19 @@ export default function ReviewForm() {
                 : "Submitting your review..."}
             </p>
             {quality && step === "submitting" && (
-              <div
-                className={`inline-block text-sm font-semibold px-3 py-1 rounded-md mt-2 ${QUALITY_STYLES[quality.label]}`}
-              >
-                Quality score: {quality.score}/100 ({quality.label})
+              <div className="flex flex-col items-center gap-1.5 mt-2">
+                <div
+                  className={`inline-block text-sm font-semibold px-3 py-1 rounded-md ${QUALITY_STYLES[quality.label]}`}
+                >
+                  Quality score: {quality.score}/100 ({quality.label})
+                </div>
+                {quality.photoVerification && (
+                  <div
+                    className={`inline-block text-sm font-semibold px-3 py-1 rounded-md ${quality.photoVerification.legitimate ? "bg-emerald-900/40 text-emerald-400" : "bg-coral/15 text-coral"}`}
+                  >
+                    Photo: {quality.photoVerification.legitimate ? "Verified" : "Suspicious"}
+                  </div>
+                )}
               </div>
             )}
           </div>

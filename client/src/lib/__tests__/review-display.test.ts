@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { isNearLocation } from "../exif";
 import {
   accountAgeLabel,
   isGpsVerified,
@@ -189,5 +190,59 @@ describe("accountAgeLabel", () => {
 
   it("returns months old for >= 30 days", () => {
     expect(accountAgeLabel(1_000_000_000 - 60 * 86400)).toBe("2mo old");
+  });
+});
+
+/* ---------- GPS Verified proximity check (isGpsVerified + isNearLocation) ---------- */
+
+describe("GPS Verified badge logic", () => {
+  // Avery's Modern Teahouse: 40.4127399, -104.9962192
+  const placeLat = 40.4127399;
+  const placeLng = -104.9962192;
+
+  it("shows badge when photo GPS matches place exactly", () => {
+    const reviewLat = 40.41274;
+    const reviewLng = -104.996219;
+    expect(isGpsVerified(reviewLat, reviewLng)).toBe(true);
+    expect(
+      isNearLocation(
+        { latitude: reviewLat, longitude: reviewLng },
+        { latitude: placeLat, longitude: placeLng },
+      ),
+    ).toBe(true);
+  });
+
+  it("shows badge when photo GPS is within 0.5mi of place", () => {
+    // ~400m north of the place
+    const reviewLat = 40.4163;
+    const reviewLng = -104.9962;
+    expect(isGpsVerified(reviewLat, reviewLng)).toBe(true);
+    expect(
+      isNearLocation(
+        { latitude: reviewLat, longitude: reviewLng },
+        { latitude: placeLat, longitude: placeLng },
+      ),
+    ).toBe(true);
+  });
+
+  it("does not show badge when photo GPS is far from place", () => {
+    // Denver, ~60mi away
+    const reviewLat = 39.7392;
+    const reviewLng = -104.9903;
+    expect(isGpsVerified(reviewLat, reviewLng)).toBe(true);
+    expect(
+      isNearLocation(
+        { latitude: reviewLat, longitude: reviewLng },
+        { latitude: placeLat, longitude: placeLng },
+      ),
+    ).toBe(false);
+  });
+
+  it("does not show badge when review has no GPS (lat=0, lng=0)", () => {
+    expect(isGpsVerified(0, 0)).toBe(false);
+  });
+
+  it("does not show badge when only lat is zero", () => {
+    expect(isGpsVerified(0, -104.996)).toBe(false);
   });
 });
