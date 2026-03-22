@@ -18,9 +18,9 @@ This solves the fundamental tension in review incentives: every previous token-i
 
 The app has 6 deep Venice AI integration points: (1) natural language search parsing and ranking, (2) place intelligence briefings, (3) review quality scoring, (4) review summarization, (5) photo verification for proof-of-visit, and (6) comparative place recommendations. Users sign up with email via Coinbase CDP embedded wallets — an invisible non-custodial wallet is created on Base with gas sponsored via CDP Paymaster. Users never see crypto.
 
-The full stack: React + MapLibre GL JS frontend with MapTiler tiles, Express backend, Venice API for all AI, Google Places for POI enrichment (server-side only, no user data sent), TomTom Routing API for navigation, EAS on Base for on-chain reviews, CDP for auth + wallets, and Claude for the autonomous Guardian agent.
+The full stack: React + MapLibre GL JS frontend with MapTiler tiles, Express backend, Venice API for all AI (including the Guardian agent via MiniMax M2.7), Google Places for POI enrichment (server-side only, no user data sent), TomTom Routing API for navigation, EAS on Base for on-chain reviews, and CDP for auth + wallets.
 
-368 tests (170 server + 141 client + 57 agent). Live at ghostmaps.app.
+375+ tests (170 server + 141 client + 64 agent). Live at ghostmaps.app.
 
 **Try it:** The map defaults to Loveland, CO. To see on-chain reviews with AI quality scoring, GPS verification, and community summaries, search for:
 - **"Avery's Modern Teahouse Loveland"**
@@ -53,7 +53,7 @@ Contents of `CONVERSATION_LOG.md` (submitted in full)
 | Agent Harness | claude-code |
 | Model | claude-opus-4-6 |
 | Skills | frontend-design, simplify, spec, eth-standards, eth-security |
-| Tools | Venice AI API, Google Places API, TomTom Routing API, EAS SDK (ethers.js), Coinbase CDP SDK, Anthropic SDK, ERC-8004 Identity Registry, MapLibre GL JS, MapTiler, Vitest, Playwright, Railway, Vite, Zustand, TanStack Query |
+| Tools | Venice AI API (search + Guardian agent), Google Places API, TomTom Routing API, EAS SDK (ethers.js), Coinbase CDP SDK, ERC-8004 Identity Registry, GHOST ERC-20, MapLibre GL JS, MapTiler, Vitest, Playwright, Railway, Vite, Zustand, TanStack Query |
 | Intention | continuing |
 
 ### Helpful Resources
@@ -92,7 +92,7 @@ TODO
 TODO
 
 ### Intention Notes
-Ghost Maps is a real product we intend to ship. Post-hackathon roadmap includes: transit directions via GTFS feeds, offline map caching, self-hosted OSM data to replace Google Places dependency, Base mainnet migration for reviews, and React Native mobile app.
+Ghost Maps is a real product we intend to ship. Post-hackathon roadmap includes: pluralistic Guardian auditing (multiple independent agents publishing competing verification attestations), GHOST token on Base mainnet with DEX liquidity, transit directions via GTFS feeds, offline map caching, self-hosted OSM data to replace Google Places dependency, Base mainnet migration for reviews, and React Native mobile app.
 
 ---
 
