@@ -5,6 +5,7 @@ import path from "path";
 import {
   fetchAccountAge,
   fetchReviewsForPlace,
+  fetchVerificationsForReviews,
   type OnChainReview,
 } from "./eas-reader";
 import {
@@ -498,14 +499,16 @@ app.get("/api/reviews/:placeId", async (req, res) => {
 
     const reviews = await fetchReviewsForPlace(placeId);
 
-    // Fetch identities + summary in parallel (not sequentially)
+    // Fetch identities + summary + verifications in parallel
     const attesters = [...new Set(reviews.map((r) => r.attester))];
     const identities: Record<
       string,
       { firstSeen: number; totalReviews: number }
     > = {};
 
-    const [, summary] = await Promise.all([
+    const reviewUIDs = reviews.map((r) => r.uid);
+
+    const [, summary, verificationsMap] = await Promise.all([
       // Identity lookups (parallelized)
       Promise.all(
         attesters.map(async (addr) => {
@@ -536,9 +539,20 @@ app.get("/api/reviews/:placeId", async (req, res) => {
             }
           })()
         : Promise.resolve(""),
+      // Guardian verifications
+      fetchVerificationsForReviews(reviewUIDs),
     ]);
 
-    const data = { reviews, identities, summary };
+    // Convert Map to plain object for JSON serialization
+    const verifications: Record<
+      string,
+      { verdict: string; confidence: number; reasoningSummary: string }
+    > = {};
+    for (const [uid, v] of verificationsMap) {
+      verifications[uid] = v;
+    }
+
+    const data = { reviews, identities, summary, verifications };
 
     // Cache the result
     reviewCache.set(placeId, { data, timestamp: Date.now() });

@@ -54,10 +54,17 @@ export interface ReviewIdentity {
   totalReviews: number;
 }
 
+export interface ReviewVerification {
+  verdict: string;
+  confidence: number;
+  reasoningSummary: string;
+}
+
 export interface ReviewsResponse {
   reviews: OnChainReview[];
   identities: Record<string, ReviewIdentity>;
   summary: string;
+  verifications?: Record<string, ReviewVerification>;
 }
 
 export interface RouteSummary {

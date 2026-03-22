@@ -1,0 +1,26 @@
+{
+  "name": "ghost-guardian",
+  "version": "1.0.0",
+  "description": "Review Guardian agent for Ghost Maps — autonomous on-chain review verification",
+  "type": "commonjs",
+  "scripts": {
+    "start": "tsx guardian.ts",
+    "deploy-schema": "tsx deploy-schema.ts",
+    "deploy-token": "tsx deploy-token.ts",
+    "generate-wallet": "tsx generate-wallet.ts",
+    "test": "vitest run",
+    "test:unit": "vitest run unit.test",
+    "test:integration": "vitest run integration.test"
+  },
+  "dependencies": {
+    "@ethereum-attestation-service/eas-sdk": "^2.9.0",
+    "dotenv": "^17.3.1",
+    "ethers": "^6.16.0",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  }
+}

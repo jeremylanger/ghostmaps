@@ -295,8 +295,8 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Fix address search: `geocodeAddress()` now accepts userLat/userLng and sends 50km locationBias to Google Places; Venice prompt updated with partial address examples ("123", "123 maple")
 - [x] Tests: 59 client tests passing (10 new: skip-ahead, GPS accuracy gating, far-from-route, snap-to-nearest, short steps)
 
-### Day 10 — March 20-21 ✅
-**Documentation + Polish + Architecture Simplification**
+### Day 10 — March 20-22 (IN PROGRESS)
+**Documentation + Polish + Deploy + Submit**
 - [x] Comprehensive README (architecture, setup, tech stack, privacy model)
 - [x] API documentation (machine-readable for AI judges)
 - [x] Remove Overture Maps — all search now via Google Places (Nearby Search for categories, Text Search for names)
@@ -369,10 +369,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Fail closed: Venice scoring errors throw instead of returning default score
 - [x] Tests: 14 unit tests for flag enforcement logic
 
-**End of day:** App is polished. Documentation is thorough enough for AI agents to understand the full system.
-
-### Day 11 — March 21-22 (IN PROGRESS)
-**Bug Fixes + Polish + Deploy + Submit**
+**Bug Fixes + Deploy + Submit**
 - [x] Deploy to Railway (Express server + Vite static build, single service) — live at https://ghostmaps.app
 - [x] Custom domain (ghostmaps.app) with SSL via Railway + Porkbun DNS
 - [x] Add production server IP to Google Places API key restrictions
@@ -409,12 +406,111 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] New test files: store.test.ts, eas.test.ts, exif.test.ts, review-display.test.ts
 - [x] Extracted review-utils.ts and buildReviewData for testability
 - [x] Vitest configs scoped to prevent cross-project discovery
-- [ ] Seed demo reviews (write a few real reviews so judges see the full experience)
+- [x] Seed demo reviews (Avery's Modern Teahouse, Slice House, Verboten Brewing)
+### Review Guardian Agent
+
+#### Spec
+
+**Happy path**
+- Happy: Agent runs autonomously on a schedule, checks for new review attestations on Base, and processes them without human intervention
+- Happy: Agent discovers a batch of new reviews, reasons about them individually and as a group, and publishes verification attestations for legitimate reviews
+- Happy: Agent detects a coordinated sybil pattern (multiple new wallets, same place, short timeframe) and publishes a SybilAlert attestation referencing the suspicious review UIDs
+- Happy: Agent investigates a suspicious reviewer by pulling their full review history across all places, then makes a judgment based on the full picture
+- Happy: Agent's investigation path varies based on what it finds — a clean batch gets quick verification, a suspicious batch triggers multi-step investigation
+- Happy: Agent finds fake/sybil reviews and publishes a ReviewVerification counter-attestation on-chain referencing the original review's UID, with verdict, confidence score, and reasoning summary
+- Happy: Ghost Maps frontend reads verification attestations and de-emphasizes or hides reviews flagged with high confidence
+- Happy: Flagging is fully transparent — the review, the flag, and the reasoning are all publicly on-chain
+
+**Failure states**
+- Failure: EAS GraphQL is unreachable → agent logs the error and retries on next scheduled run, does not crash
+- Failure: Agent fails to publish an attestation (gas error, nonce issue) → logs the failure, queues the review for re-evaluation on next run
+- Failure: Agent encounters a review with malformed or undecodable attestation data → skips it, logs the UID, continues processing remaining reviews
+- Failure: Agent's wallet has insufficient gas to publish attestations → logs a warning, pauses attestation publishing but continues analysis
+- Failure: Agent loses context between runs (restart, crash) → rebuilds state from on-chain data (last processed attestation timestamp), no dependency on local state for correctness
+
+**Edge cases**
+- Edge: First run with no prior verification attestations — agent processes all existing reviews as a backfill, not just new ones
+- Edge: Agent encounters its own verification attestations when scanning — skips them, doesn't re-evaluate its own flags
+- Edge: A legitimate reviewer happens to create a new wallet and review one place — agent should consider this normal behavior in isolation, only flag when combined with other signals
+- Edge: Same review gets processed twice (overlapping runs, restart) — agent checks for existing verification attestation before publishing a duplicate
+- Edge: A place receives 50+ reviews at once (viral moment, not sybil) — agent should distinguish organic spikes from coordinated attacks based on wallet diversity, review content variance, and timing distribution
+
+**Security & privacy**
+- Security: Agent's wallet private key is stored as an environment variable, never logged or exposed in reasoning summaries
+- Security: Review content is only held in memory during analysis — never written to disk or sent to external services
+- Security: Agent's reasoning chain (which may reference review content) is not published on-chain — only the verdict, confidence, and a brief summary
+- Privacy: Agent does not correlate wallet addresses with real-world identities — analysis is purely behavioral (timing, frequency, rating patterns)
+- Privacy: Agent does not log raw review text in its output — only attestation UIDs and verdicts
+
+**On-chain integrity**
+- On-chain: New ReviewVerification EAS schema deployed on Base Sepolia with fields for verdict, confidence, and reasoning summary
+- On-chain: Verification attestations use EAS refUID to reference the original review attestation — native EAS relationship, not a custom field
+- On-chain: Agent publishes attestations from a dedicated wallet, distinct from any user wallet — its identity is verifiable on-chain
+- On-chain: Verification attestations are themselves immutable — the agent can publish updated assessments (new attestation, same refUID) but cannot delete prior ones
+- On-chain: Agent operates on Base Sepolia (same chain as reviews) — no cross-chain complexity
+
+**Integration boundaries**
+- Integration: Agent uses EAS GraphQL API to query new attestations filtered by schema UID and timestamp — same endpoint the app already uses in eas-reader.ts
+- Integration: Agent uses ethers.js + EAS SDK to publish attestations — same stack the app uses for review submission
+- Integration: Agent is a standalone Node.js process, separate from the Express server — shares no runtime state with the app
+- Integration: Agent has its own funded wallet on Base Sepolia for gas — separate from user wallets and CDP Paymaster
+
+**UX states**
+- UX: Review card shows a "Verified" badge when the Guardian has published a legitimate verification attestation
+- UX: Review card shows a "Flagged" indicator when the Guardian has published a sybil/spam verdict with high confidence — review content still visible but visually de-emphasized
+- UX: Reviews with no verification attestation yet show no badge — absence of verification is neutral, not suspicious
+- UX: Tapping a flag/verification badge shows the Guardian's verdict, confidence score, and reasoning summary
+- UX: A test harness script generates review attestations for each scenario (legitimate, sybil clusters, spam, GPS mismatch, organic spikes) so the agent's behavior is demonstrable
+
+#### Implementation
+- [x] Design and deploy ReviewVerification EAS schema on Base Sepolia (verdict, confidence, reasoningSummary + refUID)
+- [x] Generate dedicated agent wallet, fund from Sepolia faucet
+- [x] Build agent core: LLM loop with tools (queryNewReviews, queryWalletHistory, queryPlaceReviews, publishVerification, publishSybilAlert)
+- [x] Build EAS tools: query attestations by schema/timestamp, query by attester wallet, publish verification attestation with refUID
+- [x] Build agent guidelines prompt (review integrity mandate, pattern recognition, escalation thresholds)
+- [x] Build test harness: script to generate fake review attestations for each scenario (legitimate, sybil cluster, spam, organic spike)
+- [ ] Run agent against test scenarios, verify correct verdicts published on-chain
+- [x] Frontend: fetch verification attestations (by refUID) alongside reviews
+- [x] Frontend: display Verified/Flagged badges on review cards
+- [x] Frontend: flag detail view (verdict, confidence, reasoning summary)
+- [x] Register Guardian identity via ERC-8004 on Base Sepolia (agentId + agentURI metadata)
+- [ ] Deploy agent as standalone process on Railway
+- [x] Tests: 57 agent + 4 server + 6 client = 67 new tests (368 total)
+
+### GHOST Token + Review Rewards
+
+#### Spec
+- Happy: Reviewer submits a review → Guardian verifies it as legitimate → reward contract automatically releases GHOST tokens to reviewer's wallet
+- Happy: Reviewer submits a fake review → Guardian flags it → no tokens released
+- Happy: Token balance visible on review cards (earned from verified reviews)
+- Failure: Guardian hasn't verified a review yet → reward is pending, not denied
+- Failure: Reward contract has insufficient token balance → logs warning, reviewer can claim later
+- Edge: Same review can't be rewarded twice (contract tracks claimed review UIDs)
+- On-chain: ERC-20 GHOST token deployed on Base Sepolia (OpenZeppelin standard)
+- On-chain: RewardDistributor contract reads Guardian verification attestations, releases tokens for legitimate verdicts above confidence threshold
+- On-chain: Reward amount is fixed per verified review (simple for hackathon, configurable later)
+- Security: Only the RewardDistributor can mint/transfer reward tokens — not the Guardian, not users
+
+#### Implementation
+- [x] Deploy GHOST ERC-20 token on Base Sepolia (OpenZeppelin, fixed initial supply)
+- [x] Deploy RewardDistributor contract (reads EAS verification attestations, releases tokens)
+- [x] Wire reward claiming into the app — deferred to doc-only (RewardDistributor is built, frontend display deferred)
+- [x] Tests: reward distribution, double-claim prevention, insufficient balance handling
+
+### Submission + Polish
+
+- [x] Update README and submission draft with Guardian + token documentation
+- [x] Update submission draft tracks (add Base + Protocol Labs)
+- [ ] Take app screenshots, host publicly, link in README
+- [ ] Create cover image, host publicly
+- [ ] Create Moltbook post
+- [ ] Self-custody NFT transfer (required before publishing)
 - [ ] Demo script — rehearse the narrative
 - [ ] Record demo video if required
-- [ ] Write project description / submission
-- [ ] Update CONVERSATION_LOG.md with Day 11 session before publishing submission
+- [ ] Update CONVERSATION_LOG.md before publishing submission
 - [ ] Submit
+
+**End of day:** App is polished, documented, deployed, and submitted. Done.
 
 ---
 

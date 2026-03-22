@@ -88,6 +88,9 @@ Browser (React + MapLibre GL JS)
 | POI Data | Google Places API (search + enrichment, server-side, no user data sent) |
 | Navigation | TomTom Routing API (traffic, speed limits, lane guidance) |
 | On-Chain | EAS on Base via ethers.js + EAS SDK |
+| Guardian Agent | MiniMax M2.7 via Venice API (autonomous review verification) |
+| Agent Identity | ERC-8004 Identity Registry on Base |
+| Token | GHOST ERC-20 on Base Sepolia (review rewards) |
 | Auth | Coinbase CDP Embedded Wallets (email OTP, invisible wallet) |
 | Streaming | Server-Sent Events (SSE) |
 | Testing | Vitest (unit + integration) + Playwright (E2E) |
@@ -139,9 +142,68 @@ Immutable reviews solve real problems (Yelp pay-to-play, platform censorship), b
 
 **What about harassment or defamatory content?** Reviews with threats, hate speech, adult content, or doxxing are blocked *before* they reach the chain — they never become attestations. For edge cases that pass automated checks, the client can filter reviews below a quality threshold. Planned for v2: community counter-attestations (on-chain flags that reference a review's UID, enabling decentralized moderation).
 
-**What about sybil attacks (mass fake accounts)?** This is the hardest problem. CDP wallets are free to create. Planned defenses (v2): stake-and-challenge (reviewers put skin in the game), soulbound reputation (non-transferable credibility), and quadratic decay (diminishing impact from a single identity). See `plans/reviews.md` for the full 6-layer defense design.
+**What about sybil attacks (mass fake accounts)?** The **Review Guardian agent** solves this. See below.
 
 **Our position:** Centralized moderation is a solved problem — and it's been solved badly (Yelp extortion, Google's 240M removed fakes in 2024). We'd rather build robust decentralized quality signals than recreate the system we're replacing.
+
+---
+
+## Review Guardian Agent
+
+An autonomous AI agent that monitors the Base blockchain for new Ghost Maps review attestations, investigates patterns, and publishes transparent verification verdicts on-chain.
+
+**The agent IS the LLM.** It reasons natively about review patterns — no hardcoded rules. Given guidelines (not checklists), it decides what to investigate, how deep to go, and what action to take. Every situation is different, and the agent's response is different.
+
+### How It Works
+
+1. Agent polls EAS every 4 hours for new review attestations (or runs on-demand with `--once`)
+2. Agent reasons about patterns: wallet ages, timing, rating distributions, content similarity
+3. Agent uses tools to investigate: query wallet history, query place reviews, cross-reference
+4. Agent publishes verification attestations on-chain with verdict, confidence, and reasoning
+
+**Verdicts:** `legitimate` | `suspicious` | `sybil` | `spam`
+
+**Verification Schema:** `string verdict, uint8 confidence, string reasoningSummary`
+
+**Schema UID:** [`0x351ed5d597414cc66a0835da8614ac4d37af6213dc4deeee898912695a9bd635`](https://base-sepolia.easscan.org/schema/view/0x351ed5d597414cc66a0835da8614ac4d37af6213dc4deeee898912695a9bd635)
+
+Each verification attestation uses EAS `refUID` to reference the original review — native EAS composability. Anyone can read the verdicts, audit the reasoning, or deploy their own auditor agent against the same schema.
+
+### On-Chain Identity (ERC-8004)
+
+The Guardian is registered on the [ERC-8004 Identity Registry](https://www.8004.org) (`0x8004A169...`) on Base Sepolia. This gives it a verifiable on-chain identity (agentId NFT) and discoverable metadata about its capabilities and verification schema.
+
+**Guardian wallet:** [`0x2efeEd3097978664731ffe6EC0FaFa5CFD58b08D`](https://sepolia.basescan.org/address/0x2efeEd3097978664731ffe6EC0FaFa5CFD58b08D)
+
+### GHOST Token Rewards
+
+**GHOST token:** [`0x98d2ccd1d02F396A4a6FDE996381297c655BB198`](https://sepolia.basescan.org/address/0x98d2ccd1d02F396A4a6FDE996381297c655BB198) (ERC-20 on Base Sepolia)
+
+Verified reviews earn GHOST tokens. The reward flow is fully on-chain and trustless:
+
+1. Reviewer submits review → on-chain attestation
+2. Guardian verifies review → on-chain verification attestation
+3. If verdict is `legitimate` with confidence ≥ 60% → GHOST tokens released to reviewer
+
+**Why this matters:** Every previous token-incentivized review system failed because paying for reviews creates an incentive to fake them, and no one solved the filtering problem. The Guardian agent solves this — token rewards become viable because fraud is caught before rewards are distributed.
+
+### Architecture
+
+```
+agent/
+├── guardian.ts              # Agent core — LLM loop with tool use
+├── guidelines.ts            # Agent mandate and investigation principles
+├── tools.ts                 # EAS query + publish tools for the LLM
+├── schema.ts                # ReviewVerification schema definition
+├── test-harness.ts          # Generate test scenarios (sybil, spam, organic, legitimate)
+├── register-8004.ts         # ERC-8004 identity registration
+├── deploy-schema.ts         # Deploy verification schema on Base Sepolia
+├── deploy-token.ts          # Deploy GHOST ERC-20 token
+├── generate-wallet.ts       # Generate dedicated agent wallet
+└── contracts/
+    ├── GhostToken.ts        # GHOST ERC-20 (pre-compiled bytecode)
+    └── RewardDistributor.ts # Token reward distribution logic
+```
 
 ---
 
@@ -228,6 +290,11 @@ VITE_MAPTILER_KEY=        # MapTiler Streets v2 tiles
 GOOGLE_PLACES_API_KEY=    # Place enrichment (hours, ratings, photos)
 TOMTOM_API_KEY=           # Route calculation
 VITE_CDP_PROJECT_ID=      # Coinbase CDP embedded wallets
+
+# Guardian agent (in agent/.env)
+GUARDIAN_PRIVATE_KEY=     # Guardian wallet private key
+VENICE_API_KEY=           # Venice API key (for Guardian LLM)
+GHOST_TOKEN_ADDRESS=      # Deployed GHOST ERC-20 address
 
 # Optional
 PORT=3001                 # Server port (default: 3001)

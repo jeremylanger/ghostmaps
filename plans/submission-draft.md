@@ -10,20 +10,23 @@
 Ghost Maps
 
 ### Description
-Ghost Maps is a private, AI-powered maps app with on-chain reviews and real navigation. Venice AI handles all search queries with zero data retention — no search history, no location tracking, no profiling. Reviews are EAS attestations on Base that no business can pay to remove and no platform can filter. Navigation uses TomTom for traffic-aware turn-by-turn directions without storing routes.
+Ghost Maps is a private, AI-powered maps app with on-chain reviews, real navigation, and an autonomous Review Guardian agent. Venice AI handles all search queries with zero data retention — no search history, no location tracking, no profiling. Reviews are EAS attestations on Base that no business can pay to remove and no platform can filter. Navigation uses TomTom for traffic-aware turn-by-turn directions without storing routes.
+
+**The Review Guardian** is an autonomous AI agent that monitors the blockchain for new review attestations, reasons about fraud patterns (sybil clusters, spam, coordinated attacks), and publishes transparent verification verdicts as EAS attestations. It's not a rules engine — the agent IS the LLM, reasoning natively about each unique situation with guidelines, not checklists. Its verdicts are public, immutable, and on-chain. Verified reviews earn GHOST tokens (ERC-20 on Base). The Guardian is registered via ERC-8004 with verifiable on-chain identity.
+
+This solves the fundamental tension in review incentives: every previous token-incentivized review system failed because paying for reviews creates an incentive to fake them. The Guardian agent makes token rewards viable by catching fraud before rewards are distributed — private reasoning, public accountability.
 
 The app has 6 deep Venice AI integration points: (1) natural language search parsing and ranking, (2) place intelligence briefings, (3) review quality scoring, (4) review summarization, (5) photo verification for proof-of-visit, and (6) comparative place recommendations. Users sign up with email via Coinbase CDP embedded wallets — an invisible non-custodial wallet is created on Base with gas sponsored via CDP Paymaster. Users never see crypto.
 
-The full stack: React + MapLibre GL JS frontend with MapTiler tiles, Express backend, Venice API for all AI, Google Places for POI enrichment (server-side only, no user data sent), TomTom Routing API for navigation, EAS on Base for on-chain reviews, and CDP for auth + wallets.
+The full stack: React + MapLibre GL JS frontend with MapTiler tiles, Express backend, Venice API for all AI, Google Places for POI enrichment (server-side only, no user data sent), TomTom Routing API for navigation, EAS on Base for on-chain reviews, CDP for auth + wallets, and Claude for the autonomous Guardian agent.
 
-Built from scratch in 10 days. 70 commits. 13 API endpoints. 301 tests (166 server + 135 client). Live at ghostmaps.app.
+368 tests (170 server + 141 client + 57 agent). Live at ghostmaps.app.
 
 **Try it:** The map defaults to Loveland, CO. To see on-chain reviews with AI quality scoring, GPS verification, and community summaries, search for:
 - **"Avery's Modern Teahouse Loveland"**
 - **"Slice House Loveland"**
 - **"Verboten Brewing Loveland"**
 
-Also try location-aware searches like "coffee in Denver" or "pizza in Los Angeles".
 
 ### Problem Statement
 Google Maps tracks your location every 2 minutes, saves every search query, logs every business interaction, and has paid $7.3B+ in privacy fines. Private alternatives exist (Organic Maps, OsmAnd) but have terrible search quality (~70% accuracy via Nominatim) and no reviews. Yelp faces 700+ lawsuits alleging pay-to-play review manipulation. Amazon estimates 16-20% of its 250M+ reviews are fake. Google removed 240M fake reviews in 2024 alone. There is no maps app that combines private AI-powered search, trustworthy on-chain reviews, and real navigation.
@@ -34,10 +37,11 @@ https://github.com/jeremylanger/ghostmaps
 ### Deployed URL
 https://ghostmaps.app
 
-### Tracks (3)
-1. **Venice — Private Agents, Trusted Actions** ($11,500) — `ea3b366947c54689bd82ae80bf9f3310`
-2. **Synthesis Open Track** ($28,134) — `fdb76d08812b43f6a5f454744b66f590`
-3. **Agent Services on Base** ($5,000) — `6f0e3d7dcadf4ef080d3f424963caff5`
+### Tracks (4)
+1. **Synthesis Open Track** ($28,300) — `fdb76d08812b43f6a5f454744b66f590`
+2. **Venice — Private Agents, Trusted Actions** (3,000 VVV) — `ea3b366947c54689bd82ae80bf9f3310`
+3. **Base — Agent Services on Base** ($10,000) — `6f0e3d7dcadf4ef080d3f424963caff5`
+4. **Protocol Labs — Trust Layer** ($8,004) — TBD
 
 ### Conversation Log
 Contents of `CONVERSATION_LOG.md` (submitted in full)
@@ -49,7 +53,7 @@ Contents of `CONVERSATION_LOG.md` (submitted in full)
 | Agent Harness | claude-code |
 | Model | claude-opus-4-6 |
 | Skills | frontend-design, simplify, spec, eth-standards, eth-security |
-| Tools | Venice AI API, Google Places API, TomTom Routing API, EAS SDK (ethers.js), Coinbase CDP SDK, MapLibre GL JS, MapTiler, Vitest, Playwright, Railway, Vite, Zustand, TanStack Query |
+| Tools | Venice AI API, Google Places API, TomTom Routing API, EAS SDK (ethers.js), Coinbase CDP SDK, Anthropic SDK, ERC-8004 Identity Registry, MapLibre GL JS, MapTiler, Vitest, Playwright, Railway, Vite, Zustand, TanStack Query |
 | Intention | continuing |
 
 ### Helpful Resources
@@ -60,6 +64,8 @@ Contents of `CONVERSATION_LOG.md` (submitted in full)
 - https://portal.cdp.coinbase.com/products/embedded-wallets
 - https://maplibre.org/maplibre-gl-js/docs/
 - https://docs.maptiler.com/cloud/api/maps/
+- https://www.8004.org
+- https://docs.anthropic.com/en/docs/build-with-claude/tool-use
 
 ### Helpful Skills
 <!-- skill name + reason why it was impactful -->
@@ -91,7 +97,7 @@ Ghost Maps is a real product we intend to ship. Post-hackathon roadmap includes:
 ---
 
 ## Pre-Submit Checklist
-- [ ] Fill in Helpful Skills (reasons for each)
+- [x] Fill in Helpful Skills (reasons for each)
 - [ ] Record and upload demo video → fill in Video URL
 - [ ] Take app screenshot(s), host publicly → fill in Pictures
 - [ ] Create cover image, host publicly → fill in Cover Image URL

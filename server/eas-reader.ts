@@ -101,6 +101,70 @@ export async function fetchReviewsForPlace(
   return reviews;
 }
 
+export interface ReviewVerification {
+  verdict: string;
+  confidence: number;
+  reasoningSummary: string;
+}
+
+const VERIFICATION_SCHEMA_UID =
+  "0x351ed5d597414cc66a0835da8614ac4d37af6213dc4deeee898912695a9bd635";
+
+/** Fetch Guardian verification attestations for a batch of review UIDs */
+export async function fetchVerificationsForReviews(
+  reviewUIDs: string[],
+): Promise<Map<string, ReviewVerification>> {
+  const result = new Map<string, ReviewVerification>();
+  if (reviewUIDs.length === 0) return result;
+
+  const res = await fetch(EAS_GRAPHQL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      query: `query($schemaId: String!, $refUIDs: [String!]!) {
+        attestations(
+          where: {
+            schemaId: { equals: $schemaId }
+            refUID: { in: $refUIDs }
+          }
+          orderBy: [{ time: desc }]
+          take: 100
+        ) {
+          refUID
+          decodedDataJson
+        }
+      }`,
+      variables: { schemaId: VERIFICATION_SCHEMA_UID, refUIDs: reviewUIDs },
+    }),
+  });
+
+  if (!res.ok) {
+    console.error(`EAS verification fetch error: ${res.status}`);
+    return result;
+  }
+
+  const data = await res.json();
+  const attestations = data.data?.attestations || [];
+
+  for (const a of attestations) {
+    try {
+      const fields = parseDecodedData(a.decodedDataJson);
+      // Only keep the first (most recent) verification per review
+      if (!result.has(a.refUID)) {
+        result.set(a.refUID, {
+          verdict: fields.verdict,
+          confidence: Number(fields.confidence),
+          reasoningSummary: fields.reasoningSummary,
+        });
+      }
+    } catch (err) {
+      console.error("EAS: skipping malformed verification attestation:", err);
+    }
+  }
+
+  return result;
+}
+
 /** Fetch the first attestation timestamp for an address (account age proxy) */
 export async function fetchAccountAge(
   attester: string,

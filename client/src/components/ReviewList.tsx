@@ -8,7 +8,12 @@ import {
   timeAgo,
 } from "../lib/review-utils";
 import { QUALITY_STYLES, qualityLabel } from "../lib/theme";
-import type { OnChainReview, ReviewIdentity } from "../types";
+import type {
+  OnChainReview,
+  ReviewIdentity,
+  ReviewVerification,
+} from "../types";
+import VerificationBadge from "./VerificationBadge";
 
 function ReviewText({ text }: { text: string }) {
   const { body, ordered, tip } = parseReviewText(text);
@@ -37,11 +42,13 @@ function ReviewText({ text }: { text: string }) {
 function ReviewCard({
   review,
   identity,
+  verification,
   placeLat,
   placeLng,
 }: {
   review: OnChainReview;
   identity?: ReviewIdentity;
+  verification?: ReviewVerification;
   placeLat: number;
   placeLng: number;
 }) {
@@ -85,6 +92,7 @@ function ReviewCard({
             GPS Verified
           </span>
         )}
+        {verification && <VerificationBadge verification={verification} />}
       </div>
 
       <ReviewText text={review.text} />
@@ -146,7 +154,7 @@ export default function ReviewList({
 
   if (error || !data) return null;
 
-  const { reviews, identities, summary } = data;
+  const { reviews, identities, summary, verifications } = data;
 
   if (reviews.length === 0) {
     return (
@@ -201,6 +209,7 @@ export default function ReviewList({
             key={review.uid}
             review={review}
             identity={identities[review.attester]}
+            verification={verifications?.[review.uid]}
             placeLat={placeLat}
             placeLng={placeLng}
           />

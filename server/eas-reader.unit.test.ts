@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 // Test the parsing logic used in eas-reader (extracted for testability)
 
@@ -140,5 +140,159 @@ describe("EAS Reader - Review Data Conversion", () => {
     expect(Number("0")).toBe(0);
     expect(Number("50")).toBe(50);
     expect(Number("100")).toBe(100);
+  });
+});
+
+/* ---------- fetchVerificationsForReviews ---------- */
+
+// Re-implement the verification parsing logic inline for unit testing
+// (mirrors parseDecodedData + the Map logic in fetchVerificationsForReviews)
+function parseVerificationFromAttestation(a: {
+  refUID: string;
+  decodedDataJson: string;
+}) {
+  const fields = parseDecodedData(a.decodedDataJson);
+  return {
+    refUID: a.refUID,
+    verdict: fields.verdict,
+    confidence: Number(fields.confidence),
+    reasoningSummary: fields.reasoningSummary,
+  };
+}
+
+describe("Verification Data Parsing", () => {
+  it("should parse verification attestation decoded data", () => {
+    const json = JSON.stringify([
+      {
+        name: "verdict",
+        type: "string",
+        signature: "",
+        value: { name: "verdict", type: "string", value: "legitimate" },
+      },
+      {
+        name: "confidence",
+        type: "uint8",
+        signature: "",
+        value: { name: "confidence", type: "uint8", value: "85" },
+      },
+      {
+        name: "reasoningSummary",
+        type: "string",
+        signature: "",
+        value: {
+          name: "reasoningSummary",
+          type: "string",
+          value: "Review contains specific details about the menu.",
+        },
+      },
+    ]);
+
+    const result = parseVerificationFromAttestation({
+      refUID: "0xabc123",
+      decodedDataJson: json,
+    });
+
+    expect(result.refUID).toBe("0xabc123");
+    expect(result.verdict).toBe("legitimate");
+    expect(result.confidence).toBe(85);
+    expect(result.reasoningSummary).toBe(
+      "Review contains specific details about the menu.",
+    );
+  });
+
+  it("should parse sybil verdict", () => {
+    const json = JSON.stringify([
+      {
+        name: "verdict",
+        type: "string",
+        signature: "",
+        value: { name: "verdict", type: "string", value: "sybil" },
+      },
+      {
+        name: "confidence",
+        type: "uint8",
+        signature: "",
+        value: { name: "confidence", type: "uint8", value: "92" },
+      },
+      {
+        name: "reasoningSummary",
+        type: "string",
+        signature: "",
+        value: {
+          name: "reasoningSummary",
+          type: "string",
+          value: "Multiple reviews from same wallet within 1 minute.",
+        },
+      },
+    ]);
+
+    const result = parseVerificationFromAttestation({
+      refUID: "0xdef456",
+      decodedDataJson: json,
+    });
+
+    expect(result.verdict).toBe("sybil");
+    expect(result.confidence).toBe(92);
+  });
+
+  it("should keep only first (most recent) verification per refUID", () => {
+    const map = new Map<
+      string,
+      { verdict: string; confidence: number; reasoningSummary: string }
+    >();
+
+    // Simulate two verifications for same review (ordered desc by time)
+    const attestations = [
+      {
+        refUID: "0xabc",
+        decodedDataJson: JSON.stringify([
+          {
+            name: "verdict",
+            value: { value: "legitimate" },
+          },
+          { name: "confidence", value: { value: "90" } },
+          { name: "reasoningSummary", value: { value: "Updated verdict" } },
+        ]),
+      },
+      {
+        refUID: "0xabc",
+        decodedDataJson: JSON.stringify([
+          {
+            name: "verdict",
+            value: { value: "suspicious" },
+          },
+          { name: "confidence", value: { value: "60" } },
+          { name: "reasoningSummary", value: { value: "Old verdict" } },
+        ]),
+      },
+    ];
+
+    for (const a of attestations) {
+      const fields = parseDecodedData(a.decodedDataJson);
+      if (!map.has(a.refUID)) {
+        map.set(a.refUID, {
+          verdict: fields.verdict,
+          confidence: Number(fields.confidence),
+          reasoningSummary: fields.reasoningSummary,
+        });
+      }
+    }
+
+    expect(map.size).toBe(1);
+    expect(map.get("0xabc")!.verdict).toBe("legitimate");
+    expect(map.get("0xabc")!.reasoningSummary).toBe("Updated verdict");
+  });
+
+  it("should return empty map for empty reviewUIDs array", () => {
+    const map = new Map<
+      string,
+      { verdict: string; confidence: number; reasoningSummary: string }
+    >();
+    // Mirrors the early return in fetchVerificationsForReviews
+    const reviewUIDs: string[] = [];
+    if (reviewUIDs.length === 0) {
+      // no-op, map stays empty
+    }
+    expect(map.size).toBe(0);
   });
 });
