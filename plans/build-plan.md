@@ -21,7 +21,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 | Navigation | TomTom Routing API (traffic ETA, speed limits, lane guidance) |
 | On-chain | EAS on Base (ethers.js + EAS SDK) |
 | Auth + Wallets | Coinbase CDP Embedded Wallets (email OTP, invisible wallet on Base) |
-| Identity | ERC-8004 |
+| Identity | EAS GraphQL (account age, review count) |
 | Streaming | SSE (Server-Sent Events) |
 | Search UX | Smart search bar with streaming results below map |
 
@@ -295,7 +295,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Fix address search: `geocodeAddress()` now accepts userLat/userLng and sends 50km locationBias to Google Places; Venice prompt updated with partial address examples ("123", "123 maple")
 - [x] Tests: 59 client tests passing (10 new: skip-ahead, GPS accuracy gating, far-from-route, snap-to-nearest, short steps)
 
-### Day 10 — March 20-21 (IN PROGRESS)
+### Day 10 — March 20-21 ✅
 **Documentation + Polish + Architecture Simplification**
 - [x] Comprehensive README (architecture, setup, tech stack, privacy model)
 - [x] API documentation (machine-readable for AI judges)
@@ -337,7 +337,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Audit server logs — removed search query logging from index.ts, Venice content logging from venice.ts
 - [x] Clarify MapTiler + Coinbase in README transparency section (why these aren't real concerns)
 - [x] Add "Immutability Tradeoffs" section to README (moderation approach, sybil defense roadmap)
-- [x] Delete `here.unit.test.ts`, fix test count (actual: 155 server + 65 client = 220 total)
+- [x] Delete `here.unit.test.ts`, fix test count (actual: 166 server + 130 client = 296 total)
 
 **Open Items (high priority, needs further design):**
 - [x] ~~ERC-8004~~ — dropped (designed for AI agent identity, not user identity; claiming it without genuine use was misleading)
@@ -371,7 +371,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Update minimum review length from 5 to 25 characters
 - [x] Update error UX: generic blocked message, preserve form text on block
 - [x] Fail closed: Venice scoring errors throw instead of returning default score
-- [x] Tests: 14 unit tests for flag enforcement logic (204 total passing)
+- [x] Tests: 14 unit tests for flag enforcement logic
 
 **End of day:** App is polished. Documentation is thorough enough for AI agents to understand the full system.
 
@@ -480,6 +480,6 @@ Venice is central to the app, not a utility:
 3. Tap recommended place → place details with hours, cuisine, AI summary, on-chain reviews, user photos
 4. Sign up with email → invisible wallet created on Base
 5. Write a review → take photo, rate, describe → Venice scores quality → submit on-chain (free, gas sponsored)
-6. See review appear with quality badge + ERC-8004 identity
+6. See review appear with quality badge + reviewer identity (account age, review count)
 7. Tap "Get directions" → route with traffic-aware ETA, turn-by-turn, speed limits, lane guidance
 8. Show Privacy Comparison page → "Here's what Google collects. Here's what we don't."

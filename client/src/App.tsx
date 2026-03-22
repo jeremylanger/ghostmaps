@@ -31,14 +31,17 @@ function WelcomeDialog() {
 
   if (!checkedRef.current) {
     checkedRef.current = true;
-    navigator.permissions?.query({ name: "geolocation" }).then((result) => {
-      if (result.state === "granted") {
-        setOpen(false);
-      }
-      setChecking(false);
-    }).catch(() => {
-      setChecking(false);
-    });
+    navigator.permissions
+      ?.query({ name: "geolocation" })
+      .then((result) => {
+        if (result.state === "granted") {
+          setOpen(false);
+        }
+        setChecking(false);
+      })
+      .catch(() => {
+        setChecking(false);
+      });
   }
 
   if (checking || userLocation || !open) return null;
@@ -68,11 +71,7 @@ function WelcomeDialog() {
         onPointerDownOutside={(e) => e.preventDefault()}
       >
         <DialogHeader className="items-center">
-          <img
-            src="/logo.png"
-            alt="Ghost Maps"
-            className="size-32"
-          />
+          <img src="/logo.png" alt="Ghost Maps" className="size-32" />
           <DialogTitle className="text-2xl font-display text-bone">
             Ghost Maps
           </DialogTitle>
@@ -84,8 +83,8 @@ function WelcomeDialog() {
         <div className="flex items-start gap-2.5 bg-surface-raised rounded-lg p-3 border border-edge/50">
           <Shield className="size-4 text-cyan shrink-0 mt-0.5" />
           <p className="text-sm text-blue-gray leading-relaxed">
-            Your location is never stored or logged. It&apos;s sent
-            only to find nearby places and is discarded after each request.
+            Your location is never stored or logged. It&apos;s sent only to find
+            nearby places and is discarded after each request.
           </p>
         </div>
 

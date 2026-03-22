@@ -21,9 +21,7 @@ interface DecodedField {
   value: { value: string };
 }
 
-function parseDecodedData(
-  decodedDataJson: string,
-): Record<string, string> {
+function parseDecodedData(decodedDataJson: string): Record<string, string> {
   const fields: DecodedField[] = JSON.parse(decodedDataJson);
   const result: Record<string, string> = {};
   for (const f of fields) {

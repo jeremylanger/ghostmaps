@@ -205,11 +205,12 @@ export default function SearchBar() {
                         {place.address}
                       </span>
                     )}
-                    {place.distanceMeters != null && !Number.isNaN(place.distanceMeters) && (
-                      <span className="text-xs font-semibold text-cyan font-mono shrink-0">
-                        {formatDistanceLive(place.distanceMeters)}
-                      </span>
-                    )}
+                    {place.distanceMeters != null &&
+                      !Number.isNaN(place.distanceMeters) && (
+                        <span className="text-xs font-semibold text-cyan font-mono shrink-0">
+                          {formatDistanceLive(place.distanceMeters)}
+                        </span>
+                      )}
                   </div>
                 </div>
               );

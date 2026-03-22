@@ -38,7 +38,7 @@ Open source. Built on Ethereum (Base). Privacy by design.
 
 ### 4. Review Authenticity (6-Layer Defense)
 - Detailed in [plans/reviews.md](reviews.md)
-- **Hackathon MVP:** Identity (ERC-8004) + Proof of visit (photo + EXIF GPS) + Quality scoring (Venice AI)
+- **Hackathon MVP:** Identity (EAS GraphQL: account age, review count) + Proof of visit (photo + EXIF GPS) + Quality scoring (Venice AI)
 - **V2+:** Stake & challenge, soulbound reputation, quadratic decay, token incentives
 - Goal: reward genuine contributions while making gaming economically/technically infeasible
 
@@ -101,7 +101,7 @@ EAS on Base  <--- Review attestations
 - **MapTiler Streets v2 for tiles** — polished, dense POI labels at zoom 12+, free tier (100K/month)
 - **Google Places for all POI data** — Nearby Search for categories, Text Search for names/addresses, enrichment for details. All server-side.
 - **Venice as OpenAI-compatible endpoint** — standard SDK, simple integration
-- **Base L2** — sub-cent transactions, EAS already deployed, ERC-8004 registration already on Base
+- **Base L2** — sub-cent transactions, EAS already deployed
 
 ---
 
@@ -224,9 +224,9 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 
 **Data flow:**
 ```
-User searches → Venice AI (zero retention) → Overture POIs (open data)
+User searches → Venice AI (zero retention) → Google Places (server-side, no user data)
 User taps a place → Backend sends [place name + coords] to Google → Gets hours/rating/photo
-                     Google sees: "someone looked up Verve Coffee at 214 S Main St"
+                     Google sees: "a server looked up Verve Coffee at 214 S Main St"
                      Google does NOT see: who searched, what they searched for, their location
 ```
 
@@ -267,8 +267,8 @@ See detailed day-by-day build plan. Summary:
 - Day 9: Navigation overhaul (drive test feedback), search by name/address/coordinates ✅
 - Day 9.5: Navigation fixes round 2 (instruction consolidation, step advancement, live ETA, position smoothing, camera offset, rerouting sensitivity) ✅
 - Day 9.75: Navigation fixes round 3 (step progression rewrite with proximity+direction scan, trailing path projection, address search location bias) ✅
-- Day 10: Remove Overture Maps (all search via Google Places), README + API docs, UI polish (action buttons, nav bar, map controls, z-index fixes)
-- Day 11: Deploy + demo + submit
+- Day 10: Remove Overture Maps (all search via Google Places), README + API docs, UI polish (action buttons, nav bar, map controls, z-index fixes) ✅
+- Day 11: Deploy + demo + submit (IN PROGRESS)
 
 ---
 
@@ -320,7 +320,7 @@ Day-by-day build plan is at: `~/.claude/plans/iridescent-swinging-island.md`
 - [EAS on Base Explorer](https://base.easscan.org/schemas)
 - [Venice API Docs](https://docs.venice.ai/)
 - [Venice API Base URL](https://api.venice.ai/api/v1)
-- [ERC-8004 Spec](https://eips.ethereum.org/EIPS/eip-8004)
+- ~~[ERC-8004 Spec](https://eips.ethereum.org/EIPS/eip-8004)~~ — dropped (not implemented)
 - [Hackathon Page](https://synthesis.devfolio.co)
 - [HERE Developer](https://developer.here.com/)
 - [TomTom Developer](https://developer.tomtom.com/)

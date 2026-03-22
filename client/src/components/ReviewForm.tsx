@@ -1,10 +1,10 @@
-import { useQueryClient } from "@tanstack/react-query";
 import type { EvmAddress } from "@coinbase/cdp-core";
 import {
   useEvmAddress,
   useIsSignedIn,
   useSendUserOperation,
 } from "@coinbase/cdp-hooks";
+import { useQueryClient } from "@tanstack/react-query";
 import { Camera, CheckCircle } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useReviews } from "../hooks/useReviews";
 import type { ReviewData } from "../lib/eas";
 import {
   buildAttestCalldata,
@@ -28,7 +29,6 @@ import {
 } from "../lib/eas";
 import { extractPhotoGPS, isNearLocation } from "../lib/exif";
 import { QUALITY_STYLES } from "../lib/theme";
-import { useReviews } from "../hooks/useReviews";
 import { useAppStore } from "../store";
 import AuthButton from "./AuthButton";
 
@@ -291,14 +291,17 @@ export default function ReviewForm() {
                   <div
                     className={`inline-block text-sm font-semibold px-3 py-1 rounded-md ${quality.photoVerification.legitimate ? "bg-emerald-900/40 text-emerald-400" : "bg-coral/15 text-coral"}`}
                   >
-                    Photo: {quality.photoVerification.legitimate ? "Verified" : "Suspicious"}
+                    Photo:{" "}
+                    {quality.photoVerification.legitimate
+                      ? "Verified"
+                      : "Suspicious"}
                   </div>
                 )}
               </div>
             )}
             <p className="text-sm text-muted mt-2">
-              Permanently stored on Base — no one can delete, modify, or
-              censor it. It may take a minute to appear in the reviews list.
+              Permanently stored on Base — no one can delete, modify, or censor
+              it. It may take a minute to appear in the reviews list.
             </p>
             <a
               href={`${EASSCAN_URL}/schema/view/${REVIEW_SCHEMA_UID}`}
@@ -354,7 +357,10 @@ export default function ReviewForm() {
                   <div
                     className={`inline-block text-sm font-semibold px-3 py-1 rounded-md ${quality.photoVerification.legitimate ? "bg-emerald-900/40 text-emerald-400" : "bg-coral/15 text-coral"}`}
                   >
-                    Photo: {quality.photoVerification.legitimate ? "Verified" : "Suspicious"}
+                    Photo:{" "}
+                    {quality.photoVerification.legitimate
+                      ? "Verified"
+                      : "Suspicious"}
                   </div>
                 )}
               </div>
@@ -464,7 +470,8 @@ export default function ReviewForm() {
         )}
         {text.trim().length > 0 && text.trim().length < MIN_REVIEW_LENGTH && (
           <p className="text-xs text-coral text-center">
-            Review must be at least {MIN_REVIEW_LENGTH} characters ({MIN_REVIEW_LENGTH - text.trim().length} more needed).
+            Review must be at least {MIN_REVIEW_LENGTH} characters (
+            {MIN_REVIEW_LENGTH - text.trim().length} more needed).
           </p>
         )}
         <Button

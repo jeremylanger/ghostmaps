@@ -110,7 +110,15 @@ function ReviewCard({
   );
 }
 
-export default function ReviewList({ placeId, placeLat, placeLng }: { placeId: string; placeLat: number; placeLng: number }) {
+export default function ReviewList({
+  placeId,
+  placeLat,
+  placeLng,
+}: {
+  placeId: string;
+  placeLat: number;
+  placeLng: number;
+}) {
   const { data, isLoading, error } = useReviews(placeId);
 
   if (isLoading) {
