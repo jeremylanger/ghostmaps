@@ -94,7 +94,7 @@
 - Lane guidance display (sectionType=lanes, dark lane bar with highlighted follow-lanes)
 - Auto-rerouting when user goes off route (~50m threshold)
 - Server-side review cache (2min TTL) + parallel identity/summary fetch
-- Privacy comparison page (8 categories, $7.3B fines, transparency section)
+- Privacy comparison page (8 categories, $7.1B fines, transparency section)
 
 ### Day 9.5 — Done ✅ (Drive Test Feedback Round 2)
 - Instruction consolidation: merge keep-left/keep-right noise into "Continue on {road}" (client-side post-processing)

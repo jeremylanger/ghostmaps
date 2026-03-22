@@ -4,7 +4,7 @@
 
 Building a private AI-powered maps app with on-chain reviews and navigation. Privacy-first alternative to Google Maps — private search via Venice AI, trustworthy on-chain reviews via EAS on Base, and navigation without location tracking.
 
-**The pitch:** "Google Maps tracks your location every 2 minutes and has paid $7.3B+ in privacy fines. We built the alternative — AI-powered search, trustworthy on-chain reviews, and real navigation, without anyone knowing where you go."
+**The pitch:** "Google Maps tracks your location constantly and has paid $7.1B+ in privacy fines. We built the alternative — AI-powered search, trustworthy on-chain reviews, and real navigation, without anyone knowing where you go."
 
 **Hackathon strategy:** AI agents judge this hackathon. Code quality, documentation, machine-readable artifacts, and on-chain proof matter as much as the demo. Venice bounty criteria: originality, ecosystem alignment (privacy), growth potential, technical depth, proof of work.
 
@@ -128,7 +128,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Re-routing when user goes off route (~50m threshold, auto-recalculates)
 - [x] Privacy Comparison page — side-by-side: what Google collects vs. what we don't
   - 8 comparison categories with Google vs Ghost Maps cards
-  - $7.3B+ fines section with 4 major cases
+  - $7.1B+ fines section with 4 major cases
   - Transparency section (TomTom, Google Places, on-chain reviews)
   - Location tracking, search history, law enforcement, opt-out, cross-app, business interactions
 - [x] Tests: 10 unit + 5 integration + 10 E2E = 25 new tests (129 server tests total)

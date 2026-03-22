@@ -12,7 +12,10 @@ export default function LocateButton() {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
+    // TEMP: Override for screenshots
+    setActive(true);
+    setUserLocation({ lat: 40.3978, lng: -105.0748 });
+    if (false) navigator.geolocation.getCurrentPosition(
       (pos) => {
         setActive(true);
         setUserLocation({

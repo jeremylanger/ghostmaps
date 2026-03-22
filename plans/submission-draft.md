@@ -29,7 +29,7 @@ The full stack: React + MapLibre GL JS frontend with MapTiler tiles, Express bac
 
 
 ### Problem Statement
-Google Maps tracks your location every 2 minutes, saves every search query, logs every business interaction, and has paid $7.3B+ in privacy fines. Private alternatives exist (Organic Maps, OsmAnd) but have terrible search quality (~70% accuracy via Nominatim) and no reviews. Yelp faces 700+ lawsuits alleging pay-to-play review manipulation. Amazon estimates 16-20% of its 250M+ reviews are fake. Google removed 240M fake reviews in 2024 alone. There is no maps app that combines private AI-powered search, trustworthy on-chain reviews, and real navigation.
+Google Maps tracks your location constantly, saves every search query, logs every business interaction, and has paid $7.1B+ in privacy fines. Private alternatives exist (Organic Maps, OsmAnd) but have terrible search quality (~70% accuracy via Nominatim) and no reviews. Yelp faces 2,000+ FTC complaints alleging extortion-style review manipulation. Amazon estimates 16-20% of its 250M+ reviews are fake. Google removed 240M fake reviews in 2024 alone. There is no maps app that combines private AI-powered search, trustworthy on-chain reviews, and real navigation.
 
 ### Repo URL
 https://github.com/jeremylanger/ghostmaps

@@ -177,7 +177,8 @@ export function useNavigationTracking(
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (pos) => {
-        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        // TEMP: Override for screenshots — Loveland city center
+        const loc = { lat: 40.3978, lng: -105.0748 };
 
         useAppStore.setState({ userLocation: loc });
 

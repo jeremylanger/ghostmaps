@@ -74,7 +74,7 @@ Factual ammunition for our privacy comparison page and pitch narrative.
 | Washington settlement | $40M | Location tracking |
 | Indiana + DC settlement | $29.5M | Location tracking |
 | DC dark patterns | $9.5M | Deceptive location settings |
-| **Total** | **$7.3B+** | |
+| **Total** | **$7.1B+** | |
 
 ### Key findings from cases:
 - Google used **dark patterns**: repeatedly prompting location enable, falsely claiming apps wouldn't work without it, burying real opt-out

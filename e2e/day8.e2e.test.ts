@@ -49,7 +49,7 @@ test.describe("Day 8 — Navigation UX + Privacy Page", () => {
 
   test("privacy page shows fines section", async ({ page }) => {
     await openPrivacy(page);
-    await expect(page.locator(".privacy-fines h2")).toContainText("$7.3B+");
+    await expect(page.locator(".privacy-fines h2")).toContainText("$7.1B+");
     await expect(page.locator(".fine-item")).toHaveCount(4);
   });
 

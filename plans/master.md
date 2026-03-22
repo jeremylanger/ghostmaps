@@ -311,7 +311,7 @@ All research from Day 1 planning is captured in these files:
 - [poi-data-research.md](poi-data-research.md) — POI data source comparison (Overture vs OSM vs Google vs HERE vs Yelp etc.), enrichment pipeline design, OSM opening hours coverage stats, competitive landscape
 - [navigation-research.md](navigation-research.md) — TomTom vs HERE vs OSRM/Valhalla comparison, API details, features, pricing
 - [photos-research.md](photos-research.md) — Place photo sources (Google blocked by ToS, TripAdvisor, Mapillary, user-generated strategy)
-- [google-surveillance-research.md](google-surveillance-research.md) — Comprehensive Google Maps data collection practices, $7.3B+ in legal penalties, privacy comparison table
+- [google-surveillance-research.md](google-surveillance-research.md) — Comprehensive Google Maps data collection practices, $7.1B+ in legal penalties, privacy comparison table
 - [auth-wallets-research.md](auth-wallets-research.md) — Coinbase CDP vs Privy vs RainbowKit, embedded wallet architecture, pricing, migration path
 - [hackathon-strategy.md](hackathon-strategy.md) — Judging criteria (AI agents + humans), Venice bounty criteria, winning strategy
 - [reviews.md](reviews.md) — 6-layer review authenticity system, hackathon MVP scope, why previous on-chain review projects failed

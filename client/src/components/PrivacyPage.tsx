@@ -72,21 +72,25 @@ const fines = [
     case: "40-state AG settlement (2022)",
     amount: "$392M",
     detail: "Dark patterns, false claims location tracking was off",
+    source: "https://www.npr.org/2022/11/14/1136521305/google-settlement-location-tracking-data-privacy",
   },
   {
     case: "Texas settlement (2024)",
     amount: "$1.375B",
     detail: "Tracked geolocation + biometrics without consent",
+    source: "https://www.texasattorneygeneral.gov/news/releases/attorney-general-ken-paxton-finalizes-historic-settlement-google-and-secures-1375-billion-big-tech",
   },
   {
     case: "Jury verdict (2025)",
     amount: "$425.7M",
     detail: "Tracked 98M users via third-party apps for 8 years after opt-out",
+    source: "https://www.cnbc.com/2025/09/04/google-must-pay-425-million-in-class-action-over-privacy-jury-rules.html",
   },
   {
     case: "Incognito mode settlement (2023)",
     amount: "$5B",
     detail: "Secretly collected browsing data in Incognito mode",
+    source: "https://www.npr.org/2023/12/30/1222268415/google-settles-5-billion-privacy-lawsuit",
   },
 ];
 
@@ -119,9 +123,9 @@ export default function PrivacyPage() {
         </div>
 
         <p className="text-[15px] text-blue-gray leading-relaxed mb-5">
-          Google Maps tracks your location every 2 minutes, saves every search,
+          Google Maps tracks your location constantly, saves every search,
           and has paid
-          <strong className="text-coral"> $7.3B+ in privacy fines</strong>.
+          <strong className="text-coral"> $7.1B+ in privacy fines</strong>.
           Here's what they collect vs. what we don't.
         </p>
 
@@ -161,7 +165,7 @@ export default function PrivacyPage() {
         {/* Fines section */}
         <div className="mb-5">
           <h2 className="text-lg font-extrabold text-coral mb-3 font-display">
-            $7.3B+ in Privacy Fines
+            $7.1B+ in Privacy Fines
           </h2>
           <div className="flex flex-col gap-2">
             {fines.map((f) => (
@@ -173,7 +177,14 @@ export default function PrivacyPage() {
                   {f.amount}
                 </span>
                 <div className="flex flex-col gap-0.5 text-xs text-blue-gray leading-snug">
-                  <strong className="text-bone text-sm">{f.case}</strong>
+                  <a
+                    href={f.source}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-bone text-sm font-bold hover:text-cyan no-underline"
+                  >
+                    {f.case} ↗
+                  </a>
                   <span>{f.detail}</span>
                 </div>
               </div>

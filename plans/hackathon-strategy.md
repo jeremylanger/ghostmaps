@@ -48,7 +48,7 @@
   4. Review summarization
   5. Photo verification
   6. Comparative recommendations
-- **Real problem** — Google Maps $7.3B+ in privacy fines proves the market
+- **Real problem** — Google Maps $7.1B+ in privacy fines proves the market
 - **Growth potential** — everyone uses maps, privacy is mainstream concern
 
 ---
@@ -66,7 +66,7 @@ We hit #2 and #4 directly.
 ## Winning Strategy
 
 ### What makes us strong
-- Solves a real, massive problem ($7.3B+ in Google privacy penalties)
+- Solves a real, massive problem ($7.1B+ in Google privacy penalties)
 - Deep Venice integration (6 touchpoints, not a wrapper)
 - On-chain with real UX (CDP embedded wallets, gas sponsorship, EAS)
 - Technically ambitious but achievable
@@ -77,7 +77,7 @@ We hit #2 and #4 directly.
 1. **Working end-to-end demo** that AI agents can actually use
 2. **Excellent documentation** (README, API docs, architecture diagram)
 3. **On-chain proof** (EAS attestations verifiable on basescan)
-4. **Clear narrative:** "Google Maps tracks you every 2 minutes and has paid $7.3B+ in fines. We built the alternative."
+4. **Clear narrative:** "Google Maps tracks you every 2 minutes and has paid $7.1B+ in fines. We built the alternative."
 5. **Privacy comparison page** — visual, factual, compelling
 
 ### Risks

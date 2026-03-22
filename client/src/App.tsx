@@ -48,19 +48,12 @@ function WelcomeDialog() {
 
   const handleAllow = () => {
     setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        useAppStore.getState().setUserLocation({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        });
-        setOpen(false);
-      },
-      () => {
-        setLocating(false);
-      },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 },
-    );
+    // TEMP: Override for screenshots — Loveland city center
+    useAppStore.getState().setUserLocation({
+      lat: 40.3978,
+      lng: -105.0748,
+    });
+    setOpen(false);
   };
 
   return (
