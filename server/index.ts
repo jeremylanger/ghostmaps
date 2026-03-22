@@ -162,7 +162,7 @@ app.get("/api/ai-search", async (req, res) => {
         googleApiKey,
         userLat,
         userLng,
-        parsed.radius || 5000,
+        parsed.radius || undefined,
       );
     } else {
       const searchQuery = parsed.name_query || parsed.address_query || q;
@@ -266,7 +266,7 @@ app.get("/api/ai-search/stream", async (req, res) => {
         googleApiKey,
         userLat,
         userLng,
-        parsed.radius || 5000,
+        parsed.radius || undefined,
       );
     } else {
       // Name search via Text Search
