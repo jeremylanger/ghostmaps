@@ -61,14 +61,19 @@ export function useMapInit(
         attributionControl: false,
       });
 
-      // TEMP: Override for screenshots — Loveland city center
-      const loc = { lat: 40.3978, lng: -105.0748 };
-      useAppStore.setState({ userLocation: loc });
-      map.flyTo({
-        center: [loc.lng, loc.lat],
-        zoom: INITIAL_ZOOM,
-        duration: 1200,
-      });
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          useAppStore.setState({ userLocation: loc });
+          map.flyTo({
+            center: [loc.lng, loc.lat],
+            zoom: INITIAL_ZOOM,
+            duration: 1200,
+          });
+        },
+        (err) => console.error("Geolocation error:", err.message),
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 },
+      );
 
       map.addControl(new maplibregl.NavigationControl(), "bottom-right");
 
