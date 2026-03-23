@@ -178,6 +178,8 @@ An autonomous AI agent that monitors the Base blockchain for new Ghost Maps revi
 
 Each verification attestation uses EAS `refUID` to reference the original review — native EAS composability. Anyone can read the verdicts, audit the reasoning, or deploy their own auditor agent against the same schema.
 
+**Why EAS instead of the ERC-8004 Validation Registry?** The Validation Registry validates agent work quality (agent-to-agent trust). Our attestations validate user-generated content (content trust). We chose EAS because: (1) any app can read our verifications without integrating ERC-8004, (2) attestations include human-readable reasoning, not just a numeric score, (3) reviews are already EAS attestations so `refUID` creates a native linked chain, and (4) verifications are useful regardless of who published them — full composability.
+
 ### On-Chain Identity (ERC-8004)
 
 The Guardian is registered on the [ERC-8004 Identity Registry](https://www.8004.org) (`0x8004A169...`) on Base Sepolia. This gives it a verifiable on-chain identity (agentId NFT) and discoverable metadata about its capabilities and verification schema.
