@@ -14,7 +14,7 @@ We built a maps app that doesn't track you.
 
 **The Review Guardian** — an autonomous AI agent that monitors the blockchain for new reviews, investigates fraud patterns, and publishes transparent verification verdicts on-chain. Verified reviews earn GHOST tokens via a quadratic reward curve. Registered via ERC-8004.
 
-**Tracks:** Synthesis Open Track, Venice Private Agents, Agent Services on Base, ERC-8004 Agents With Receipts
+**Tracks:** Synthesis Open Track, Venice Private Agents, Agents With Receipts — ERC-8004
 
 **Live:** https://ghostmaps.app
 **Repo:** https://github.com/jeremylanger/ghostmaps

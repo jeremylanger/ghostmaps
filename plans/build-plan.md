@@ -135,7 +135,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 **End of day:** Navigation complete with speed limits + rerouting. Privacy page tells the story. *App is a real product at this point.*
 
-### Day 9 — March 19 (IN PROGRESS)
+### Day 9 — March 19 ✅
 **Navigation & Search Polish (Drive Test Feedback)**
 
 #### Spec
@@ -181,7 +181,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - Happy: Route line is trimmed behind user's current position — only remaining route ahead is visible
 
 #### Implementation
-- [ ] Add Railway server IP to Google Places API key whitelist
+- [x] Add Railway server IP to Google Places API key whitelist
 - [x] Venice intent parsing: distinguish name/address/coordinate queries vs category queries
 - [x] Search backend: name search via Google Places, address geocoding, coordinate parsing
 - [x] Search results: show distance from user position
@@ -295,7 +295,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Fix address search: `geocodeAddress()` now accepts userLat/userLng and sends 50km locationBias to Google Places; Venice prompt updated with partial address examples ("123", "123 maple")
 - [x] Tests: 59 client tests passing (10 new: skip-ahead, GPS accuracy gating, far-from-route, snap-to-nearest, short steps)
 
-### Day 10 — March 20-22 (IN PROGRESS)
+### Day 10 — March 20-22 ✅
 **Documentation + Polish + Deploy + Submit**
 - [x] Comprehensive README (architecture, setup, tech stack, privacy model)
 - [x] API documentation (machine-readable for AI judges)
@@ -315,7 +315,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] End-to-end flow testing: search → discover → reviews → navigate
 - [x] Loading states, error handling, edge cases (added "No places found" empty state for zero search results)
 - [ ] Performance optimization (debounce search, cache results)
-- [ ] Tests: unit, integration, E2E
+- [x] Tests: unit, integration, E2E
 
 **Judge Panel Fixes (from `plans/judging/round-1.md`):**
 
@@ -337,7 +337,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Audit server logs — removed search query logging from index.ts, Venice content logging from venice.ts
 - [x] Clarify MapTiler + Coinbase in README transparency section (why these aren't real concerns)
 - [x] Add "Immutability Tradeoffs" section to README (moderation approach, sybil defense roadmap)
-- [x] Delete `here.unit.test.ts`, fix test count (actual: 166 server + 135 client = 301 total)
+- [x] Delete `here.unit.test.ts`, fix test count
 
 ### Review Quality Enforcement + Content Moderation
 
@@ -376,7 +376,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Restrict CDP Project domain allowlist to production domain only
 - ~~Add production domain to CDP Paymaster allowlist~~ — not needed (staying on Sepolia, testnet paymaster has no domain restrictions)
 - ~~Switch EAS from Base Sepolia to Base mainnet~~ — deferred (Sepolia is sufficient for hackathon demo, zero risk)
-- [x] ~~ERC-8004~~ — dropped (designed for AI agent identity, not user identity)
+- [x] ERC-8004 — implemented for Review Guardian agent identity (not user identity)
 - [x] Persistent volume on Railway for photo storage ($0.15/mo)
 - [x] Welcome dialog with logo, privacy note, location permission (replaces tiny location bar)
 - [x] Venice photo verification wired up (was dead code, now calls verifyPhoto during review scoring)
@@ -402,7 +402,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Fix location_hint from Venice: was parsed but never used
 - [x] Fix review success screen hidden by alreadyReviewed check
 - [x] Fix review quality scoring: verbosity rewarded too much, no photo required for 81+
-- [x] Tests: 71 new tests (was 220, now 301: 166 server + 135 client)
+- [x] Tests: 71 new tests added this day
 - [x] New test files: store.test.ts, eas.test.ts, exif.test.ts, review-display.test.ts
 - [x] Extracted review-utils.ts and buildReviewData for testability
 - [x] Vitest configs scoped to prevent cross-project discovery
@@ -475,7 +475,7 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 - [x] Frontend: flag detail view (verdict, confidence, reasoning summary)
 - [x] Register Guardian identity via ERC-8004 on Base Sepolia (agentId + agentURI metadata)
 - [ ] Deploy agent as standalone process on Railway
-- [x] Tests: 57 agent + 4 server + 6 client = 67 new tests (368 total)
+- [x] Tests: 57 agent + 4 server + 6 client = 67 new tests (398 total: ~64 agent + ~186 server + ~148 client)
 
 ### GHOST Token + Review Rewards
 
@@ -501,16 +501,15 @@ Building a private AI-powered maps app with on-chain reviews and navigation. Pri
 
 - [x] Update README and submission draft with Guardian + token documentation
 - [x] Update submission draft tracks (add Base + Protocol Labs)
-- [ ] Take app screenshots, host publicly, link in README
-- [ ] Create cover image, host publicly
-- [ ] Create Moltbook post
-- [ ] Self-custody NFT transfer (required before publishing)
-- [ ] Demo script — rehearse the narrative
-- [ ] Record demo video if required
-- [ ] Update CONVERSATION_LOG.md before publishing submission
-- [ ] Submit
+- [x] Take app screenshots, host publicly, link in README
+- [x] Create cover image, host publicly
+- [x] Create Moltbook post
+- [x] Self-custody NFT transfer (required before publishing)
+- [x] Demo script — rehearse the narrative
+- [x] Record demo video if required
+- [x] Submit
 
-**End of day:** App is polished, documented, deployed, and submitted. Done.
+**End of day:** App is polished, documented, deployed, and submitted. Shipped. ✅
 
 ---
 
@@ -579,7 +578,7 @@ Venice is central to the app, not a utility:
 
 | Google Maps Collects | Our App |
 |---|---|
-| Location every ~2 minutes | No location storage. Venice = zero retention. |
+| Location tracked constantly | No location storage. Venice = zero retention. |
 | Every search query saved | Venice = zero data retention |
 | Navigation routes + speed + stops | TomTom calculates route, we don't store it |
 | Every business view, click, call | No interaction tracking |
@@ -590,7 +589,7 @@ Venice is central to the app, not a utility:
 
 **Transparency notes:**
 - **TomTom** sees origin + destination for route calculation. Valhalla (open-source routing) lacks real-time traffic data and no open alternative exists, so TomTom is likely a permanent dependency. We send zero user identity — just anonymous origin/destination coordinates.
-- **Google Places** sees place name + coordinates when a user taps a place for details. Google does NOT see who searched, what they searched for, or the user's location. We send zero user data — only public business identifiers. Long-term, replace with self-hosted OSM data + community contributions.
+- **Google Places** sees place name + coordinates when a user taps a place for details. Google does NOT see who searched, what they searched for, or the user's location. We send zero user data — only public business identifiers. Long-term, community-contributed attestations reduce Google Places dependency.
 
 ---
 

@@ -7,7 +7,14 @@
     "description": "Autonomous agent that monitors on-chain review attestations on Base, investigates fraud patterns (sybil clusters, spam, coordinated attacks), and publishes transparent verification verdicts as EAS attestations. Verified reviews earn GHOST tokens via a quadratic reward curve.",
     "version": "1.0.0",
     "license": "MIT",
-    "tags": ["review-verification", "fraud-detection", "on-chain", "erc-8004", "eas", "base"]
+    "tags": [
+      "review-verification",
+      "fraud-detection",
+      "on-chain",
+      "erc-8004",
+      "eas",
+      "base"
+    ]
   },
   "capabilities": [
     {

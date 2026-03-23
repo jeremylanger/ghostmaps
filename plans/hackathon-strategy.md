@@ -77,7 +77,7 @@ We hit #2 and #4 directly.
 1. **Working end-to-end demo** that AI agents can actually use
 2. **Excellent documentation** (README, API docs, architecture diagram)
 3. **On-chain proof** (EAS attestations verifiable on basescan)
-4. **Clear narrative:** "Google Maps tracks you every 2 minutes and has paid $7.1B+ in fines. We built the alternative."
+4. **Clear narrative:** "Google Maps tracks you constantly and has paid $7.1B+ in fines. We built the alternative."
 5. **Privacy comparison page** — visual, factual, compelling
 
 ### Risks

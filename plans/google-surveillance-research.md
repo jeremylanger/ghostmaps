@@ -8,7 +8,7 @@ Factual ammunition for our privacy comparison page and pitch narrative.
 ## What Google Maps Collects
 
 ### Location Data
-- GPS coordinates logged **every ~2 minutes** via Location History (Timeline)
+- GPS coordinates logged **constantly** via Location History (Timeline)
 - Even with Location History "off", Web & App Activity still saves location with searches
 - Location Accuracy service saves precise location **even when Google apps aren't in use**
 - Sensorvault database: detailed location records for **hundreds of millions of devices dating back nearly a decade**
@@ -87,7 +87,7 @@ Factual ammunition for our privacy comparison page and pitch narrative.
 
 | Google Maps Collects | Our App |
 |---|---|
-| Location every ~2 minutes | No location storage. Venice = zero retention |
+| Location tracked constantly | No location storage. Venice = zero retention |
 | Every search query saved | Venice = zero data retention |
 | Navigation routes + speed + stops | TomTom calculates route, we don't store it |
 | Every business view, click, call | No interaction tracking |
@@ -97,7 +97,7 @@ Factual ammunition for our privacy comparison page and pitch narrative.
 | Tracked 98M users who opted out | No opt-out needed — data never collected |
 | $224.5B/year ad revenue from your data | No ads, no data monetization |
 
-**Transparency note:** TomTom sees origin + destination for route calculation. Long-term, self-host Valhalla for fully private routing.
+**Transparency note:** TomTom sees origin + destination for route calculation. No user identity is sent — just anonymous coordinates.
 
 ---
 

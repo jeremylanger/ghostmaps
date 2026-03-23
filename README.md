@@ -66,7 +66,7 @@ Browser (React + MapLibre GL JS)
 
 | What Google Maps Collects | What Ghost Maps Does |
 |---|---|
-| Location every ~2 minutes | No location storage. Venice = zero retention |
+| Location tracked constantly | No location storage. Venice = zero retention |
 | Every search query saved | Venice = zero data retention |
 | Navigation routes + speed + stops | TomTom calculates route, we don't store it |
 | Every business view, click, call | No interaction tracking |
@@ -370,7 +370,7 @@ DNS: Porkbun (ALIAS record → Railway edge). SSL auto-provisioned by Railway.
 
 Built for **The Synthesis** (March 13-22, 2026) — a 10-day hackathon judged by AI agents + humans.
 
-**Track:** Venice Bounty — "Private Agents, Trusted Actions"
+**Tracks:** Synthesis Open Track, Venice Private Agents, Agents With Receipts — ERC-8004
 
 **Scoring criteria:** Confidentiality as design requirement, agent architecture and trust design, problem legitimacy, scope and demo quality.
 

@@ -63,7 +63,7 @@ Open source. Built on Ethereum (Base). Privacy by design.
 
 3. **Problem legitimacy**
    - Google Maps: surveillance machine that tracks everywhere you go and search for
-   - Yelp: ~700 lawsuits alleging pay-to-play review manipulation
+   - Yelp: 2,000+ FTC complaints alleging pay-to-play review manipulation
    - Amazon: 16-20% of 250M+ reviews may be fake, $788B in unwanted purchases annually
    - Google removed 240M fake reviews in 2024 alone
    - Private map alternatives exist but search is terrible (Organic Maps ~70% accuracy)
@@ -183,8 +183,9 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 - Can migrate to Supabase + CDP (custom JWT mode) later if needed
 
 ### 2. Token Incentives — RESOLVED
-- **Decided:** Skip for hackathon. Focus on intrinsic motivation.
-- V2 question remains: can tokens work with proof-of-visit + quality scoring?
+- **Decided:** Implemented for hackathon. GHOST ERC-20 token deployed on Base Sepolia (`0x98d2ccd1d02F396A4a6FDE996381297c655BB198`).
+- Quadratic reward curve: `GHOST = quality² / 100`. Verified reviews earn tokens automatically.
+- Guardian agent verifies reviews before rewards are distributed — solves the gaming problem that killed previous token-incentivized review systems.
 
 ### 3. Data Freshness — DEFERRED
 - Not a hackathon concern. Overture updates monthly.
@@ -215,7 +216,7 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 - Smart search bar UX (not chat interface)
 
 ### 11. ERC-8004 — RESOLVED
-- **Decided:** Dropped. ERC-8004 is designed for AI agent identity, not user identity. Claiming it without genuine use was misleading.
+- **Decided:** Implemented for the Review Guardian agent identity (not user identity). Guardian registered on the ERC-8004 Identity Registry on Base Sepolia with agentId NFT and discoverable metadata about its capabilities and verification schema.
 
 ### 12. EAS Network — RESOLVED
 - **Decided:** Stay on Base Sepolia for hackathon. No mainnet switch needed — Sepolia is sufficient for demo, zero risk.
@@ -242,7 +243,7 @@ User taps a place → Backend sends [place name + coords] to Google → Gets hou
                      Google does NOT see: who searched, what they searched for, their location
 ```
 
-**Long-term:** Replace with self-hosted OSM data + community-contributed hours/photos once coverage improves. Google Places is a bridge, not the architecture.
+**Long-term:** Community-contributed attestations (hours, photos, menus) reduce Google Places dependency over time. Google Places is a bridge, not the architecture.
 
 ### 8. App Name — RESOLVED
 - **Ghost Maps** — ghostmaps.app (purchased)
@@ -280,7 +281,7 @@ See detailed day-by-day build plan. Summary:
 - Day 9.5: Navigation fixes round 2 (instruction consolidation, step advancement, live ETA, position smoothing, camera offset, rerouting sensitivity) ✅
 - Day 9.75: Navigation fixes round 3 (step progression rewrite with proximity+direction scan, trailing path projection, address search location bias) ✅
 - Day 10: Remove Overture Maps (all search via Google Places), README + API docs, UI polish (action buttons, nav bar, map controls, z-index fixes) ✅
-- Day 11: Bug fixes (EAS BigNumber parsing, Venice search classification, review GPS coords, search radius, quality scoring), UX polish (welcome dialog, review validation/success/duplicate guard, location-aware search, empty search state, review display improvements), 71 new tests (301 total) (IN PROGRESS)
+- Day 11: Bug fixes (EAS BigNumber parsing, Venice search classification, review GPS coords, search radius, quality scoring), UX polish (welcome dialog, review validation/success/duplicate guard, location-aware search, empty search state, review display improvements), Review Guardian agent, GHOST token, ERC-8004 registration, 398 tests total ✅
 
 ---
 
@@ -299,8 +300,7 @@ Priority features for Google Maps parity (in rough order):
 9. **Supabase auth migration** — add social login (Google, Apple) via Supabase + CDP custom JWT mode
 
 ### Decided against
-- **Bright Data / scraped Google data** — legal risk, ironic for a privacy app, and our Overture + OSM + HERE stack provides sufficient data for the hackathon
-- **Token incentives** — deferred to V2, after proof-of-visit + quality scoring are battle-tested
+- **Bright Data / scraped Google data** — legal risk, ironic for a privacy app, and our Google Places server-side integration provides sufficient data for the hackathon
 
 ---
 
@@ -332,7 +332,7 @@ Day-by-day build plan is at: `~/.claude/plans/iridescent-swinging-island.md`
 - [EAS on Base Explorer](https://base.easscan.org/schemas)
 - [Venice API Docs](https://docs.venice.ai/)
 - [Venice API Base URL](https://api.venice.ai/api/v1)
-- ~~[ERC-8004 Spec](https://eips.ethereum.org/EIPS/eip-8004)~~ — dropped (not implemented)
+- [ERC-8004 Spec](https://eips.ethereum.org/EIPS/eip-8004) — used for Guardian agent identity registration
 - [Hackathon Page](https://synthesis.devfolio.co)
 - [HERE Developer](https://developer.here.com/)
 - [TomTom Developer](https://developer.tomtom.com/)

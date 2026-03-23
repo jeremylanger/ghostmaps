@@ -238,7 +238,7 @@ What we design the architecture to support later:
 - Amazon: 16-20% of 250M+ reviews may be fake
 - Google: removed 240M fake reviews + 12M fake listings in 2024
 - Google Maps extortion: criminals flood businesses with fake 1-stars, demand payment
-- Yelp: ~700 lawsuits alleging pay-to-play filtering
+- Yelp: 2,000+ FTC complaints alleging pay-to-play filtering
 - Consumer cost: $788B in unwanted purchases annually
 - Amazon product swapping: sellers swap products but keep old high-quality reviews
 
