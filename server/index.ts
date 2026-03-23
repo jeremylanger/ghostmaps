@@ -707,4 +707,31 @@ app.get("/{*path}", (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+
+  // Start Guardian agent on a 1-hour cron cycle
+  const guardianKey = process.env.GUARDIAN_PRIVATE_KEY;
+  const veniceKey = process.env.VENICE_API_KEY;
+  if (guardianKey && veniceKey) {
+    const GUARDIAN_INTERVAL = 3_600_000; // 1 hour
+    const runGuardian = () => {
+      console.log("[Guardian] Starting cycle...");
+      const { execFile } = require("child_process");
+      execFile(
+        "npx",
+        ["tsx", path.join(__dirname, "..", "agent", "guardian.ts"), "--once"],
+        { cwd: path.join(__dirname, "..", "agent"), timeout: 600_000 },
+        (err: Error | null, stdout: string, stderr: string) => {
+          if (stdout) console.log("[Guardian]", stdout.slice(-500));
+          if (stderr) console.error("[Guardian]", stderr.slice(-300));
+          if (err) console.error("[Guardian] Error:", err.message);
+        },
+      );
+    };
+    // First run after 30s startup delay, then every hour
+    setTimeout(runGuardian, 30_000);
+    setInterval(runGuardian, GUARDIAN_INTERVAL);
+    console.log("Guardian agent scheduled: every 1 hour");
+  } else {
+    console.log("Guardian agent disabled (missing GUARDIAN_PRIVATE_KEY or VENICE_API_KEY)");
+  }
 });

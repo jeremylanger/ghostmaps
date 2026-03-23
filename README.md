@@ -14,8 +14,6 @@ The map defaults to Loveland, CO. Search for these places to see on-chain review
 - **"Slice House"** — search "pizza in Loveland"
 - **"Verboten Brewing"** — search "brewing in Loveland"
 
-Also try location-aware searches like "coffee in Denver" or "pizza in Los Angeles".
-
 <p align="center">
   <img src="client/public/screenshots/2-search.png" width="270" />
   <img src="client/public/screenshots/4-on-chain-reviews.png" width="270" />
@@ -165,7 +163,7 @@ An autonomous AI agent that monitors the Base blockchain for new Ghost Maps revi
 
 ### How It Works
 
-1. Agent polls EAS every 4 hours for new review attestations (or runs on-demand with `--once`)
+1. Agent runs every hour on the Express server (or on-demand with `npx tsx agent/guardian.ts --once`)
 2. Agent reasons about patterns: wallet ages, timing, rating distributions, content similarity
 3. Agent uses tools to investigate: query wallet history, query place reviews, cross-reference
 4. Agent publishes verification attestations on-chain with verdict, confidence, and reasoning

@@ -28,7 +28,7 @@ import {
 // ---------------------------------------------------------------------------
 
 const VENICE_URL = "https://api.venice.ai/api/v1/chat/completions";
-const POLL_INTERVAL_MS = 14_400_000; // 4 hours between runs
+const POLL_INTERVAL_MS = 3_600_000; // 1 hour between runs
 const LOOKBACK_SECONDS = 604800; // On first run, look back 7 days
 
 // ---------------------------------------------------------------------------
