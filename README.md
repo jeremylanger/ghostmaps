@@ -251,6 +251,7 @@ Full API documentation with request/response schemas: [`API.md`](API.md)
 | `GET` | `/api/photos/:hash` | Serve review photo by hash |
 | `POST` | `/api/route` | Calculate route via TomTom (traffic-aware) |
 | `POST` | `/api/compare` | Compare 2-5 places via Venice AI |
+| `GET` | `/api/ghost-balance/:address` | GHOST token balance for a wallet address |
 | `GET` | `/api/server-ip` | Server outbound IP (for API key whitelisting) |
 
 ---
@@ -274,8 +275,18 @@ ghostmaps/
 │   ├── eas-reader.ts           # EAS on-chain review fetching
 │   ├── photos.ts               # Photo upload/storage (SHA-256 keyed)
 │   └── types.ts                # TypeScript type definitions
+├── agent/                      # Review Guardian agent
+│   ├── guardian.ts             # Agent core — LLM loop with tool use
+│   ├── guidelines.ts           # Agent mandate and investigation principles
+│   ├── tools.ts                # EAS query + publish tools
+│   ├── schema.ts               # ReviewVerification schema definition
+│   ├── test-harness.ts         # Generate test scenarios (sybil, spam, organic, legitimate)
+│   └── contracts/              # GHOST token + RewardDistributor
 ├── e2e/                        # Playwright E2E tests
 ├── plans/                      # Architecture docs, research, build plan
+├── conversation-logs/          # Raw human-agent collaboration logs (24 sessions)
+├── agent.json                  # JSON Agents PAM manifest (DevSpot/ERC-8004)
+├── agent_log.json              # Latest Guardian investigation log
 ├── API.md                      # Full API documentation
 └── CLAUDE.md                   # Development guidelines
 ```
