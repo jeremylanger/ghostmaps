@@ -33,10 +33,10 @@ export default function VerificationBadge({
   if (!config) return null;
 
   return (
-    <span className="relative inline-block">
+    <span className="relative inline-flex">
       <button
         type="button"
-        className={`text-[10px] font-semibold px-1.5 py-px rounded cursor-pointer ${config.bg} ${config.text}`}
+        className={`text-[10px] font-semibold px-1.5 py-px rounded whitespace-nowrap cursor-pointer ${config.bg} ${config.text}`}
         onClick={() => setShowDetail((v) => !v)}
         aria-label={`Guardian ${config.label}`}
       >

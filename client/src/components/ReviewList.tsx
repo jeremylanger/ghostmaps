@@ -77,18 +77,13 @@ function ReviewCard({
         </span>
       </div>
 
-      <div className="flex items-center gap-1.5 mb-1">
+      <div className="flex flex-wrap items-center gap-1.5 mb-1">
         <span className="text-amber text-sm">
           {"★".repeat(review.rating)}
           {"☆".repeat(5 - review.rating)}
         </span>
-        <span
-          className={`text-[10px] font-semibold px-1.5 py-px rounded ${QUALITY_STYLES[label]}`}
-        >
-          {label} review depth
-        </span>
         {nearPlace && (
-          <span className="text-[10px] font-semibold px-1.5 py-px rounded bg-emerald-900/40 text-emerald-400">
+          <span className="text-[10px] font-semibold px-1.5 py-px rounded whitespace-nowrap bg-emerald-900/40 text-emerald-400">
             GPS Verified
           </span>
         )}
@@ -112,7 +107,7 @@ function ReviewCard({
         rel="noopener noreferrer"
         className="text-[11px] text-cyan no-underline hover:underline"
       >
-        On-chain proof
+        On-chain proof ↗
       </a>
     </div>
   );
