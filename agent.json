@@ -1,29 +1,80 @@
 {
-  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
-  "name": "Ghost Maps Review Guardian",
-  "description": "Autonomous agent that monitors on-chain review attestations on Base, investigates fraud patterns (sybil clusters, spam, coordinated attacks), and publishes transparent verification verdicts as EAS attestations. Protects the integrity of Ghost Maps reviews through private reasoning and public, immutable verdicts.",
-  "services": [
+  "manifest_version": "1.0",
+  "profiles": ["core", "exec"],
+  "agent": {
+    "id": "ajson://ghostmaps/review-guardian",
+    "name": "Ghost Maps Review Guardian",
+    "description": "Autonomous agent that monitors on-chain review attestations on Base, investigates fraud patterns (sybil clusters, spam, coordinated attacks), and publishes transparent verification verdicts as EAS attestations. Verified reviews earn GHOST tokens via a quadratic reward curve.",
+    "version": "1.0.0",
+    "license": "MIT",
+    "tags": ["review-verification", "fraud-detection", "on-chain", "erc-8004", "eas", "base"]
+  },
+  "capabilities": [
     {
-      "name": "ReviewVerification",
-      "endpoint": "https://base-sepolia.easscan.org/schema/view/0x351ed5d597414cc66a0835da8614ac4d37af6213dc4deeee898912695a9bd635",
-      "version": "1.0.0"
+      "id": "review-verification",
+      "description": "Analyze on-chain review attestations for legitimacy, sybil attacks, and spam patterns. Publish transparent verification verdicts as EAS attestations."
+    },
+    {
+      "id": "reward-distribution",
+      "description": "Distribute GHOST ERC-20 tokens to reviewers whose reviews are verified as legitimate, using a quadratic reward curve based on review quality score."
     }
   ],
-  "active": true,
-  "registrations": [
+  "tools": [
     {
-      "agentRegistry": "eip155:84532:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
-      "wallet": "0x2efeEd3097978664731ffe6EC0FaFa5CFD58b08D",
-      "registrationTxHash": "0x3067709797a2205ae4ba19fd728a3c022116e7374e06458094ebbc9f04f5075e"
+      "id": "tool://guardian/query-new-reviews",
+      "name": "queryNewReviews",
+      "description": "Fetch new review attestations from EAS GraphQL since a given timestamp",
+      "type": "api"
+    },
+    {
+      "id": "tool://guardian/query-wallet-history",
+      "name": "queryWalletHistory",
+      "description": "Fetch all reviews by a specific wallet address across all places",
+      "type": "api"
+    },
+    {
+      "id": "tool://guardian/query-place-reviews",
+      "name": "queryPlaceReviews",
+      "description": "Fetch all reviews for a specific place",
+      "type": "api"
+    },
+    {
+      "id": "tool://guardian/publish-verification",
+      "name": "publishVerification",
+      "description": "Publish a verification attestation on-chain for a single review (legitimate, suspicious, or spam)",
+      "type": "blockchain"
+    },
+    {
+      "id": "tool://guardian/publish-sybil-alert",
+      "name": "publishSybilAlert",
+      "description": "Publish sybil alert attestations for multiple coordinated fake reviews",
+      "type": "blockchain"
     }
   ],
-  "metadata": {
-    "app": "Ghost Maps",
-    "appUrl": "https://ghostmaps.app",
-    "repo": "https://github.com/jeremylanger/ghostmaps",
-    "chain": "base-sepolia",
-    "model": "minimax-m27",
-    "modelProvider": "Venice AI",
+  "modalities": {
+    "input": ["text", "structured-data"],
+    "output": ["text", "blockchain-transaction"]
+  },
+  "context": {
+    "window": 200000,
+    "strategy": "rolling",
+    "persistent": false
+  },
+  "runtime": {
+    "type": "node",
+    "language": "typescript",
+    "entrypoint": "agent/guardian.ts",
+    "resources": {
+      "cpu_cores_min": 1,
+      "memory_mb_min": 512,
+      "accelerator": "none"
+    }
+  },
+  "erc8004": {
+    "identityRegistry": "0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+    "chain": "eip155:84532",
+    "wallet": "0x2efeEd3097978664731ffe6EC0FaFa5CFD58b08D",
+    "registrationTxHash": "0x3067709797a2205ae4ba19fd728a3c022116e7374e06458094ebbc9f04f5075e",
     "verificationSchemaUID": "0x351ed5d597414cc66a0835da8614ac4d37af6213dc4deeee898912695a9bd635",
     "reviewSchemaUID": "0x968e91f0274b78a31037839b55e59b942dd1521daebf9190268137e450b7d69f",
     "ghostTokenAddress": "0x98d2ccd1d02F396A4a6FDE996381297c655BB198"
