@@ -2,7 +2,7 @@
 
 **Private AI-powered maps with trustworthy on-chain reviews.**
 
-Google Maps tracks your location constantly and has paid $7.1B+ in privacy fines. Ghost Maps is the alternative — AI-powered search, on-chain reviews that can't be deleted or manipulated, and real navigation, without anyone knowing where you go.
+Google Maps tracks everything you do ([$7.1B+ in fines](https://www.npr.org/2022/11/14/1136521305/google-settlement-location-tracking-data-privacy)). Review platforms can't stop fakes ([240M removed by Google in 2024](https://www.seroundtable.com/google-maps-spam-fighting-2024-39186.html), [2,000+ FTC complaints against Yelp](https://www.cbsnews.com/news/yelp-continues-to-battle-extortion-claims-by-businesses/)). Ghost Maps is a private maps app with AI-powered search, on-chain reviews guarded by an autonomous agent, and real navigation — all without tracking you.
 
 **Live at [ghostmaps.app](https://ghostmaps.app)**
 
@@ -56,11 +56,15 @@ An autonomous AI agent that monitors the Base blockchain for new Ghost Maps revi
 
 Each verification attestation uses EAS `refUID` to reference the original review — native EAS composability. Anyone can read the verdicts, audit the reasoning, or deploy their own auditor agent against the same schema.
 
-**Why EAS instead of the ERC-8004 Validation Registry?** The Validation Registry validates agent work quality (agent-to-agent trust). Our attestations validate user-generated content (content trust). We chose EAS because: (1) any app can read our verifications without integrating ERC-8004, (2) attestations include human-readable reasoning, not just a numeric score, (3) reviews are already EAS attestations so `refUID` creates a native linked chain, and (4) verifications are useful regardless of who published them — full composability.
+<details>
+<summary><strong>Why EAS instead of the ERC-8004 Validation Registry?</strong></summary>
+
+The Validation Registry validates agent work quality (agent-to-agent trust). Our attestations validate user-generated content (content trust). We chose EAS because: (1) any app can read our verifications without integrating ERC-8004, (2) attestations include human-readable reasoning, not just a numeric score, (3) reviews are already EAS attestations so `refUID` creates a native linked chain, and (4) verifications are useful regardless of who published them — full composability.
+</details>
 
 ### On-Chain Identity (ERC-8004)
 
-The Guardian is registered on the [ERC-8004 Identity Registry](https://www.8004.org) (`0x8004A169...`) on Base Sepolia. This gives it a verifiable on-chain identity (agentId NFT) and discoverable metadata about its capabilities and verification schema.
+The Guardian is registered on the [ERC-8004 Identity Registry](https://www.8004.org) on Base Sepolia. This gives it a verifiable on-chain identity (agentId NFT) and discoverable metadata about its capabilities and verification schema.
 
 **Guardian wallet:** [`0x2efeEd3097978664731ffe6EC0FaFa5CFD58b08D`](https://sepolia.basescan.org/address/0x2efeEd3097978664731ffe6EC0FaFa5CFD58b08D)
 
@@ -125,6 +129,19 @@ Immutable reviews solve real problems (Yelp pay-to-play, platform censorship), b
 **What about sybil attacks (mass fake accounts)?** The Review Guardian agent catches coordinated attacks by analyzing wallet behavior, timing patterns, and content similarity across reviews. Flagged reviews are publicly marked with on-chain verdicts.
 
 **Our position:** Centralized moderation is a solved problem — and it's been solved badly (Yelp extortion, Google's 240M removed fakes in 2024). We'd rather build robust decentralized quality signals than recreate the system we're replacing.
+
+---
+
+## Venice AI Integration (6 Endpoints)
+
+Venice is central to the app, not a utility:
+
+1. **Conversational search** — Parse natural language queries ("late night tacos with outdoor seating"), extract intent (categories, attributes, radius), rank results with explanations
+2. **Place intelligence briefing** — Synthesize all POI data into a 2-3 sentence natural language summary per place
+3. **Review quality scoring** — Analyze specificity, sentiment-rating consistency, flag suspicious patterns (1-100 score)
+4. **Review summarization** — Aggregate all on-chain reviews for a place into a community briefing
+5. **Photo verification** — Metadata analysis (file size, GPS, dimensions) to support proof-of-visit
+6. **Comparative recommendations** — Compare 2-5 places using reviews + data, explain tradeoffs
 
 ---
 
@@ -195,19 +212,6 @@ Browser (React + MapLibre GL JS)
 | Streaming | Server-Sent Events (SSE) |
 | Testing | Vitest (unit + integration) + Playwright (E2E) |
 | Deployment | Railway (single service) |
-
----
-
-## Venice AI Integration (6 Endpoints)
-
-Venice is central to the app, not a utility:
-
-1. **Conversational search** — Parse natural language queries ("late night tacos with outdoor seating"), extract intent (categories, attributes, radius), rank results with explanations
-2. **Place intelligence briefing** — Synthesize all POI data into a 2-3 sentence natural language summary per place
-3. **Review quality scoring** — Analyze specificity, sentiment-rating consistency, flag suspicious patterns (1-100 score)
-4. **Review summarization** — Aggregate all on-chain reviews for a place into a community briefing
-5. **Photo verification** — Metadata analysis (file size, GPS, dimensions) to support proof-of-visit
-6. **Comparative recommendations** — Compare 2-5 places using reviews + data, explain tradeoffs
 
 ---
 
