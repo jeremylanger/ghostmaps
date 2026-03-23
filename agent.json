@@ -1,0 +1,31 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "Ghost Maps Review Guardian",
+  "description": "Autonomous agent that monitors on-chain review attestations on Base, investigates fraud patterns (sybil clusters, spam, coordinated attacks), and publishes transparent verification verdicts as EAS attestations. Protects the integrity of Ghost Maps reviews through private reasoning and public, immutable verdicts.",
+  "services": [
+    {
+      "name": "ReviewVerification",
+      "endpoint": "https://base-sepolia.easscan.org/schema/view/0x351ed5d597414cc66a0835da8614ac4d37af6213dc4deeee898912695a9bd635",
+      "version": "1.0.0"
+    }
+  ],
+  "active": true,
+  "registrations": [
+    {
+      "agentRegistry": "eip155:84532:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+      "wallet": "0x2efeEd3097978664731ffe6EC0FaFa5CFD58b08D",
+      "registrationTxHash": "0x3067709797a2205ae4ba19fd728a3c022116e7374e06458094ebbc9f04f5075e"
+    }
+  ],
+  "metadata": {
+    "app": "Ghost Maps",
+    "appUrl": "https://ghostmaps.app",
+    "repo": "https://github.com/jeremylanger/ghostmaps",
+    "chain": "base-sepolia",
+    "model": "minimax-m27",
+    "modelProvider": "Venice AI",
+    "verificationSchemaUID": "0x351ed5d597414cc66a0835da8614ac4d37af6213dc4deeee898912695a9bd635",
+    "reviewSchemaUID": "0x968e91f0274b78a31037839b55e59b942dd1521daebf9190268137e450b7d69f",
+    "ghostTokenAddress": "0x98d2ccd1d02F396A4a6FDE996381297c655BB198"
+  }
+}
