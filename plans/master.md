@@ -22,7 +22,7 @@ Open source. Built on Ethereum (Base). Privacy by design.
 
 ### 2. Private AI Search (Venice)
 - Natural language search: "late night tacos near me" or "quiet coffee shop with wifi"
-- Venice interprets queries against Overture POI data — zero data retention
+- Venice interprets natural language queries — zero data retention
 - Venice API is OpenAI-compatible (`https://api.venice.ai/api/v1`)
 - Model: GLM 4.7 (128k context) or similar
 - Also used for: review summarization, pattern detection, suspicious review flagging
@@ -70,7 +70,7 @@ Open source. Built on Ethereum (Base). Privacy by design.
    - NO private maps app has AI-powered search or trustworthy reviews
 
 4. **Scope and demo quality**
-   - Demo flow: open map -> natural language search via Venice -> see Overture POI results -> read/leave on-chain reviews via EAS on Base
+   - Demo flow: open map -> natural language search via Venice -> see Google Places results -> read/leave on-chain reviews via EAS on Base
    - Tight, focused, end-to-end demo-able in 10 days
 
 ---
@@ -168,7 +168,7 @@ See [plans/reviews.md](reviews.md) for full research on:
 ### The Search Gap
 Google's advantage comes from: 200M+ self-maintained business profiles, Knowledge Graph, billions of reviews/photos, web crawling, behavioral signals, and Gemini AI integration. OSM-based apps use Nominatim (~70% accuracy) which can't handle natural language.
 
-**Our opportunity:** Venice + Overture Maps = private natural language search that's dramatically better than Nominatim, without any of Google's surveillance.
+**Our opportunity:** Venice + Google Places (server-side) = private natural language search that's dramatically better than Nominatim, without any of Google's user surveillance.
 
 ---
 
@@ -188,7 +188,7 @@ Google's advantage comes from: 200M+ self-maintained business profiles, Knowledg
 - Guardian agent verifies reviews before rewards are distributed — solves the gaming problem that killed previous token-incentivized review systems.
 
 ### 3. Data Freshness — DEFERRED
-- Not a hackathon concern. Overture updates monthly.
+- Not a hackathon concern. Google Places data is live.
 
 ### 4. Revenue / Sustainability — DEFERRED
 - Not a hackathon concern.

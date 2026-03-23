@@ -26,5 +26,15 @@ Sessions already processed for CONVERSATION_LOG.md (created 2026-03-20):
 - ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/6696dfc1-9679-498e-8654-84d7dc5b817e.jsonl
 - ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/9d2b4cc1-09bc-4516-bf29-096cfd4ecebe.jsonl
 - ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/a748f86e-b9b3-466d-8ecf-060e97b2022b.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/7b8073e8-1b41-458b-85a7-e790604aa16c.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/1ca53e69-9890-4feb-9a8b-4ba7ef3e9d81.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/5227c347-ad23-4ba4-b89d-4d43bff19396.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/6facd6b7-c685-42c8-a217-cd5d6a715fb6.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/4d536e2a-37d0-4d34-b652-8c566bcc2274.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/c6c2cd1f-0f6f-4aaf-b318-8085bd618b75.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/4f032b42-8303-47fa-af3e-489d31ce63a7.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/0c90a414-66c7-455d-b932-3accc351ab0d.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/b5e2f68b-6cad-438c-8a6e-189225942846.jsonl
+- ~/.claude/projects/-Users-jeremylanger-jeremy-claude-ghostmaps/1b9bb589-6eeb-4171-9196-d005e7caf60f.jsonl
 
 **How to apply:** Next time CONVERSATION_LOG.md needs updating, compare this list against the current .jsonl files in both directories. Only export and summarize new sessions that aren't in this list. Add their paths here after processing.

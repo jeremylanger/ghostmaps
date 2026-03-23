@@ -4,7 +4,7 @@
 
 Google Maps tracks everything you do ([$7.1B+ in fines](https://www.npr.org/2022/11/14/1136521305/google-settlement-location-tracking-data-privacy)). Review platforms can't stop fakes ([240M removed by Google in 2024](https://www.seroundtable.com/google-maps-spam-fighting-2024-39186.html), [2,000+ FTC complaints against Yelp](https://www.cbsnews.com/news/yelp-continues-to-battle-extortion-claims-by-businesses/)). Ghost Maps is a private maps app with AI-powered search, on-chain reviews guarded by an autonomous agent, and real navigation — all without tracking you.
 
-**Live at [ghostmaps.app](https://ghostmaps.app)**
+**Live at [ghostmaps.app](https://ghostmaps.app)** · [Demo Video](https://www.loom.com/share/f38c204b53e94211b1aaea1b1a57b8fc)
 
 ### Try It
 
@@ -186,7 +186,7 @@ Browser (React + MapLibre GL JS)
 **Transparency:** We disclose exactly what each service sees:
 
 - **TomTom** sees anonymous origin/destination coordinates for route calculation. No user identity.
-- **Google Places** sees search queries and location coordinates (needed to find nearby places) — but all requests come from our server, so Google never sees *who* is searching. Google sees "a server searched for pizza near 40.15, -105.10" — not "Jeremy searched for pizza." No user identity, session, or device info is sent.
+- **Google Places** sees place lookups and location coordinates (needed to find nearby places). All requests come from our server — Google never sees individual users, sessions, devices, or IP addresses. Google sees "a server looked up pizza near 40.15, -105.10" — not who searched or why. Google can observe aggregate query patterns from our server (what types of places are searched, in which regions). This is a deliberate tradeoff: Google's business data is the best available (~95% coverage for hours/ratings), and the alternative is empty place panels. Long-term, community-contributed attestations reduce this dependency.
 - **MapTiler** serves map tiles directly to the browser. Tile requests reveal approximate area (city/neighborhood level, not precise location) via standard HTTP. This is the same as loading any map — no more identifying than browsing a weather site. No user identity is sent.
 - **Coinbase CDP** handles wallet creation via email OTP. Coinbase holds the email-to-wallet mapping — but we don't store emails ourselves, and email-based auth is standard across every app. The alternative (asking users to manage seed phrases) would make the app unusable. CDP is a bridge to invisible crypto UX, not a surveillance vector.
 - **Server logs** contain only errors and startup messages. No search queries, locations, or user data are logged.

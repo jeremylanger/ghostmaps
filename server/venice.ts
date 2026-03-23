@@ -72,7 +72,10 @@ async function* veniceChatStream(
     throw new Error(`Venice API error: ${response.status} ${text}`);
   }
 
-  const reader = response.body!.getReader();
+  if (!response.body) {
+    throw new Error("Venice API returned no response body for stream");
+  }
+  const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
 

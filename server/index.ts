@@ -732,6 +732,8 @@ app.listen(PORT, () => {
     setInterval(runGuardian, GUARDIAN_INTERVAL);
     console.log("Guardian agent scheduled: every 1 hour");
   } else {
-    console.log("Guardian agent disabled (missing GUARDIAN_PRIVATE_KEY or VENICE_API_KEY)");
+    console.log(
+      "Guardian agent disabled (missing GUARDIAN_PRIVATE_KEY or VENICE_API_KEY)",
+    );
   }
 });
