@@ -387,11 +387,13 @@ Your wallet address is ${wallet.address} — skip any attestations from this add
 
   log("cycle_end", { verdicts: results.length, iterations: iterationCount });
 
-  // Write log to file for post-run analysis
-  const logPath = new URL("./guardian-log.json", import.meta.url);
+  // Write log to repo root as agent_log.json (DevSpot compatibility)
   const fs = await import("node:fs");
+  const path = await import("node:path");
+  const repoRoot = path.resolve(new URL(".", import.meta.url).pathname, "..");
+  const logPath = path.join(repoRoot, "agent_log.json");
   fs.writeFileSync(logPath, JSON.stringify(runLog, null, 2));
-  console.log(`Log written to agent/guardian-log.json`);
+  console.log(`Log written to agent_log.json`);
 
   return { results, lastTimestamp: Math.floor(Date.now() / 1000) };
 }
